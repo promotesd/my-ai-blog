@@ -1,0 +1,107 @@
+---
+import BlogCard from '@/components/blog-card.astro'
+import Link from '@/components/link.astro'
+import PageHead from '@/components/page-head.astro'
+import { buttonVariants } from '@/components/ui/button'
+import { SITE } from '@/consts'
+import Layout from '@/layouts/layout.astro'
+import { getRecentPosts } from '@/lib/data-utils'
+
+const blog = await getRecentPosts(SITE.featuredPostCount)
+---
+
+<Layout class="max-w-3xl">
+  <PageHead slot="head" title="Home" />
+
+  <section class="rounded-lg border">
+    <div class="flex flex-col gap-4 p-6">
+      <div>
+        <p class="text-muted-foreground mb-2 text-sm">Hi, I am</p>
+        <h1 class="text-3xl leading-none font-medium">张林奕涵</h1>
+      </div>
+
+      <p class="text-muted-foreground text-sm leading-7">
+        我关注遥感视觉、多模态学习、视觉语言模型与 RAG 系统。
+        这个网站用于记录我的科研项目、论文阅读、实验过程和技术笔记。
+      </p>
+
+      <div class="flex flex-wrap gap-2 text-xs">
+        <span class="rounded-full border px-3 py-1">Remote Sensing</span>
+        <span class="rounded-full border px-3 py-1">Multimodal AI</span>
+        <span class="rounded-full border px-3 py-1">VLM</span>
+        <span class="rounded-full border px-3 py-1">RAG</span>
+        <span class="rounded-full border px-3 py-1">Segmentation</span>
+      </div>
+    </div>
+  </section>
+
+  <section class="grid gap-4 md:grid-cols-2">
+    <div class="rounded-lg border p-6">
+      <h2 class="mb-3 text-xl font-medium">Research</h2>
+      <p class="text-muted-foreground text-sm leading-7">
+        主要研究方向包括遥感图像理解、视觉语言分割、多模态检索、
+        小目标检测，以及面向遥感场景的智能问答系统。
+      </p>
+    </div>
+
+    <div class="rounded-lg border p-6">
+      <h2 class="mb-3 text-xl font-medium">Current Focus</h2>
+      <p class="text-muted-foreground text-sm leading-7">
+        正在探索 VLM 与多模态 RAG 在遥感图像问答、语义分割和区域理解任务中的结合。
+      </p>
+    </div>
+  </section>
+
+  <section class="rounded-lg border p-6">
+    <h2 class="mb-4 text-xl font-medium">Selected Projects</h2>
+
+    <div class="flex flex-col gap-4">
+      <div>
+        <h3 class="font-medium">SegEarth-R1 Extension</h3>
+        <p class="text-muted-foreground text-sm leading-7">
+          面向遥感图像理解的视觉语言分割系统，关注分割、推理、元素定位与多模态问答。
+        </p>
+      </div>
+
+      <div>
+        <h3 class="font-medium">GeoMoE</h3>
+        <p class="text-muted-foreground text-sm leading-7">
+          面向遥感图文检索的参数高效专家混合方法，关注地理先验引导的路由机制。
+        </p>
+      </div>
+
+      <div>
+        <h3 class="font-medium">慢病用药小管家</h3>
+        <p class="text-muted-foreground text-sm leading-7">
+          面向慢病患者的用药管理 Web 应用设计，关注问诊、用药、复诊与配送闭环。
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <section class="flex flex-col gap-y-4">
+    <h2 class="text-2xl font-medium">Latest posts</h2>
+
+    <ul class="flex flex-col gap-y-4">
+      {
+        blog.map((post) => (
+          <li>
+            <BlogCard entry={post} />
+          </li>
+        ))
+      }
+    </ul>
+
+    <div class="flex justify-center">
+      <Link
+        href="/blog"
+        class={buttonVariants({ variant: 'ghost' }) + ' group'}
+      >
+        See all posts
+        <span class="ml-1.5 transition-transform group-hover:translate-x-1">
+          &rarr;
+        </span>
+      </Link>
+    </div>
+  </section>
+</Layout>
