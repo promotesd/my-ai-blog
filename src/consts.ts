@@ -4,7 +4,7 @@ export const SITE: Site = {
   title: '张林奕涵',
   description:
     '个人简历与技术博客，记录遥感视觉、多模态学习、视觉语言模型、RAG 与项目实践。',
-  href: 'http://localhost:1234',
+  href: 'https://xiaodudu.top',
   author: '张林奕涵',
   locale: 'zh-CN',
   featuredPostCount: 2,
@@ -32,7 +32,7 @@ export const NAV_LINKS: SocialLink[] = [
 
 export const SOCIAL_LINKS: SocialLink[] = [
   {
-    href: 'https://github.com/你的GitHub用户名',
+    href: 'https://github.com/promotesd',
     label: 'GitHub',
   },
   {
