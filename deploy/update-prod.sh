@@ -12,7 +12,12 @@ fi
 
 git pull --ff-only
 
-COMPOSE_PARALLEL_LIMIT=1 docker compose -f docker-compose.prod.yml --env-file .env.production build backend frontend
+if [ ! -f frontend/dist/index.html ]; then
+  echo "frontend/dist/index.html not found. Build frontend locally and upload frontend/dist before updating production." >&2
+  exit 1
+fi
+
+COMPOSE_PARALLEL_LIMIT=1 docker compose -f docker-compose.prod.yml --env-file .env.production build backend
 docker compose -f docker-compose.prod.yml --env-file .env.production up -d
 docker image prune -f
 
