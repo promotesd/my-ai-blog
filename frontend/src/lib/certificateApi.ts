@@ -1,0 +1,61 @@
+/**
+ * certificateApi.ts
+ * Supabase query functions for the Certificate page.
+ *
+ * Exports:
+ *   fetchCertificates()  — Fetch all published certificates, ordered by
+ *                          display_order ASC, then issue_date DESC.
+ *
+ * Schema reference:
+ *   supabase/migrations/20260306000000_create_certificates_table.sql
+ *   supabase/migrations/20260315000000_update_certificates_clear_seed.sql
+ */
+
+import { portfolioApi } from "@/services/portfolioApi"
+import type { Certificate } from "@/types/certificate"
+
+// ─── Raw DB row shape (matches the certificates table columns) ────────────────
+
+interface CertificateRow {
+  id:              string
+  title:           string
+  description:     string
+  category:        string
+  issuer_name:     string
+  issuer_logo_url: string | null
+  issue_date:      string
+  expiry_date:     string | null
+  status:          string
+  pdf_url:         string | null
+  thumbnail_url:   string | null
+  display_order:   number
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// fetchCertificates
+// ─────────────────────────────────────────────────────────────────────────────
+
+/**
+ * Fetches all published certificates from Supabase ordered by:
+ *   1. display_order ASC  (manual sort override)
+ *   2. issue_date   DESC  (most recent first within same display_order)
+ *
+ * Returns an empty array when the table is empty — no error thrown.
+ * Throws on Supabase network / query errors (caller should catch and show UI error).
+ */
+export async function fetchCertificates(): Promise<Certificate[]> {
+  const data = await portfolioApi.list<CertificateRow & { id: number }>("certificates")
+  return data.map((row) => ({
+    id:            row.id,
+    title:         row.title,
+    description:   row.description,
+    category:      row.category     as Certificate["category"],
+    issuer_name:   row.issuer_name,
+    issuer_logo:   row.issuer_logo_url ?? undefined,
+    issue_date:    row.issue_date,
+    expiry_date:   row.expiry_date  ?? null,
+    status:        row.status       as Certificate["status"],
+    pdf_url:       row.pdf_url      ?? null,
+    thumbnail_url: row.thumbnail_url ?? null,
+  }))
+}

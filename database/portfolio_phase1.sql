@@ -1,0 +1,185 @@
+USE xiaodudu_blog;
+
+-- Additive portfolio migration. Safe to apply after database/init.sql.
+DROP PROCEDURE IF EXISTS add_project_portfolio_columns;
+DELIMITER //
+CREATE PROCEDURE add_project_portfolio_columns()
+BEGIN
+  IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_schema = DATABASE() AND table_name = 'project' AND column_name = 'payload') THEN
+    ALTER TABLE project ADD COLUMN payload JSON;
+  END IF;
+  IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_schema = DATABASE() AND table_name = 'project' AND column_name = 'sort_order') THEN
+    ALTER TABLE project ADD COLUMN sort_order INT DEFAULT 0;
+  END IF;
+  IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_schema = DATABASE() AND table_name = 'project' AND column_name = 'visible') THEN
+    ALTER TABLE project ADD COLUMN visible TINYINT DEFAULT 1;
+  END IF;
+END//
+DELIMITER ;
+CALL add_project_portfolio_columns();
+DROP PROCEDURE add_project_portfolio_columns;
+
+CREATE TABLE IF NOT EXISTS blog (
+  id BIGINT PRIMARY KEY AUTO_INCREMENT,
+  slug VARCHAR(200) NOT NULL UNIQUE,
+  title VARCHAR(300) NOT NULL,
+  payload JSON,
+  status VARCHAR(30) DEFAULT 'published',
+  sort_order INT DEFAULT 0,
+  visible TINYINT DEFAULT 1,
+  created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+  updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+);
+
+CREATE TABLE IF NOT EXISTS skill (
+  id BIGINT PRIMARY KEY AUTO_INCREMENT,
+  slug VARCHAR(200) DEFAULT '',
+  title VARCHAR(300) NOT NULL,
+  payload JSON,
+  status VARCHAR(30) DEFAULT 'published',
+  sort_order INT DEFAULT 0,
+  visible TINYINT DEFAULT 1,
+  created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+  updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+);
+
+CREATE TABLE IF NOT EXISTS certificate (
+  id BIGINT PRIMARY KEY AUTO_INCREMENT,
+  slug VARCHAR(200) NOT NULL UNIQUE,
+  title VARCHAR(300) NOT NULL,
+  payload JSON,
+  status VARCHAR(30) DEFAULT 'published',
+  sort_order INT DEFAULT 0,
+  visible TINYINT DEFAULT 1,
+  created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+  updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+);
+
+CREATE TABLE IF NOT EXISTS timeline (
+  id BIGINT PRIMARY KEY AUTO_INCREMENT,
+  slug VARCHAR(200) NOT NULL UNIQUE,
+  title VARCHAR(300) NOT NULL,
+  payload JSON,
+  status VARCHAR(30) DEFAULT 'published',
+  sort_order INT DEFAULT 0,
+  visible TINYINT DEFAULT 1,
+  created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+  updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+);
+
+CREATE TABLE IF NOT EXISTS work_experience (
+  id BIGINT PRIMARY KEY AUTO_INCREMENT,
+  slug VARCHAR(200) DEFAULT '',
+  title VARCHAR(300) NOT NULL,
+  payload JSON,
+  status VARCHAR(30) DEFAULT 'published',
+  sort_order INT DEFAULT 0,
+  visible TINYINT DEFAULT 1,
+  created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+  updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+);
+
+CREATE TABLE IF NOT EXISTS coding_journey (
+  id BIGINT PRIMARY KEY AUTO_INCREMENT,
+  slug VARCHAR(200) DEFAULT '',
+  title VARCHAR(300) NOT NULL,
+  payload JSON,
+  status VARCHAR(30) DEFAULT 'published',
+  sort_order INT DEFAULT 0,
+  visible TINYINT DEFAULT 1,
+  created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+  updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+);
+
+CREATE TABLE IF NOT EXISTS tech_tool (
+  id BIGINT PRIMARY KEY AUTO_INCREMENT,
+  slug VARCHAR(200) DEFAULT '',
+  title VARCHAR(300) NOT NULL,
+  payload JSON,
+  status VARCHAR(30) DEFAULT 'published',
+  sort_order INT DEFAULT 0,
+  visible TINYINT DEFAULT 1,
+  created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+  updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+);
+
+CREATE TABLE IF NOT EXISTS deployed_project (
+  id BIGINT PRIMARY KEY AUTO_INCREMENT,
+  slug VARCHAR(200) NOT NULL UNIQUE,
+  title VARCHAR(300) NOT NULL,
+  payload JSON,
+  status VARCHAR(30) DEFAULT 'published',
+  sort_order INT DEFAULT 0,
+  visible TINYINT DEFAULT 1,
+  created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+  updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+);
+
+CREATE TABLE IF NOT EXISTS diary (
+  id BIGINT PRIMARY KEY AUTO_INCREMENT,
+  slug VARCHAR(200) NOT NULL UNIQUE,
+  title VARCHAR(300) NOT NULL,
+  payload JSON,
+  status VARCHAR(30) DEFAULT 'published',
+  sort_order INT DEFAULT 0,
+  visible TINYINT DEFAULT 1,
+  created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+  updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+);
+
+CREATE TABLE IF NOT EXISTS portfolio_stats (
+  id BIGINT PRIMARY KEY AUTO_INCREMENT,
+  slug VARCHAR(200) DEFAULT '',
+  title VARCHAR(300) NOT NULL,
+  payload JSON,
+  status VARCHAR(30) DEFAULT 'published',
+  sort_order INT DEFAULT 0,
+  visible TINYINT DEFAULT 1,
+  created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+  updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+);
+
+CREATE TABLE IF NOT EXISTS guestbook (
+  id BIGINT PRIMARY KEY AUTO_INCREMENT,
+  name VARCHAR(100) NOT NULL,
+  message TEXT NOT NULL,
+  avatar_url VARCHAR(500),
+  fingerprint VARCHAR(255) NOT NULL UNIQUE,
+  ip_address VARCHAR(100),
+  visible TINYINT DEFAULT 1,
+  created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+  updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+);
+
+CREATE TABLE IF NOT EXISTS project_github_url (
+  id BIGINT PRIMARY KEY AUTO_INCREMENT,
+  project_id BIGINT NOT NULL,
+  github_url VARCHAR(500) NOT NULL,
+  sort_order INT DEFAULT 0,
+  CONSTRAINT fk_project_github_url_project FOREIGN KEY (project_id) REFERENCES project(id) ON DELETE CASCADE
+);
+
+CREATE TABLE IF NOT EXISTS popular_project (
+  id BIGINT PRIMARY KEY AUTO_INCREMENT,
+  project_id BIGINT NOT NULL,
+  sort_order INT DEFAULT 0,
+  visible TINYINT DEFAULT 1,
+  CONSTRAINT fk_popular_project_project FOREIGN KEY (project_id) REFERENCES project(id) ON DELETE CASCADE
+);
+
+INSERT IGNORE INTO blog (slug, title, payload, status, sort_order, visible) VALUES
+('building-scalable-backends', 'Building Scalable Backends',
+ JSON_OBJECT('description', 'Notes about API design, caching, and maintainable backend systems.', 'content', 'This portfolio is now backed by Spring Boot, MySQL, and Redis.', 'author', 'Agung Kurniawan'),
+ 'published', 1, 1);
+
+INSERT IGNORE INTO skill (title, payload, sort_order, visible) VALUES
+('Java', JSON_OBJECT('name', 'Java', 'category', 'Backend', 'level', 88), 1, 1),
+('Spring Boot', JSON_OBJECT('name', 'Spring Boot', 'category', 'Backend', 'level', 86), 2, 1),
+('MySQL', JSON_OBJECT('name', 'MySQL', 'category', 'Database', 'level', 84), 3, 1),
+('Redis', JSON_OBJECT('name', 'Redis', 'category', 'Database', 'level', 72), 4, 1);
+
+INSERT IGNORE INTO portfolio_stats (title, payload, sort_order, visible) VALUES
+('Portfolio Stats', JSON_OBJECT('projects', 12, 'years_experience', 4, 'technologies', 20, 'certificates', 3), 1, 1);
+
+INSERT IGNORE INTO guestbook (name, message, fingerprint, visible) VALUES
+('Portfolio Visitor', 'Welcome to the Spring Boot powered guestbook.', 'seed-guestbook-entry', 1);

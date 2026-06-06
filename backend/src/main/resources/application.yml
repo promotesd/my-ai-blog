@@ -1,0 +1,44 @@
+server:
+  port: ${SERVER_PORT:8080}
+
+spring:
+  config:
+    import: optional:file:.env[.properties]
+  application:
+    name: xiaodudu-blog
+  datasource:
+    url: ${MYSQL_URL:jdbc:mysql://localhost:3306/xiaodudu_blog?useUnicode=true&characterEncoding=utf8&serverTimezone=Asia/Shanghai}
+    username: ${MYSQL_USERNAME:root}
+    password: ${MYSQL_PASSWORD:root}
+    driver-class-name: com.mysql.cj.jdbc.Driver
+  data:
+    redis:
+      host: ${REDIS_HOST:localhost}
+      port: ${REDIS_PORT:6379}
+      password: ${REDIS_PASSWORD:}
+      timeout: 2s
+  servlet:
+    multipart:
+      max-file-size: 10MB
+      max-request-size: 20MB
+
+mybatis:
+  mapper-locations: classpath:mapper/*.xml
+  type-aliases-package: com.xiaodudu.blog.entity
+  configuration:
+    map-underscore-to-camel-case: true
+
+logging:
+  level:
+    root: info
+    com.xiaodudu.blog.mapper: debug
+
+app:
+  jwt:
+    secret: ${JWT_SECRET:xiaodudu-blog-dev-secret-change-me}
+    expire-hours: ${JWT_EXPIRE_HOURS:72}
+  upload:
+    dir: ${UPLOAD_DIR:uploads}
+    public-prefix: ${UPLOAD_PUBLIC_PREFIX:/uploads/}
+  cors:
+    allowed-origins: ${CORS_ALLOWED_ORIGINS:http://localhost:5173,http://127.0.0.1:5173}

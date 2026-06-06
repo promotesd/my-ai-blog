@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xiaodudu.blog.mapper.PaperMapper">
+  <select id="findAll" resultType="com.xiaodudu.blog.entity.Paper">
+    SELECT * FROM paper ORDER BY featured DESC, year DESC, id DESC
+  </select>
+
+  <select id="findById" parameterType="long" resultType="com.xiaodudu.blog.entity.Paper">
+    SELECT * FROM paper WHERE id = #{id} LIMIT 1
+  </select>
+  <insert id="insert" parameterType="com.xiaodudu.blog.entity.Paper" useGeneratedKeys="true" keyProperty="id">
+    INSERT INTO paper (title, authors, venue, year, status, abstract_text, tags, pdf_url, code_url, project_url, dataset_url, featured)
+    VALUES (#{title}, #{authors}, #{venue}, #{year}, #{status}, #{abstractText}, #{tags}, #{pdfUrl}, #{codeUrl}, #{projectUrl}, #{datasetUrl}, #{featured})
+  </insert>
+  <update id="update" parameterType="com.xiaodudu.blog.entity.Paper">
+    UPDATE paper SET title=#{title}, authors=#{authors}, venue=#{venue}, year=#{year}, status=#{status}, abstract_text=#{abstractText}, tags=#{tags}, pdf_url=#{pdfUrl}, code_url=#{codeUrl}, project_url=#{projectUrl}, dataset_url=#{datasetUrl}, featured=#{featured}
+    WHERE id=#{id}
+  </update>
+  <delete id="deleteById">
+    DELETE FROM paper WHERE id = #{id}
+  </delete>
+
+  <update id="incrementLikeCount" parameterType="long">
+    UPDATE paper SET like_count = like_count + 1 WHERE id = #{id}
+  </update>
+</mapper>

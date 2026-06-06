@@ -1,0 +1,15 @@
+export const env = {
+  apiBaseUrl: import.meta.env.VITE_API_BASE_URL || "http://localhost:8080",
+  supabaseUrl: import.meta.env.VITE_SUPABASE_URL || "",
+  supabaseAnonKey: import.meta.env.VITE_SUPABASE_ANON_KEY || "",
+  supabaseStorageBucket: import.meta.env.VITE_SUPABASE_STORAGE_BUCKET || "",
+  emailjsServiceId: import.meta.env.VITE_EMAILJS_SERVICE_ID || "",
+  emailjsTemplateId: import.meta.env.VITE_EMAILJS_TEMPLATE_ID || "",
+  emailjsContactTemplateId: import.meta.env.VITE_EMAILJS_CONTACT_TEMPLATE_ID || "",
+  emailjsPublicKey: import.meta.env.VITE_EMAILJS_PUBLIC_KEY || "",
+  steamApiKey: import.meta.env.VITE_STEAM_API_KEY || "",
+  steamId: import.meta.env.VITE_STEAM_ID || "",
+  tmdbApiKey: import.meta.env.VITE_TMDB_API_KEY || "",
+  googleBooksApiKey: import.meta.env.VITE_GOOGLE_BOOKS_API_KEY || "",
+  githubToken: import.meta.env.VITE_GITHUB_TOKEN || "",
+} as const

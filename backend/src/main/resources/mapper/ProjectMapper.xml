@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xiaodudu.blog.mapper.ProjectMapper">
+  <select id="findAll" resultType="com.xiaodudu.blog.entity.Project">
+    SELECT * FROM project ORDER BY featured DESC, updated_at DESC, id DESC
+  </select>
+
+  <select id="findBySlug" parameterType="string" resultType="com.xiaodudu.blog.entity.Project">
+    SELECT * FROM project WHERE slug = #{slug} LIMIT 1
+  </select>
+  <select id="findById" parameterType="long" resultType="com.xiaodudu.blog.entity.Project">
+    SELECT * FROM project WHERE id = #{id} LIMIT 1
+  </select>
+  <insert id="insert" parameterType="com.xiaodudu.blog.entity.Project" useGeneratedKeys="true" keyProperty="id">
+    INSERT INTO project (title, slug, description, content_md, tech_stack, status, category, github_url, demo_url, docs_url, cover_url, featured)
+    VALUES (#{title}, #{slug}, #{description}, #{contentMd}, #{techStack}, #{status}, #{category}, #{githubUrl}, #{demoUrl}, #{docsUrl}, #{coverUrl}, #{featured})
+  </insert>
+  <update id="update" parameterType="com.xiaodudu.blog.entity.Project">
+    UPDATE project SET title=#{title}, slug=#{slug}, description=#{description}, content_md=#{contentMd}, tech_stack=#{techStack}, status=#{status}, category=#{category}, github_url=#{githubUrl}, demo_url=#{demoUrl}, docs_url=#{docsUrl}, cover_url=#{coverUrl}, featured=#{featured}
+    WHERE id=#{id}
+  </update>
+  <delete id="deleteById">
+    DELETE FROM project WHERE id = #{id}
+  </delete>
+
+  <update id="incrementLikeCount" parameterType="long">
+    UPDATE project SET like_count = like_count + 1 WHERE id = #{id}
+  </update>
+</mapper>
