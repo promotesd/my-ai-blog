@@ -36,6 +36,14 @@ A  www  服务器公网 IP
 首次部署：
 
 ```bash
+sudo apt update
+sudo apt install -y git curl openssl nginx certbot python3-certbot-nginx docker.io docker-compose-v2
+sudo systemctl enable --now docker nginx
+```
+
+> Ubuntu 26.04 的 Compose v2 包名是 `docker-compose-v2`；如果你的系统源提供的是 `docker-compose-plugin`，二者任选其一即可，最终命令都应支持 `docker compose version`。
+
+```bash
 cd /opt/my-ai-blog
 chmod +x deploy/deploy-prod.sh deploy/update-prod.sh
 APP_DIR=/opt/my-ai-blog ./deploy/deploy-prod.sh
