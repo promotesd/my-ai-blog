@@ -1,4 +1,5 @@
 import { create } from "zustand"
+import { safeGetStorageItem, safeSetStorageItem } from "@/lib/safeStorage"
 
 export const BANNER_HEIGHT = 40 // px
 
@@ -22,8 +23,8 @@ export const useBannerStore = create<BannerState>((set) => ({
     if (typeof window === "undefined") return
 
     // 1. Cek localStorage
-    const dismissed = localStorage.getItem("guestbook_banner_dismissed") === "true"
-    const submitted  = localStorage.getItem("guestbook_submitted") === "true"
+    const dismissed = safeGetStorageItem("guestbook_banner_dismissed") === "true"
+    const submitted  = safeGetStorageItem("guestbook_submitted") === "true"
 
     if (dismissed || submitted) {
       set({ visible: false, initialized: true })
@@ -45,13 +46,13 @@ export const useBannerStore = create<BannerState>((set) => ({
         resGuestbook.json(),
       ])
       if (dBanner.checked) {
-        localStorage.setItem("guestbook_banner_dismissed", "true")
+        safeSetStorageItem("guestbook_banner_dismissed", "true")
         set({ visible: false, initialized: true })
         return
       }
       if (dGuestbook.checked) {
         // Tamu sudah mengisi buku tamu → sembunyikan banner
-        localStorage.setItem("guestbook_submitted", "true")
+        safeSetStorageItem("guestbook_submitted", "true")
         set({ visible: false, initialized: true })
         return
       }
@@ -64,7 +65,7 @@ export const useBannerStore = create<BannerState>((set) => ({
 
   dismiss: () => {
     if (typeof window !== "undefined") {
-      localStorage.setItem("guestbook_banner_dismissed", "true")
+      safeSetStorageItem("guestbook_banner_dismissed", "true")
     }
     // Catat fingerprint server-side agar tidak bisa bypass dengan hapus localStorage
     import("@/lib/fingerprint")

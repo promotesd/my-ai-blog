@@ -1,3 +1,5 @@
+import { safeGetStorageItem, safeSetStorageItem } from "@/lib/safeStorage"
+
 /**
  * Generate a SHA-256 browser fingerprint from stable browser characteristics.
  * Used to uniquely identify a visitor without requiring login.
@@ -6,14 +8,14 @@
  */
 export async function generateFingerprint(): Promise<string> {
   // crypto.subtle is only available in secure contexts (HTTPS / localhost).
-  if (!crypto?.subtle) {
+  if (typeof crypto === "undefined" || !crypto.subtle) {
     const STORAGE_KEY = "_gb_fp"
-    const stored = localStorage.getItem(STORAGE_KEY)
+    const stored = safeGetStorageItem(STORAGE_KEY)
     if (stored) return stored
     const random = Array.from({ length: 32 }, () =>
       Math.floor(Math.random() * 16).toString(16)
     ).join("")
-    localStorage.setItem(STORAGE_KEY, random)
+    safeSetStorageItem(STORAGE_KEY, random)
     return random
   }
 

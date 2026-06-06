@@ -1,4 +1,5 @@
 import { createContext, useContext, useEffect, useMemo, useState } from "react"
+import { safeGetStorageItem, safeSetStorageItem } from "@/lib/safeStorage"
 
 export interface ThemeProviderProps {
   children: React.ReactNode
@@ -32,7 +33,7 @@ export function ThemeProvider({
   defaultTheme = "dark",
   enableSystem,
 }: ThemeProviderProps) {
-  const [theme, setThemeState] = useState(() => localStorage.getItem("theme") || defaultTheme)
+  const [theme, setThemeState] = useState(() => safeGetStorageItem("theme") || defaultTheme)
   const resolvedTheme = resolveTheme(theme, enableSystem)
 
   useEffect(() => {
@@ -42,7 +43,7 @@ export function ThemeProvider({
       root.classList.toggle("light", resolvedTheme === "light")
     }
     root.style.colorScheme = resolvedTheme === "dark" ? "dark" : "light"
-    localStorage.setItem("theme", theme)
+    safeSetStorageItem("theme", theme)
   }, [attribute, resolvedTheme, theme])
 
   const value = useMemo(

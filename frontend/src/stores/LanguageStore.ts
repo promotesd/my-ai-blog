@@ -1,5 +1,6 @@
 import { create } from "zustand"
-import { persist } from "zustand/middleware"
+import { createJSONStorage, persist } from "zustand/middleware"
+import { safeStorage } from "@/lib/safeStorage"
 
 export type Locale = "id" | "en" | "de" | "zh"
 
@@ -14,6 +15,9 @@ export const useLanguageStore = create<LanguageState>()(
       locale: "id",
       setLocale: (locale) => set({ locale }),
     }),
-    { name: "portfolio-locale" }
+    {
+      name: "portfolio-locale",
+      storage: createJSONStorage(() => safeStorage),
+    }
   )
 )
