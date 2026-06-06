@@ -15,6 +15,9 @@ const RESOURCE_MAP: Record<string, string> = {
   diaries: "diaries",
   portfolio_stats: "portfolio-stats",
   guestbook: "guestbook",
+  gallery_photos: "gallery/photos",
+  gallery_albums: "gallery/albums",
+  gallery_guests: "gallery/guests",
 }
 
 type Operation = "select" | "insert" | "update" | "delete"
@@ -110,7 +113,7 @@ const storageBucket = (bucket = "") => ({
     try {
       const formData = new FormData()
       formData.append("file", file)
-      formData.append("category", "general")
+      formData.append("category", bucket.startsWith("gallery") ? "gallery" : "general")
       const token = localStorage.getItem("portfolio-admin-token")
       const response = await fetch(bucket.startsWith("guestbook") ? "/api/upload/guestbook" : "/api/upload/files", {
         method: "POST",

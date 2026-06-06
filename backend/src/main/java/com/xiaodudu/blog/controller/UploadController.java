@@ -30,7 +30,7 @@ public class UploadController {
       "application/vnd.android.package-archive", "application/octet-stream"
   );
   private static final Set<String> ALLOWED_CATEGORIES = Set.of(
-      "blogs", "certificates", "timeline", "projects", "guestbook", "general"
+      "blogs", "certificates", "timeline", "projects", "guestbook", "gallery", "general"
   );
 
   private final RedisSupportService redis;
