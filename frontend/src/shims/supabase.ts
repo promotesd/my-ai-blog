@@ -115,11 +115,14 @@ const storageBucket = (bucket = "") => ({
       formData.append("file", file)
       formData.append("category", bucket.startsWith("gallery") ? "gallery" : "general")
       const token = localStorage.getItem("portfolio-admin-token")
-      const response = await fetch(bucket.startsWith("guestbook") ? "/api/upload/guestbook" : "/api/upload/files", {
+      const response = await fetch(
+        bucket.startsWith("guestbook") ? "/api/upload/guestbook" : bucket.startsWith("gallery") ? "/api/upload/gallery" : "/api/upload/files",
+        {
         method: "POST",
         headers: token ? { Authorization: `Bearer ${token}` } : {},
         body: formData,
-      })
+        }
+      )
       const body = await response.json()
       if (!response.ok || body.code >= 400) throw new Error(body.message || "Upload failed")
       return { data: { path: body.data.url }, error: null as SupabaseError }

@@ -105,6 +105,24 @@ public class UploadController {
     return Result.success(Map.of("url", publicPrefix + "guestbook/" + filename));
   }
 
+  @PostMapping("/gallery")
+  public Result<Map<String, String>> galleryPhoto(
+      @RequestParam("file") MultipartFile file,
+      HttpServletRequest request
+  ) throws Exception {
+    if (file.isEmpty() || !ALLOWED.contains(file.getContentType())) {
+      throw new RuntimeException("图库仅支持 png、jpg、webp、gif 图片");
+    }
+    redis.requireRateLimit("rate:gallery-upload:" + request.getRemoteAddr(), Duration.ofSeconds(2));
+    String original = file.getOriginalFilename() == null ? "gallery" : file.getOriginalFilename();
+    String ext = original.contains(".") ? original.substring(original.lastIndexOf('.')) : ".png";
+    String filename = UUID.randomUUID() + ext.toLowerCase();
+    Path dir = Path.of(uploadDir).toAbsolutePath().resolve("gallery");
+    Files.createDirectories(dir);
+    Files.copy(file.getInputStream(), dir.resolve(filename));
+    return Result.success(Map.of("url", publicPrefix + "gallery/" + filename));
+  }
+
   @GetMapping("/images")
   public Result<List<Map<String, Object>>> images() throws Exception {
     Path dir = Path.of(uploadDir).toAbsolutePath();
