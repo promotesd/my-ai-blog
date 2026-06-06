@@ -18,11 +18,14 @@ const ID_MONTHS_SHORT = [
 ]
 function formatDate(iso: string) {
   const d = new Date(iso)
+  if (Number.isNaN(d.getTime())) return ""
   return `${d.getDate()} ${ID_MONTHS_SHORT[d.getMonth()]} ${d.getFullYear()}`
 }
 
 export default function BlogPageCard({ blog, view = "grid" }: BlogPageCardProps) {
-  const isDeveloper = blog.author.type === "developer"
+  const author = blog.author ?? { name: "Agung Kurniawan", type: "developer" as const }
+  const authorName = author.name || "Agung Kurniawan"
+  const isDeveloper = author.type === "developer"
   const [translated, setTranslated] = useState<{ title: string; excerpt: string } | null>(null)
 
   const displayTitle   = translated?.title   ?? blog.title
@@ -116,21 +119,21 @@ export default function BlogPageCard({ blog, view = "grid" }: BlogPageCardProps)
               <div
                 className={cn(
                   "w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold shrink-0 overflow-hidden",
-                  !blog.author.avatar && (isDeveloper
+                  !author.avatar && (isDeveloper
                     ? "bg-accentColor text-white"
                     : "bg-gray-200 dark:bg-gray-600 text-gray-700 dark:text-gray-200")
                 )}
               >
-                {blog.author.avatar ? (
-                  <img src={blog.author.avatar} alt={blog.author.name} className="w-full h-full object-cover" />
+                {author.avatar ? (
+                  <img src={author.avatar} alt={authorName} className="w-full h-full object-cover" />
                 ) : (
-                  blog.author.name.charAt(0).toUpperCase()
+                  authorName.charAt(0).toUpperCase()
                 )}
               </div>
               <div className="min-w-0">
                 <div className="flex items-center gap-1.5">
                   <p className="text-xs font-medium dark:text-gray-200 truncate max-w-[90px]">
-                    {blog.author.name}
+                    {authorName}
                   </p>
                   {isDeveloper && (
                     <span className="text-[10px] px-1.5 py-0.5 bg-accentColor/15 text-accentColor rounded font-semibold shrink-0">

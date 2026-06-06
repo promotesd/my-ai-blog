@@ -8,6 +8,8 @@ import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.time.Duration;
+import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -46,6 +48,109 @@ public class GitHubStatsController {
         "public_repos", counts.publicRepos(),
         "private_repos", counts.privateRepos()
     );
+  }
+
+  @GetMapping("/github-private-repos")
+  public List<Map<String, Object>> githubPrivateRepos() {
+    if (token == null || token.isBlank()) {
+      return List.of();
+    }
+
+    try {
+      ObjectNode body = objectMapper.createObjectNode();
+      body.put("query", """
+          query {
+            viewer {
+              repositories(
+                privacy: PRIVATE
+                ownerAffiliations: OWNER
+                orderBy: { field: UPDATED_AT, direction: DESC }
+                first: 100
+              ) {
+                nodes {
+                  databaseId
+                  name
+                  nameWithOwner
+                  url
+                  description
+                  homepageUrl
+                  repositoryTopics(first: 10) {
+                    nodes { topic { name } }
+                  }
+                  primaryLanguage { name }
+                  stargazerCount
+                  forkCount
+                  watchers { totalCount }
+                  updatedAt
+                  visibility
+                }
+              }
+            }
+          }
+          """);
+
+      HttpRequest request = HttpRequest.newBuilder()
+          .uri(URI.create("https://api.github.com/graphql"))
+          .timeout(Duration.ofSeconds(8))
+          .header("Accept", "application/vnd.github+json")
+          .header("Content-Type", "application/json")
+          .header("User-Agent", "xiaodudu-portfolio")
+          .header("Authorization", "Bearer " + token)
+          .POST(HttpRequest.BodyPublishers.ofString(objectMapper.writeValueAsString(body)))
+          .build();
+
+      HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
+      if (response.statusCode() < 200 || response.statusCode() >= 300) {
+        log.warn("GitHub private repos API returned status {}", response.statusCode());
+        return List.of();
+      }
+
+      JsonNode nodes = objectMapper.readTree(response.body())
+          .path("data")
+          .path("viewer")
+          .path("repositories")
+          .path("nodes");
+      if (!nodes.isArray()) {
+        return List.of();
+      }
+
+      return objectMapper.convertValue(nodes, new com.fasterxml.jackson.core.type.TypeReference<List<Map<String, Object>>>() {})
+          .stream()
+          .map(this::toGitHubRepo)
+          .toList();
+    } catch (Exception exception) {
+      log.warn("Failed to fetch GitHub private repos, returning fallback list: {}", exception.getMessage());
+      return List.of();
+    }
+  }
+
+  @SuppressWarnings("unchecked")
+  private Map<String, Object> toGitHubRepo(Map<String, Object> node) {
+    Map<String, Object> topics = (Map<String, Object>) node.getOrDefault("repositoryTopics", Map.of());
+    List<Map<String, Object>> topicNodes = (List<Map<String, Object>>) topics.getOrDefault("nodes", List.of());
+    List<String> topicNames = topicNodes.stream()
+        .map(topicNode -> (Map<String, Object>) topicNode.getOrDefault("topic", Map.of()))
+        .map(topic -> String.valueOf(topic.getOrDefault("name", "")))
+        .filter(name -> !name.isBlank())
+        .toList();
+    Map<String, Object> language = (Map<String, Object>) node.get("primaryLanguage");
+    Map<String, Object> watchers = (Map<String, Object>) node.getOrDefault("watchers", Map.of());
+
+    Map<String, Object> repo = new LinkedHashMap<>();
+    repo.put("id", node.getOrDefault("databaseId", 0));
+    repo.put("name", node.getOrDefault("name", ""));
+    repo.put("full_name", node.getOrDefault("nameWithOwner", ""));
+    repo.put("html_url", node.getOrDefault("url", ""));
+    repo.put("description", node.get("description"));
+    repo.put("homepage", node.get("homepageUrl"));
+    repo.put("topics", topicNames);
+    repo.put("language", language == null ? null : language.get("name"));
+    repo.put("stargazers_count", node.getOrDefault("stargazerCount", 0));
+    repo.put("forks_count", node.getOrDefault("forkCount", 0));
+    repo.put("watchers_count", watchers.getOrDefault("totalCount", 0));
+    repo.put("updated_at", node.getOrDefault("updatedAt", ""));
+    repo.put("visibility", String.valueOf(node.getOrDefault("visibility", "private")).toLowerCase());
+    return repo;
   }
 
   private GitHubCounts fetchGitHubCounts() {

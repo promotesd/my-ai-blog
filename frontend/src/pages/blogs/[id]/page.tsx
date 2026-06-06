@@ -23,6 +23,7 @@ const ID_MONTHS = [
 ]
 function formatDate(iso: string) {
   const d = new Date(iso)
+  if (Number.isNaN(d.getTime())) return ""
   return `${d.getDate()} ${ID_MONTHS[d.getMonth()]} ${d.getFullYear()}`
 }
 
@@ -55,6 +56,8 @@ export default function BlogDetailPage({ params }: { params: { id: string } }) {
 
   const displayTitle   = translatedTitle   ?? blog?.title   ?? ""
   const displayContent = translatedContent ?? blog?.content ?? ""
+  const author = blog?.author ?? { name: "Agung Kurniawan", type: "developer" as const }
+  const authorName = author.name || "Agung Kurniawan"
 
   const handleTranslate = useCallback(async () => {
     if (!blog) return
@@ -202,7 +205,7 @@ export default function BlogDetailPage({ params }: { params: { id: string } }) {
     )
   }
 
-  const isDeveloper = blog.author.type === "developer"
+  const isDeveloper = author.type === "developer"
   const shareUrl = typeof window !== "undefined" ? window.location.href : ""
   const shareTitle = encodeURIComponent(blog.title)
 
@@ -270,20 +273,20 @@ export default function BlogDetailPage({ params }: { params: { id: string } }) {
                 <div
                   className={cn(
                     "w-10 h-10 rounded-full flex items-center justify-center text-sm font-bold shrink-0 overflow-hidden",
-                    !blog.author.avatar && (isDeveloper
+                    !author.avatar && (isDeveloper
                       ? "bg-accentColor text-white"
                       : "bg-gray-200 dark:bg-gray-600 text-gray-700 dark:text-gray-200")
                   )}
                 >
-                  {blog.author.avatar ? (
-                    <img src={blog.author.avatar} alt={blog.author.name} className="w-full h-full object-cover" />
+                  {author.avatar ? (
+                    <img src={author.avatar} alt={authorName} className="w-full h-full object-cover" />
                   ) : (
-                    blog.author.name.charAt(0).toUpperCase()
+                    authorName.charAt(0).toUpperCase()
                   )}
                 </div>
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2 flex-wrap">
-                    <p className="text-sm font-semibold dark:text-white truncate max-w-full">{blog.author.name}</p>
+                    <p className="text-sm font-semibold dark:text-white truncate max-w-full">{authorName}</p>
                     {isDeveloper && (
                       <span className="text-[10px] px-2 py-0.5 bg-accentColor/15 text-accentColor rounded font-bold shrink-0">
                         DEVELOPER / AUTHOR
