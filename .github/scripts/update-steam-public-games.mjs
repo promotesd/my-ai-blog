@@ -44,6 +44,8 @@ for (const pattern of matches) {
 }
 
 if (!Array.isArray(games)) {
+  await writeFile("/tmp/steam-public-games-debug.html", html);
+  console.error(`Steam HTML bytes: ${html.length}; XML bytes: ${xml.length}`);
   throw new Error("Could not find the public Steam games payload");
 }
 

@@ -27,6 +27,13 @@ jobs:
         env:
           STEAM_ID: "76561199152950377"
         run: node .github/scripts/update-steam-public-games.mjs
+      - name: Upload Steam response for parser debugging
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: steam-public-games-debug
+          path: /tmp/steam-public-games-debug.html
+          retention-days: 1
       - name: Commit changed snapshot
         run: |
           if git diff --quiet -- data/steam-public-games.json; then
