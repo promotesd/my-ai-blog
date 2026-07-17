@@ -3,10 +3,12 @@
 import { useEffect } from "react"
 import Link from "next/link"
 import { X, BookOpen, ArrowRight } from "lucide-react"
+import { useTranslations } from "next-intl"
 import { useBannerStore, BANNER_HEIGHT } from "@/stores/BannerStore"
 import { cn } from "@/lib/utils"
 
 export default function GuestbookBanner() {
+  const t = useTranslations("guestbookBanner")
   const { visible, initialized, init, dismiss } = useBannerStore()
 
   // Init once on mount — reads localStorage
@@ -41,14 +43,13 @@ export default function GuestbookBanner() {
       >
         <BookOpen size={13} className="shrink-0 opacity-80" />
         <span className="hidden sm:inline">
-          👋 Hai! Tinggalkan pesan di{" "}
-          <span className="underline underline-offset-2 font-semibold">Buku Tamu</span>{" "}
-          saya — kunjungan kamu sangat berarti!
+          👋 {t("desktop_prefix")}{" "}
+          <span className="underline underline-offset-2 font-semibold">{t("guestbook")}</span>{" "}
+          {t("desktop_suffix")}
         </span>
         <span className="sm:hidden">
-          👋 Isi{" "}
-          <span className="underline underline-offset-2 font-semibold">Buku Tamu</span>{" "}
-          saya!
+          👋 {t("mobile_prefix")}{" "}
+          <span className="underline underline-offset-2 font-semibold">{t("guestbook")}</span>
         </span>
         <ArrowRight
           size={13}
@@ -62,12 +63,12 @@ export default function GuestbookBanner() {
           e.stopPropagation()
           dismiss()
         }}
-        title="Jangan tampilkan lagi"
-        aria-label="Tutup pengumuman"
+        title={t("dismiss")}
+        aria-label={t("close")}
         className="absolute right-3 top-1/2 -translate-y-1/2 flex items-center gap-1 px-2 py-1 rounded-md text-white/70 hover:text-white hover:bg-white/10 transition-all text-[10px] sm:text-xs"
       >
         <X size={11} />
-        <span className="hidden sm:inline">Jangan tampilkan lagi</span>
+        <span className="hidden sm:inline">{t("dismiss")}</span>
       </button>
     </div>
   )

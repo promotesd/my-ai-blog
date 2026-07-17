@@ -28,7 +28,7 @@ import {
   type TimelineColor,
 } from "@/data/timelineData" // Pastikan export timelineData statis sudah dihapus/tidak digunakan
 import "yet-another-react-lightbox/styles.css"
-import TranslateWidget from "@/components/TranslateWidget"
+import { portfolioApi } from "@/services/portfolioApi"
 
 const Lightbox = dynamic(() => import("yet-another-react-lightbox"), { ssr: false })
 
@@ -198,44 +198,27 @@ function PhotoGrid({
 function TimelineCard({ item, side }: { item: TimelineItem; side: "left" | "right" }) {
   const { ref, inView } = useInView(0.1)
   const [lightboxIdx, setLightboxIdx] = useState<number | null>(null)
-  
-  // State untuk menyimpan hasil translate
-  const [translated, setTranslated] = useState<Record<string, string> | null>(null)
 
   const t = useTranslations("timeline")
   const c = colorMap[item.color] || colorMap["blue"] 
 
   const slides = item.photos?.map((p) => ({ src: p.src, description: p.caption })) || []
 
+  const periodEnd = item.period_end === "Sekarang" || item.period_end === "present"
+    ? t("period_present")
+    : item.period_end
   const periodLabel =
-    item.period_start === item.period_end
+    item.period_start === periodEnd
       ? item.period_start
-      : `${item.period_start} – ${item.period_end}`
-
-  // 1. Siapkan fields yang mau ditranslate (Flat Record<string, string>)
-  const translateFields = useMemo(() => {
-    const fields: Record<string, string> = {
-      title: item.title,
-      description: item.description,
-    }
-    if (item.subtitle) fields.subtitle = item.subtitle
-    if (item.quote) fields.quote = item.quote
-    
-    item.highlights?.forEach((h, i) => { fields[`hl_${i}`] = h })
-    item.responsibilities?.forEach((r, i) => { fields[`resp_${i}`] = r })
-    item.projects?.forEach((p, i) => { fields[`proj_${i}`] = p })
-    
-    return fields
-  }, [item])
-
-  // 2. Siapkan variabel display (gunakan translated jika ada, jika tidak fallback ke item asli)
-  const title = translated?.title || item.title
-  const subtitle = translated?.subtitle || item.subtitle
-  const description = translated?.description || item.description
-  const quote = translated?.quote || item.quote
-  const highlights = item.highlights?.map((h, i) => translated?.[`hl_${i}`] || h) || []
-  const responsibilities = item.responsibilities?.map((r, i) => translated?.[`resp_${i}`] || r) || []
-  const projects = item.projects?.map((p, i) => translated?.[`proj_${i}`] || p) || []
+      : `${item.period_start} – ${periodEnd}`
+  const isOngoing = ["ongoing", "Sedang Berlangsung", "进行中"].includes(item.status)
+  const title = item.title
+  const subtitle = item.subtitle
+  const description = item.description
+  const quote = item.quote
+  const highlights = item.highlights || []
+  const responsibilities = item.responsibilities || []
+  const projects = item.projects || []
 
   return (
     <div
@@ -285,30 +268,22 @@ function TimelineCard({ item, side }: { item: TimelineItem; side: "left" | "righ
               </div>
             </div>
             
-            {/* 3. Tempatkan Widget Translate di samping badge status */}
             <div className="flex flex-col items-end gap-2 shrink-0">
               <span
                 className={cn(
                   "inline-flex items-center gap-1 text-[10px] font-semibold px-2 py-0.5 rounded-full",
-                  item.status === "Sedang Berlangsung"
+                  isOngoing
                     ? "bg-accentColor/15 text-accentColor"
                     : "bg-gray-100 dark:bg-gray-800 text-gray-500 dark:text-gray-400"
                 )}
               >
-                {item.status === "Sedang Berlangsung" ? (
+                {isOngoing ? (
                   <span className="w-1.5 h-1.5 rounded-full bg-accentColor animate-pulse" />
                 ) : (
                   <CheckCircle2 size={10} />
                 )}
-                {item.status === "Sedang Berlangsung" ? t("status_ongoing") || item.status : item.status}
+                {isOngoing ? t("status_ongoing") : t("status_completed")}
               </span>
-              
-              {/* TOMBOL TRANSLATE DI SINI */}
-              <TranslateWidget
-                fields={translateFields}
-                onTranslated={(out) => setTranslated(out)}
-                onReverted={() => setTranslated(null)}
-              />
             </div>
           </div>
 
@@ -703,7 +678,7 @@ function HeroSection({
   const t = useTranslations("timeline")
   const heroRef = useRef<HTMLDivElement>(null)
   const { ref: statsRef, inView: statsInView } = useInView(0.3)
-  const typed = useTyping([t("typing_1"), t("typing_2"), t("typing_3"), t("typing_4")], 70, 2000)
+  const typed = useTyping([t("typing_1"), t("typing_2"), t("typing_3"), t("typing_4"), t("typing_5")], 70, 2000)
 
   const statCards = [
     { icon: <GraduationCap size={20} />, value: stats.learnYears, suffix: t("suffix_years"), label: t("stat_learn_years"), start: statsInView },
@@ -783,8 +758,19 @@ export default function TimelinePage() {
   }, [])
 
   useEffect(() => {
-    setRawItems(timelineData)
-    setIsLoading(false)
+    let cancelled = false
+    setIsLoading(true)
+    portfolioApi.list<TimelineItem>("timelines")
+      .then((items) => {
+        if (!cancelled) setRawItems(items.length ? items : timelineData)
+      })
+      .catch(() => {
+        if (!cancelled) setRawItems(timelineData)
+      })
+      .finally(() => {
+        if (!cancelled) setIsLoading(false)
+      })
+    return () => { cancelled = true }
   }, [])
 
   // Hitung stats secara dinamis dari rawItems
@@ -845,7 +831,7 @@ export default function TimelinePage() {
           <div className="flex flex-col items-center justify-center py-24 gap-4 text-center">
             <div className="w-10 h-10 border-4 border-accentColor/30 border-t-accentColor rounded-full animate-spin" />
             <p className="text-gray-500 dark:text-gray-400 text-sm font-medium animate-pulse">
-              Memuat data perjalanan...
+              {t("loading")}
             </p>
           </div>
         ) : filteredItems.length === 0 ? (

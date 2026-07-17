@@ -23,7 +23,9 @@ const CATEGORY_LABELS: Record<string, string> = {
   "Pencapaian & Award": "成果与奖项",
   "Organisasi & Komunitas": "组织与社群",
 }
-const statusLabel = (status: string) => status === "Selesai" ? "已完成" : status === "Sedang Berlangsung" ? "进行中" : status
+const isCompletedStatus = (status: string) => ["completed", "Selesai", "已完成"].includes(status)
+const statusLabel = (status: string) => isCompletedStatus(status) ? "已完成" : "进行中"
+const periodLabel = (period: string) => ["present", "Sekarang"].includes(period) ? "至今" : period
 
 const ITEMS_PER_PAGE = 6
 
@@ -103,7 +105,7 @@ export default function TimelineDashboardPage() {
 
   // ─── Stats ──────────────────────────────────────────────────────────────────
   const totalItems = timelines.length
-  const completedCount = timelines.filter(t => t.status === "Selesai").length
+  const completedCount = timelines.filter(t => isCompletedStatus(t.status)).length
   const eduCount = timelines.filter(t => t.category === "Pendidikan").length
   const workCount = timelines.filter(t => t.category === "Karir & Magang").length
 
@@ -519,7 +521,7 @@ function TimelineCard({ item, rowNum, onEdit, onDelete, isSelected, onToggle }: 
       <div className="flex flex-col gap-1.5 pl-7">
         <div className="flex items-center gap-2">
           <span className="text-[10px] font-medium px-2 py-0.5 rounded-md bg-white/[0.05] border border-white/[0.08] text-gray-400">{CATEGORY_LABELS[item.category] || item.category}</span>
-          <span className={cn("text-[10px] font-medium px-2 py-0.5 rounded-md border", item.status === "Selesai" ? "bg-emerald-500/15 text-emerald-400 border-emerald-500/20" : "bg-blue-500/15 text-blue-400 border-blue-500/20")}>{statusLabel(item.status)}</span>
+          <span className={cn("text-[10px] font-medium px-2 py-0.5 rounded-md border", isCompletedStatus(item.status) ? "bg-emerald-500/15 text-emerald-400 border-emerald-500/20" : "bg-blue-500/15 text-blue-400 border-blue-500/20")}>{statusLabel(item.status)}</span>
         </div>
         <div className="flex items-center gap-2 mt-1">
           <MapPin size={12} className="text-gray-500" />
@@ -528,7 +530,7 @@ function TimelineCard({ item, rowNum, onEdit, onDelete, isSelected, onToggle }: 
       </div>
 
       <div className="flex items-center justify-between gap-4 pl-7 pt-2">
-        <span className="text-[10px] text-gray-500">{item.period_start} - {item.period_end}</span>
+        <span className="text-[10px] text-gray-500">{item.period_start} - {periodLabel(item.period_end)}</span>
         <div className="flex items-center gap-1.5 shrink-0">
           <button onClick={onEdit} className="p-2 rounded-xl text-gray-500 hover:text-accentColor hover:bg-accentColor/10 border border-transparent hover:border-accentColor/20 transition-all"><Edit2 size={13} /></button>
           <button onClick={onDelete} className="p-2 rounded-xl text-gray-500 hover:text-red-400 hover:bg-red-500/10 border border-transparent hover:border-red-500/20 transition-all"><Trash2 size={13} /></button>
@@ -560,8 +562,8 @@ function TimelineTableRow({ item, rowNum, onEdit, onDelete, isSelected, onToggle
 
       <td className="px-4 py-3.5">
         <div className="flex flex-col gap-1">
-          <span className="text-[11px] text-gray-300 font-mono">{item.period_start} - {item.period_end}</span>
-          <span className={cn("inline-flex w-fit px-1.5 py-0.5 rounded text-[9px] font-medium", item.status === "Selesai" ? "bg-emerald-500/10 text-emerald-400" : "bg-blue-500/10 text-blue-400")}>{statusLabel(item.status)}</span>
+          <span className="text-[11px] text-gray-300 font-mono">{item.period_start} - {periodLabel(item.period_end)}</span>
+          <span className={cn("inline-flex w-fit px-1.5 py-0.5 rounded text-[9px] font-medium", isCompletedStatus(item.status) ? "bg-emerald-500/10 text-emerald-400" : "bg-blue-500/10 text-blue-400")}>{statusLabel(item.status)}</span>
         </div>
       </td>
 

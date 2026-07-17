@@ -36,8 +36,8 @@ function PCGamesTab({ globalSearch }: { globalSearch?: string }) {
     <div className="space-y-5">
       <div className="grid grid-cols-2 gap-3">
         {[
-          { icon: <Gamepad2 size={16} />, label: t("stat_total_games"), value: games.length, color: "text-blue-500" },
-          { icon: <Clock size={16} />, label: t("stat_total_hours"), value: `${totalHours} 小时`, color: "text-green-500" },
+          { icon: <Gamepad2 size={16} />, label: t("stat_total_games"), value: loading ? "--" : games.length, color: "text-blue-500" },
+          { icon: <Clock size={16} />, label: t("stat_total_hours"), value: loading ? "--" : `${totalHours} 小时`, color: "text-green-500" },
         ].map(({ icon, label, value, color }) => (
           <div key={label} className="rounded-xl border border-gray-200 dark:border-gray-700/50 bg-white dark:bg-gray-800/40 p-4 flex items-center gap-3">
             <span className={cn("p-2 rounded-lg bg-gray-100 dark:bg-gray-700/60", color)}>{icon}</span>

@@ -9,13 +9,20 @@ import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.StandardCopyOption;
 import java.time.Duration;
 import java.net.URI;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
+import java.util.Optional;
 import java.util.Set;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicLong;
 import java.util.stream.Collectors;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -25,11 +32,15 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 public class SteamController {
   private static final String EMPTY_GAMES = "{\"response\":{\"game_count\":0,\"games\":[]}}";
+  private static final long REFRESH_RETRY_MILLIS = Duration.ofMinutes(5).toMillis();
+  private static final Logger log = LoggerFactory.getLogger(SteamController.class);
 
   private final HttpClient httpClient = HttpClient.newBuilder()
       .connectTimeout(Duration.ofSeconds(8))
       .build();
   private final ObjectMapper objectMapper;
+  private final AtomicBoolean refreshInProgress = new AtomicBoolean(false);
+  private final AtomicLong lastRefreshAttempt = new AtomicLong(0);
 
   public SteamController(ObjectMapper objectMapper) {
     this.objectMapper = objectMapper;
@@ -56,6 +67,31 @@ public class SteamController {
       return ResponseEntity.ok(EMPTY_GAMES);
     }
 
+    Optional<CachedGames> cached = readCache();
+    if (cached.isPresent()) {
+      refreshCacheInBackground();
+      CachedGames games = cached.get();
+      return ResponseEntity.ok()
+          .header("X-Steam-Source", "cache")
+          .header("X-Steam-Updated-At", String.valueOf(games.updatedAt()))
+          .body(filterHiddenGames(games.payload()));
+    }
+
+    try {
+      String payload = fetchAndCacheGames();
+      return ResponseEntity.ok()
+          .header("X-Steam-Source", "live")
+          .header("X-Steam-Updated-At", String.valueOf(System.currentTimeMillis()))
+          .body(filterHiddenGames(payload));
+    } catch (Exception ex) {
+      log.warn("Steam API is unavailable and no cache exists: {}", ex.getMessage());
+      return ResponseEntity.ok()
+          .header("X-Steam-Source", "unavailable")
+          .body("{\"response\":{\"game_count\":0,\"games\":[]},\"error\":\"steam_api_unavailable\"}");
+    }
+  }
+
+  private String fetchAndCacheGames() throws Exception {
     String url = apiBaseUrl.replaceAll("/+$", "") + "/IPlayerService/GetOwnedGames/v0001/"
         + "?key=" + enc(apiKey)
         + "&steamid=" + enc(steamId)
@@ -63,33 +99,60 @@ public class SteamController {
         + "&include_appinfo=true"
         + "&include_played_free_games=true";
 
-    try {
-      HttpRequest request = HttpRequest.newBuilder(URI.create(url))
-          .timeout(Duration.ofSeconds(12))
-          .GET()
-          .build();
-      HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
-      if (response.statusCode() < 200 || response.statusCode() >= 300 || response.body().isBlank()) {
-        throw new IllegalStateException("Steam API returned " + response.statusCode());
-      }
-      Path target = Path.of(cacheFile).toAbsolutePath();
-      Files.createDirectories(target.getParent());
-      Files.writeString(target, response.body());
-      return ResponseEntity.ok().header("X-Steam-Source", "live").body(filterHiddenGames(response.body()));
-    } catch (Exception ex) {
-      try {
-        Path target = Path.of(cacheFile).toAbsolutePath();
-        if (Files.isRegularFile(target)) {
-          return ResponseEntity.ok().header("X-Steam-Source", "cache")
-              .body(filterHiddenGames(Files.readString(target)));
-        }
-      } catch (Exception ignored) {
-        // Return a stable empty payload when neither Steam nor the cache is available.
-      }
-      return ResponseEntity.ok()
-          .header("X-Steam-Source", "unavailable")
-          .body("{\"response\":{\"game_count\":0,\"games\":[]},\"error\":\"steam_api_unavailable\"}");
+    HttpRequest request = HttpRequest.newBuilder(URI.create(url))
+        .timeout(Duration.ofSeconds(12))
+        .GET()
+        .build();
+    HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
+    if (response.statusCode() < 200 || response.statusCode() >= 300 || response.body().isBlank()) {
+      throw new IllegalStateException("Steam API returned " + response.statusCode());
     }
+    JsonNode root = objectMapper.readTree(response.body());
+    if (!root.path("response").path("games").isArray()) {
+      throw new IllegalStateException("Steam API returned an invalid games payload");
+    }
+
+    Path target = Path.of(cacheFile).toAbsolutePath();
+    Files.createDirectories(target.getParent());
+    Path temporary = target.resolveSibling(target.getFileName() + ".tmp");
+    Files.writeString(temporary, response.body());
+    try {
+      Files.move(temporary, target, StandardCopyOption.REPLACE_EXISTING, StandardCopyOption.ATOMIC_MOVE);
+    } catch (java.nio.file.AtomicMoveNotSupportedException ignored) {
+      Files.move(temporary, target, StandardCopyOption.REPLACE_EXISTING);
+    }
+    return response.body();
+  }
+
+  private Optional<CachedGames> readCache() {
+    try {
+      Path target = Path.of(cacheFile).toAbsolutePath();
+      if (Files.isRegularFile(target)) {
+        return Optional.of(new CachedGames(Files.readString(target), Files.getLastModifiedTime(target).toMillis()));
+      }
+    } catch (Exception ex) {
+      log.warn("Unable to read Steam cache: {}", ex.getMessage());
+    }
+    return Optional.empty();
+  }
+
+  private void refreshCacheInBackground() {
+    long now = System.currentTimeMillis();
+    long previousAttempt = lastRefreshAttempt.get();
+    if (now - previousAttempt < REFRESH_RETRY_MILLIS || !refreshInProgress.compareAndSet(false, true)) {
+      return;
+    }
+    lastRefreshAttempt.set(now);
+    CompletableFuture.runAsync(() -> {
+      try {
+        fetchAndCacheGames();
+        log.info("Steam games cache refreshed from the official API");
+      } catch (Exception ex) {
+        log.warn("Steam background refresh failed; retaining the last valid cache: {}", ex.getMessage());
+      } finally {
+        refreshInProgress.set(false);
+      }
+    });
   }
 
   private static String enc(String value) {
@@ -130,4 +193,6 @@ public class SteamController {
       return payload;
     }
   }
+
+  private record CachedGames(String payload, long updatedAt) {}
 }

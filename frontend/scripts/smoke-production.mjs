@@ -81,6 +81,9 @@ async function visit(route, scope) {
   if (text.length < 30) failures.push(`${scope} ${route} 页面内容为空`)
   if (text.includes("Application failed to render")) failures.push(`${scope} ${route} 渲染失败`)
   if (text.includes("Agung Kurniawan")) failures.push(`${scope} ${route} 仍包含旧站个人信息`)
+  if (scope === "公开页" && /Hai!|Buku Tamu|Jangan tampilkan|kunjungan kamu/.test(text)) {
+    failures.push(`${scope} ${route} 仍包含留言提示的印尼语文案`)
+  }
   if (route === "/") {
     if (text.includes("项目记录")) failures.push("首页仍展示项目记录区块")
     if (text.includes("文章还在整理中")) failures.push("首页仍展示博客区块")
@@ -135,8 +138,15 @@ async function visit(route, scope) {
   if (route === "/entertainment") {
     if (text.includes("点击统计卡片可以进入对应分类")) failures.push("娱乐页仍展示统计卡片说明")
   }
+  if (route === "/timeline") {
+    const legacyTimelineText = text.match(/Selesai|Sekarang|Sedang Berlangsung|\bTranslate\b|机器人感知|路径规划/)
+    if (legacyTimelineText) failures.push(`时间线仍包含旧文案：${legacyTimelineText[0]}`)
+    for (const expected of ["数字媒体技术", "智能科学与工程学院", "Visual/LiDAR SLAM", "Robot Navigation", "Robot"]) {
+      if (!text.includes(expected)) failures.push(`时间线缺少新内容：${expected}`)
+    }
+  }
   if (scope === "后台页") {
-    const untranslated = text.match(/Tidak ada|Belum ada|Simpan Perubahan|Ya, Hapus|Tambah Tamu|Total Photos|Personal Photos|Guest Uploads|New Timeline Entry|New Project|Edit Project|Gallery Manager|Guestbook Moderation|Menampilkan|Pengunjung|Rata-rata Rating|Menunggu Approval|Personal \(Saya\)|Approved \(Publik\)|Pending \(Tersembunyi\)|Informasi Timeline|Album & Dimensi|Memuat halaman|Reset filter/)
+    const untranslated = text.match(/Tidak ada|Belum ada|Simpan Perubahan|Ya, Hapus|Tambah Tamu|Total Photos|Personal Photos|Guest Uploads|New Timeline Entry|New Project|Edit Project|Gallery Manager|Guestbook Moderation|Menampilkan|Pengunjung|Rata-rata Rating|Menunggu Approval|Personal \(Saya\)|Approved \(Publik\)|Pending \(Tersembunyi\)|Informasi Timeline|Album & Dimensi|Memuat halaman|Reset filter|\bpublished\b|\bdraft\b/)
     if (untranslated) failures.push(`${scope} ${route} 仍包含未翻译文案：${untranslated[0]}`)
   }
   results.push({ scope, route, ok: failures.length === before })
@@ -162,7 +172,7 @@ async function checkAdminModal({ route, tab, trigger, name }) {
     await button.click()
     await page.waitForTimeout(500)
     const text = await page.locator("body").innerText()
-    const untranslated = text.match(/Tidak ada|Belum ada|Simpan|Batal|Hapus|Tambah|Kelola|Pilih|Judul|Deskripsi|Kategori|Tanggal|Nama Pengunjung|Gambar Avatar|Menyimpan|Apakah Anda|Tindakan ini|Peringatan Kritis|New |Edit |Save |Cancel|Delete|Create |Upload |Total Photos|Personal Photos|Guest Uploads|Approved|Pending|Unknown/)
+    const untranslated = text.match(/Tidak ada|Belum ada|Simpan|Batal|Hapus|Tambah|Kelola|Pilih|Judul|Deskripsi|Kategori|Tanggal|Nama Pengunjung|Gambar Avatar|Menyimpan|Apakah Anda|Tindakan ini|Peringatan Kritis|New |Edit |Save |Cancel|Delete|Create |Upload |Total Photos|Personal Photos|Guest Uploads|Approved|Pending|Unknown|\bpublished\b|\bdraft\b|\bblue\b|\borange\b|\bgreen\b|\byellow\b|\bpurple\b|\bred\b|\bcyan\b/)
     if (untranslated) failures.push(`${name}仍包含未翻译文案：${untranslated[0]}`)
   }
   results.push({ scope: "后台弹窗", route: name, ok: failures.length === before })
@@ -230,8 +240,11 @@ async function checkContentApis() {
       failures.push("时间线接口没有返回两条教育经历")
     } else {
       const serialized = JSON.stringify(timelineItems)
-      for (const expected of ["福州大学", "哈尔滨工程大学", "本科", "研究生", "Visual/LiDAR SLAM", "Robot Navigation"]) {
+      for (const expected of ["福州大学", "哈尔滨工程大学", "本科", "研究生", "智能科学与工程学院", "Visual/LiDAR SLAM", "Robot Navigation", "Robot"]) {
         if (!serialized.includes(expected)) failures.push(`时间线缺少正确内容：${expected}`)
+      }
+      for (const removed of ["Selesai", "Sekarang", "Sedang Berlangsung", "机器人感知", "路径规划", "IMU"]) {
+        if (serialized.includes(removed)) failures.push(`时间线接口仍包含旧内容：${removed}`)
       }
       if (/Ã|Â|â€|æœ|ç¦|å°|ï¼/.test(serialized)) failures.push("时间线接口仍包含乱码")
     }

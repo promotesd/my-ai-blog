@@ -40,7 +40,7 @@ export interface TimelineFormData {
 
 const EMPTY_FORM: TimelineFormData = {
   category: "Pendidikan", type: "", title: "", subtitle: "", location: "", locationDetail: "",
-  period_start: "", period_end: "", status: "Selesai", description: "", gpa: "",
+  period_start: "", period_end: "", status: "completed", description: "", gpa: "",
   extracurricular: [], responsibilities: [], projects: [], awardLevel: "",
   highlights: [], skills: [], techStack: [], photos: [],
   quote: "", quote_author: "", color: "blue", icon: "FaSchool"
@@ -196,8 +196,8 @@ export default function TimelineFormModal({ isOpen, mode, initialData, onClose, 
               <div>
                 <label className="block text-xs font-medium text-gray-400 mb-2">状态</label>
                 <select value={form.status} onChange={(e) => setField("status", e.target.value)} className="w-full bg-white/[0.04] border border-white/[0.08] rounded-xl px-3 py-2.5 text-sm text-gray-200 outline-none focus:border-accentColor/60 transition-colors">
-                  <option value="Selesai" className="bg-[#0d1a1a]">已完成</option>
-                  <option value="Sedang Berlangsung" className="bg-[#0d1a1a]">进行中</option>
+                  <option value="completed" className="bg-[#0d1a1a]">已完成</option>
+                  <option value="ongoing" className="bg-[#0d1a1a]">进行中</option>
                 </select>
               </div>
             </div>

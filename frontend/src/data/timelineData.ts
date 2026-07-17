@@ -6,7 +6,7 @@ export type TimelineCategory =
   | "Pencapaian & Award"
   | "Organisasi & Komunitas"
 
-export type TimelineStatus = "Selesai" | "Sedang Berlangsung"
+export type TimelineStatus = "completed" | "ongoing"
 export type TimelineColor = "blue" | "orange" | "green" | "yellow" | "purple"
 
 export interface TimelineHighlight {
@@ -30,7 +30,7 @@ export interface TimelineItem {
   location: string
   locationDetail?: string           // e.g. "Remote" | "On-site"
   period_start: string              // e.g. "2007"
-  period_end: string                // e.g. "2013" | "Sekarang"
+  period_end: string                // e.g. "2026" | "present"
   status: TimelineStatus
   /** Short narrative describing this life phase */
   description: string
@@ -190,7 +190,7 @@ export const timelineData: TimelineItem[] = [
     location: "中国 福建 福州",
     period_start: "2022",
     period_end: "2026",
-    status: "Selesai",
+    status: "completed",
     description: "本科阶段就读于福州大学数字媒体技术专业，学习编程、交互、图形和内容系统相关基础。",
     highlights: ["数字媒体技术专业", "本科阶段：2022 - 2026", "持续积累计算机与工程基础"],
     skills: ["数字媒体技术", "编程基础", "计算机基础"],
@@ -205,14 +205,14 @@ export const timelineData: TimelineItem[] = [
     category: "Pendidikan",
     type: "研究生",
     title: "哈尔滨工程大学",
-    subtitle: "智能科学与技术专业",
+    subtitle: "智能科学与工程学院",
     location: "中国 黑龙江 哈尔滨",
     period_start: "2026",
-    period_end: "Sekarang",
-    status: "Sedang Berlangsung",
-    description: "2026 年开始研究生阶段学习，研究方向主要关注 LiDAR SLAM、IMU、机器人感知与路径规划。",
-    highlights: ["智能科学与技术专业", "研究方向：LiDAR SLAM、IMU、机器人感知、路径规划", "研究生阶段：2026 至今"],
-    skills: ["LiDAR SLAM", "IMU", "机器人感知", "路径规划"],
+    period_end: "present",
+    status: "ongoing",
+    description: "2026 年开始研究生阶段学习，研究方向为 Visual/LiDAR SLAM、Robot Navigation、Robot。",
+    highlights: ["智能科学与工程学院", "Visual/LiDAR SLAM", "Robot Navigation", "Robot"],
+    skills: ["Visual/LiDAR SLAM", "Robot Navigation", "Robot"],
     photos: [],
     quote: "保持好奇，持续复现，认真记录。",
     quote_author: "小嘟嘟",
@@ -232,7 +232,7 @@ export function computeStats(data: TimelineItem[] = timelineData) {
   const works = data.filter((d) => d.category === "Karir & Magang")
   const totalWorkMonths = works.reduce((acc, w) => {
     const start = parseDate(w.period_start)
-    const end = w.period_end === "Sekarang" ? new Date() : parseDate(w.period_end)
+    const end = w.period_end === "Sekarang" || w.period_end === "present" ? new Date() : parseDate(w.period_end)
     if (!start || !end) return acc
     return acc + diffMonths(start, end)
   }, 0)
