@@ -171,7 +171,7 @@ async function checkEntertainmentUi() {
   const before = failures.length
   await page.goto(`${baseURL}/entertainment`, { waitUntil: "domcontentloaded", timeout: 30_000 })
   await page.getByRole("button", { name: /^游戏$/ }).click()
-  await page.waitForTimeout(3_000)
+  await page.locator('img[src*="steam/apps"]').first().waitFor({ state: "attached", timeout: 20_000 }).catch(() => {})
   const steamCovers = await page.locator('img[src*="steam/apps"]').count()
   if (steamCovers === 0) failures.push("娱乐页没有渲染真实 Steam 游戏封面")
 
