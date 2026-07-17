@@ -63,6 +63,16 @@ public class GitHubStatsController {
       }
 
       HttpResponse<String> response = httpClient.send(builder.GET().build(), HttpResponse.BodyHandlers.ofString());
+      if (response.statusCode() == 401 && token != null && !token.isBlank()) {
+        log.warn("GitHub token was rejected; retrying public repositories without authentication");
+        response = httpClient.send(HttpRequest.newBuilder()
+            .uri(URI.create("https://api.github.com/users/" + username + "/repos?per_page=100&sort=updated&direction=desc"))
+            .timeout(Duration.ofSeconds(8))
+            .header("Accept", "application/vnd.github+json")
+            .header("User-Agent", "xiaodudu-portfolio")
+            .GET()
+            .build(), HttpResponse.BodyHandlers.ofString());
+      }
       if (response.statusCode() < 200 || response.statusCode() >= 300) {
         log.warn("GitHub repos API returned status {}", response.statusCode());
         return List.of();
@@ -218,6 +228,16 @@ public class GitHubStatsController {
       }
 
       HttpResponse<String> response = httpClient.send(builder.GET().build(), HttpResponse.BodyHandlers.ofString());
+      if (response.statusCode() == 401 && token != null && !token.isBlank()) {
+        log.warn("GitHub token was rejected; retrying public profile without authentication");
+        response = httpClient.send(HttpRequest.newBuilder()
+            .uri(URI.create("https://api.github.com/users/" + username))
+            .timeout(Duration.ofSeconds(6))
+            .header("Accept", "application/vnd.github+json")
+            .header("User-Agent", "xiaodudu-portfolio")
+            .GET()
+            .build(), HttpResponse.BodyHandlers.ofString());
+      }
       if (response.statusCode() < 200 || response.statusCode() >= 300) {
         log.warn("GitHub user API returned status {}", response.statusCode());
         return 0;
