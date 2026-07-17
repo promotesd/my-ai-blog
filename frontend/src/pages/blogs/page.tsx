@@ -5,10 +5,11 @@ import { useBlogStore } from "@/stores/BlogStore"
 import { BlogCategory } from "@/types/blog"
 import BlogPageCard from "@/components/blog/BlogPageCard"
 import BlogPageCardSkeleton from "@/components/blog/BlogPageCardSkeleton"
-import { Search, PenSquare, LayoutGrid, List, Rss, ChevronLeft, ChevronRight, AlertTriangle, ShieldCheck } from "lucide-react"
+import { Search, PenSquare, LayoutGrid, List, Rss, ChevronLeft, ChevronRight } from "lucide-react"
 import { cn } from "@/lib/utils"
-import { useTranslations } from "next-intl"
+import { useLocale, useTranslations } from "next-intl"
 import Link from "next/link"
+import { getBlogCategoryLabel } from "@/lib/blogCategory"
 
 const CATEGORIES: (BlogCategory | "All")[] = [
   "All",
@@ -26,6 +27,7 @@ const ITEMS_PER_PAGE = 9
 
 export default function BlogsPage() {
   const t = useTranslations("blogsPage")
+  const locale = useLocale()
   const { blogs, fetchBlogs } = useBlogStore()
   const [search, setSearch] = useState("")
   const [activeCategory, setActiveCategory] = useState<BlogCategory | "All">("All")
@@ -192,25 +194,6 @@ export default function BlogsPage() {
 
       {/* Content */}
       <section className="px-[5%] py-10 max-w-[1100px] mx-auto">
-        {/* Community Warning Banner */}
-        <div className="mb-6 rounded-2xl border border-amber-200 dark:border-amber-700/50 bg-amber-50 dark:bg-amber-900/20 px-5 py-4 flex gap-3.5 items-start">
-          <div className="shrink-0 mt-0.5">
-            <AlertTriangle className="w-5 h-5 text-amber-500 dark:text-amber-400" />
-          </div>
-          <div className="flex-1 min-w-0">
-            <p className="text-sm font-semibold text-amber-800 dark:text-amber-300 mb-1 flex items-center gap-2 flex-wrap">
-              {t("banner_title")}
-              <span className="inline-flex items-center gap-1 text-[11px] font-bold px-2 py-0.5 rounded-full bg-amber-200 dark:bg-amber-700/60 text-amber-800 dark:text-amber-200">
-                <ShieldCheck className="w-3 h-3" />
-                {t("banner_disclaimer")}
-              </span>
-            </p>
-            <p className="text-xs text-amber-700/90 dark:text-amber-400/90 leading-relaxed">
-              {t("banner_p1")} <span className="font-semibold">{t("banner_p1_bold")}</span>{t("banner_p2")} <span className="font-semibold">{t("banner_p2_bold")}</span> {t("banner_p3")}<span className="font-semibold">小嘟嘟</span>{t("banner_p4")}
-            </p>
-          </div>
-        </div>
-
         {/* Filters + View Toggle */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
           {/* Category Tabs */}
@@ -226,7 +209,7 @@ export default function BlogsPage() {
                     : "bg-white dark:bg-gray-800/50 border border-gray-200 dark:border-gray-700/50 text-gray-600 dark:text-gray-400 hover:border-accentColor dark:hover:border-accentColor hover:text-accentColor"
                 )}
               >
-                {cat}
+                {getBlogCategoryLabel(cat, locale)}
               </button>
             ))}
           </div>
@@ -270,7 +253,7 @@ export default function BlogsPage() {
             {activeCategory !== "All" && (
               <span>
                 {" "}{t("results_in_category")}{" "}
-                <strong className="text-accentColor">{activeCategory}</strong>
+                <strong className="text-accentColor">{getBlogCategoryLabel(activeCategory, locale)}</strong>
               </span>
             )}
           </p>

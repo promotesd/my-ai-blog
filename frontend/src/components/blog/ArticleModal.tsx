@@ -7,8 +7,9 @@ import { useBlogStore } from "@/stores/BlogStore"
 import { supabase } from "@/lib/supabase"
 import { cn } from "@/lib/utils"
 import dynamic from "next/dynamic"
-import { useTranslations } from "next-intl"
+import { useLocale, useTranslations } from "next-intl"
 import imageCompression from "browser-image-compression"
+import { getBlogCategoryLabel } from "@/lib/blogCategory"
 
 const RichTextEditor = dynamic(() => import("./RichTextEditor"), { ssr: false })
 
@@ -42,6 +43,7 @@ type Step = "form" | "preview"
 
 export default function ArticleModal({ isOpen, onClose }: ArticleModalProps) {
   const t = useTranslations("articleModal")
+  const locale = useLocale()
   const { fetchBlogs } = useBlogStore()
   const [step, setStep] = useState<Step>("form")
   const [isSubmitting, setIsSubmitting] = useState(false)
@@ -440,7 +442,7 @@ export default function ArticleModal({ isOpen, onClose }: ArticleModalProps) {
                     >
                       {CATEGORIES.map((cat) => (
                         <option key={cat} value={cat}>
-                          {cat}
+                          {getBlogCategoryLabel(cat, locale)}
                         </option>
                       ))}
                     </select>
@@ -525,7 +527,7 @@ export default function ArticleModal({ isOpen, onClose }: ArticleModalProps) {
                 )}
                 <div className="flex items-center gap-2 mb-3">
                   <span className="px-2.5 py-0.5 bg-accentColor/10 text-accentColor text-xs font-medium rounded-full">
-                    {category}
+                    {getBlogCategoryLabel(category, locale)}
                   </span>
                   <span className="text-xs text-gray-500 dark:text-gray-400">
                     {estimateReadingTime(content)} {t("min_read")}

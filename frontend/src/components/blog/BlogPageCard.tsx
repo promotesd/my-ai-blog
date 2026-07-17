@@ -6,6 +6,8 @@ import { Clock, Calendar, Tag } from "lucide-react"
 import Link from "next/link"
 import { cn } from "@/lib/utils"
 import TranslateWidget from "@/components/TranslateWidget"
+import { useLocale } from "next-intl"
+import { getBlogCategoryLabel } from "@/lib/blogCategory"
 
 interface BlogPageCardProps {
   blog: Blog
@@ -23,6 +25,7 @@ function formatDate(iso: string) {
 }
 
 export default function BlogPageCard({ blog, view = "grid" }: BlogPageCardProps) {
+  const locale = useLocale()
   const author = blog.author ?? { name: "小嘟嘟", type: "developer" as const }
   const authorName = author.name || "小嘟嘟"
   const isDeveloper = author.type === "developer"
@@ -47,7 +50,7 @@ export default function BlogPageCard({ blog, view = "grid" }: BlogPageCardProps)
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-2 mb-1.5">
               <span className="text-xs px-2 py-0.5 bg-accentColor/10 text-accentColor rounded-full font-medium">
-                {blog.category}
+                {getBlogCategoryLabel(blog.category, locale)}
               </span>
               {isDeveloper && (
                 <span className="text-xs px-2 py-0.5 bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400 rounded-full font-medium">
@@ -96,7 +99,7 @@ export default function BlogPageCard({ blog, view = "grid" }: BlogPageCardProps)
             />
             <div className="absolute inset-0 bg-gradient-to-t from-black/30 to-transparent" />
             <span className="absolute top-3 left-3 text-xs px-2.5 py-1 bg-black/50 backdrop-blur-sm text-white rounded-full font-medium flex items-center gap-1">
-              <Tag size={10} /> {blog.category}
+              <Tag size={10} /> {getBlogCategoryLabel(blog.category, locale)}
             </span>
           </div>
         </Link>

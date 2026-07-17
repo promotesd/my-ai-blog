@@ -16,6 +16,8 @@ import BlogPageCard from "@/components/blog/BlogPageCard"
 import { cn } from "@/lib/utils"
 import { useTranslate } from "@/hooks/useTranslate"
 import TranslateButton from "@/components/blog/TranslateButton"
+import { useLocale } from "next-intl"
+import { getBlogCategoryLabel } from "@/lib/blogCategory"
 
 function formatDate(iso: string) {
   const d = new Date(iso)
@@ -28,6 +30,7 @@ function formatDate(iso: string) {
 }
 
 export default function BlogDetailPage({ params }: { params: { id: string } }) {
+  const locale = useLocale()
   const { id } = params
   const { blogs, getBlogById, fetchBlogs } = useBlogStore()
   const [mounted, setMounted] = useState(false)
@@ -238,7 +241,7 @@ export default function BlogDetailPage({ params }: { params: { id: string } }) {
             {/* Category + meta */}
             <div className="flex flex-wrap items-center gap-2 mb-4">
               <span className="flex items-center gap-1 text-xs px-2.5 py-1 bg-accentColor/10 text-accentColor rounded-full font-medium">
-                <Tag size={10} /> {blog.category}
+                <Tag size={10} /> {getBlogCategoryLabel(blog.category, locale)}
               </span>
               <span className="flex items-center gap-1 text-xs text-gray-500 dark:text-gray-400">
                 <Calendar size={11} /> {formatDate(blog.publishedAt)}

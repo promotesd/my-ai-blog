@@ -4,6 +4,7 @@ import { useState, useEffect, useRef, type ReactNode } from "react"
 import { X, Upload, Tag as TagIcon, Plus, Clock, Loader2, FileText } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { PROFILE } from "@/config/profile"
+import { getBlogCategoryLabel } from "@/lib/blogCategory"
 
 export type AuthorType = "developer" | "visitor"
 
@@ -297,7 +298,7 @@ export default function BlogFormModal({
                 </option>
                 {CATEGORIES.map((c) => (
                   <option key={c} value={c} className="bg-[#0e1c1c]">
-                    {c}
+                    {getBlogCategoryLabel(c, "zh")}
                   </option>
                 ))}
               </select>

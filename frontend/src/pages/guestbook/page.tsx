@@ -7,7 +7,6 @@ import {
   Users,
   MapPin,
   Star,
-  Clock,
   Search,
   SlidersHorizontal,
   Edit3,
@@ -216,8 +215,7 @@ export default function GuestbookPage() {
       entries.length > 0
         ? (entries.reduce((s, e) => s + e.rating, 0) / entries.length).toFixed(1)
         : "0"
-    const latest = entries[0]
-    return { uniqueCities, avgRating, latest }
+    return { uniqueCities, avgRating }
   }, [entries])
 
   // ── Unique cities for filter dropdown ─────────────────────────────────────────
@@ -330,18 +328,6 @@ export default function GuestbookPage() {
                 label={t("stat_avg_rating")}
                 value={stats.avgRating}
               />
-              {stats.latest && (
-                <AnimatedStat
-                  icon={<Clock size={20} />}
-                  label={t("stat_latest")}
-                  value={stats.latest.name}
-                  sub={new Date(stats.latest.created_at).toLocaleDateString("id-ID", {
-                    day: "numeric",
-                    month: "short",
-                    year: "numeric",
-                  })}
-                />
-              )}
             </div>
           )}
         </div>
