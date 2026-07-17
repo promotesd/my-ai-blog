@@ -82,9 +82,11 @@ export default function HeroContent() {
         ))}
       </div>
 
-      <div className="bio-animation dark:bg-[linear-gradient(#fff,rgba(255,255,255,.6))] inline-block text-black dark:text-transparent bg-clip-text text-md md:text-lg text-center md:text-left">
-        {t("tagline")}
-      </div>
+      {t("tagline") && (
+        <div className="bio-animation dark:bg-[linear-gradient(#fff,rgba(255,255,255,.6))] inline-block text-black dark:text-transparent bg-clip-text text-md md:text-lg text-center md:text-left">
+          {t("tagline")}
+        </div>
+      )}
 
       <Link
         href={`mailto:${PROFILE.email}`}

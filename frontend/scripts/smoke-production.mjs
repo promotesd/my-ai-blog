@@ -93,6 +93,7 @@ async function visit(route, scope) {
       failures.push("首页欢迎文案或座右铭未更新")
     }
     if (text.includes("也可以叫我 profighted")) failures.push("首页仍展示 profighted 别名说明")
+    if (text.includes("慢慢积累，把学习变成可以被看见的作品")) failures.push("首页仍展示已删除的 tagline")
     const contactText = await page.locator("#contacts").innerText().catch(() => "")
     const emailHref = await page.locator('#contacts a[href^="mailto:"]').getAttribute("href").catch(() => "")
     if (!contactText.includes("欢迎交流") || !contactText.includes("GitHub") || !contactText.includes("邮箱")) {
