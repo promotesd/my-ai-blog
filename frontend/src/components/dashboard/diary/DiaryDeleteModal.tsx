@@ -41,21 +41,21 @@ export default function DiaryDeleteModal({
             <AlertTriangle size={26} className="text-red-400" />
           </div>
           <div>
-            <h3 className="text-lg font-semibold text-white mb-1.5">{t("delete_title") || "Hapus Diary Entry?"}</h3>
+            <h3 className="text-lg font-semibold text-white mb-1.5">{t("delete_title") || "删除日记"}</h3>
             <p className="text-sm text-gray-400 leading-relaxed">
-              {t("delete_message") || "Apakah Anda yakin ingin menghapus entry ini?"} <br/>
+              {t("delete_message") || "确定要删除这篇日记吗？"} <br/>
               <span className="text-gray-200 font-medium">"{title}"</span><br/>
-              Tindakan ini tidak dapat dibatalkan.
+              此操作不可撤销。
             </p>
           </div>
         </div>
         
         <div className="flex items-center gap-3 px-6 py-4 bg-white/[0.02] border-t border-white/[0.06]">
           <button onClick={onClose} disabled={isDeleting} className="flex-1 py-2.5 text-sm font-medium text-gray-400 hover:text-white bg-white/[0.04] hover:bg-white/[0.08] border border-white/[0.08] rounded-xl transition-all disabled:opacity-50">
-            {t("btn_cancel") || "Batal"}
+            {t("btn_cancel") || "取消"}
           </button>
           <button onClick={handleConfirm} disabled={isDeleting} className="flex-1 flex items-center justify-center gap-2 py-2.5 text-sm font-medium text-white bg-red-500/90 hover:bg-red-500 rounded-xl transition-all disabled:opacity-50">
-            {isDeleting ? <Loader2 size={16} className="animate-spin" /> : (t("btn_delete") || "Ya, Hapus")}
+            {isDeleting ? <Loader2 size={16} className="animate-spin" /> : (t("btn_delete") || "删除")}
           </button>
         </div>
       </div>

@@ -2,29 +2,19 @@
 
 import Link from "next/link"
 import { usePathname, useRouter } from "next/navigation"
-import { Terminal, BookOpen, LayoutGrid, ShieldAlert, LogOut, FolderKanban, BarChart, Wrench, Rocket, Milestone, Briefcase, Image, Music, Gamepad2, MessageSquare, BookMarked } from "lucide-react"
+import { Terminal, BookOpen, LayoutGrid, ShieldAlert, LogOut, FolderKanban, Image, MessageSquare, BookMarked, FileText, History } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { useSidebar } from "./SidebarContext"
 
 const NAV_ITEMS = [
-  { href: "/dashboard", label: "Overview", icon: LayoutGrid, exact: true },
-  { href: "/dashboard/blogs", label: "Blogs", icon: BookOpen },
-  { href: "/dashboard/diary", label: "Diary", icon: BookMarked },
-  { href: "/dashboard/projects", label: "Projects", icon: FolderKanban },
-  { href: "/dashboard/deploy-projects", label: "Deployed Projects", icon: Rocket },
-  { href: "/dashboard/certificates", label: "Certificates", icon: ShieldAlert },
-  { href: "/dashboard/timelines", label: "Timelines", icon: LayoutGrid },
-  { href: "/dashboard/tech-tools", label: "Tech Tools", icon: Terminal },
-  { href: "/dashboard/skills", label: "Skills", icon: Wrench },
-  { href: "/dashboard/portfolio-stats", label: "Portfolio Stats", icon: BarChart },
-  { href: "/dashboard/coding-journey", label: "Coding Journey", icon: Milestone },
-  { href: "/dashboard/work-experiences", label: "Work Experiences", icon: Briefcase },
-  { href: "/dashboard/gallery", label: "Gallery", icon: Image },
-  { href: "/dashboard/music", label: "Music", icon: Music },
-  { href: "/dashboard/games", label: "Games Library", icon: Gamepad2 },
-  { href: "/dashboard/books", label: "Books Library", icon: BookOpen },
-  { href: "/dashboard/guestbook", label: "Guestbook", icon: MessageSquare },
-  { href: "/dashboard/visitor-ip-logs", label: "Visitor IP Logs", icon: ShieldAlert },
+  { href: "/dashboard", label: "概览", icon: LayoutGrid, exact: true },
+  { href: "/dashboard/blogs", label: "博客", icon: BookOpen },
+  { href: "/dashboard/diary", label: "日记", icon: BookMarked },
+  { href: "/dashboard/projects", label: "项目", icon: FolderKanban },
+  { href: "/dashboard/timelines", label: "时间线", icon: History },
+  { href: "/dashboard/resume", label: "简历", icon: FileText },
+  { href: "/dashboard/gallery", label: "图库", icon: Image },
+  { href: "/dashboard/guestbook", label: "留言簿", icon: MessageSquare },
 ]
 
 export default function DashboardSidebar() {
@@ -33,9 +23,8 @@ export default function DashboardSidebar() {
   const { isOpen, close } = useSidebar()
 
   async function handleLogout() {
-    await fetch("/api/auth/logout", { method: "POST" })
+    localStorage.removeItem("portfolio-admin-token")
     router.push("/xhub")
-    router.refresh()
   }
 
   return (
@@ -56,8 +45,8 @@ export default function DashboardSidebar() {
             <Terminal size={15} className="text-accentColor" />
           </div>
           <div className="min-w-0">
-            <p className="text-sm font-bold text-white leading-tight truncate">Dev Dashboard</p>
-            <p className="text-[10px] text-gray-500 leading-tight">Supabase Manager</p>
+            <p className="text-sm font-bold text-white leading-tight truncate">小嘟嘟后台</p>
+            <p className="text-[10px] text-gray-500 leading-tight">内容管理</p>
           </div>
         </div>
       </div>
@@ -65,7 +54,7 @@ export default function DashboardSidebar() {
       {/* Nav */}
       <nav className="flex-1 px-3 py-5 space-y-0.5 overflow-y-auto scrollbar-none">
         <p className="text-[10px] font-semibold text-gray-600 uppercase tracking-widest px-2.5 mb-3">
-          Content
+          内容
         </p>
         {NAV_ITEMS.map(({ href, label, icon: Icon, exact }) => {
           const active = exact ? pathname === href : pathname.startsWith(href)
@@ -99,14 +88,14 @@ export default function DashboardSidebar() {
           className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-gray-400 hover:bg-red-500/10 hover:text-red-400 transition-all duration-200"
         >
           <LogOut size={15} className="shrink-0" />
-          <span>Logout</span>
+          <span>退出登录</span>
         </button>
 
         {/* Warning — sudah diprotect dengan middleware */}
         <div className="rounded-xl bg-emerald-500/[0.06] border border-emerald-500/15 px-3 py-3 flex items-start gap-2">
           <ShieldAlert size={12} className="text-emerald-500/70 mt-0.5 shrink-0" />
           <p className="text-[10px] text-emerald-500/50 leading-relaxed">
-            Protected by middleware auth.
+            后台接口已启用登录保护。
           </p>
         </div>
       </div>

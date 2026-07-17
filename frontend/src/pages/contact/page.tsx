@@ -16,6 +16,7 @@ import {
   SiPinterest,
   SiFacebook,
   SiGmail,
+  SiGithub,
 } from "react-icons/si";
 import { FaXTwitter } from "react-icons/fa6";
 import {
@@ -27,13 +28,15 @@ import {
 } from "react-icons/fa";
 import { ReactNode } from "react";
 import emailjs from "@emailjs/browser";
+import { PROFILE } from "@/config/profile";
+import { env } from "@/config/env";
 
 gsap.registerPlugin(ScrollTrigger);
 
 /* ─────────────────── EmailJS Config ─────────────────── */
-const EMAILJS_SERVICE_ID  = process.env.NEXT_PUBLIC_EMAILJS_SERVICE_ID  ?? "YOUR_SERVICE_ID";
-const EMAILJS_TEMPLATE_ID = process.env.NEXT_PUBLIC_EMAILJS_CONTACT_TEMPLATE_ID ?? process.env.NEXT_PUBLIC_EMAILJS_TEMPLATE_ID ?? "YOUR_TEMPLATE_ID";
-const EMAILJS_PUBLIC_KEY  = process.env.NEXT_PUBLIC_EMAILJS_PUBLIC_KEY  ?? "YOUR_PUBLIC_KEY";
+const EMAILJS_SERVICE_ID  = env.emailjsServiceId || "YOUR_SERVICE_ID";
+const EMAILJS_TEMPLATE_ID = env.emailjsContactTemplateId || env.emailjsTemplateId || "YOUR_TEMPLATE_ID";
+const EMAILJS_PUBLIC_KEY  = env.emailjsPublicKey || "YOUR_PUBLIC_KEY";
 
 /* ─────────────────── Toast ─────────────────── */
 type ToastType = "success" | "error";
@@ -91,352 +94,109 @@ interface SocialGroup {
 
 const socialGroups: SocialGroup[] = [
   {
-    id: "video",
-    title: "Video & Streaming",
-    emoji: "📹",
+    id: "contact",
+    title: "GitHub & Email",
+    emoji: "✉️",
     platforms: [
       {
-        id: "youtube",
-        platform: "YouTube",
-        handle: "@gungzzleefy",
-        url: "https://youtube.com/@gungzzleefy",
-        icon: <SiYoutube size={28} />,
-        bgColor: "from-red-600/20 to-red-900/10",
+        id: "github",
+        platform: "GitHub",
+        handle: "@promotesd",
+        url: PROFILE.githubUrl,
+        icon: <SiGithub size={28} />,
+        bgColor: "from-gray-600/20 to-gray-900/10",
+        textColor: "text-gray-900 dark:text-white",
+        borderColor: "border-gray-500/30",
+        glowColor: "hover:shadow-gray-500/20",
+        labelBg: "bg-gray-900",
+        badge: "Code",
+      },
+      {
+        id: "email",
+        platform: "Email",
+        handle: PROFILE.email,
+        url: `mailto:${PROFILE.email}`,
+        icon: <SiGmail size={28} />,
+        bgColor: "from-red-500/20 to-orange-500/10",
         textColor: "text-red-500",
         borderColor: "border-red-500/30",
         glowColor: "hover:shadow-red-500/20",
         labelBg: "bg-red-500",
-      },
-      {
-        id: "tiktok",
-        platform: "TikTok",
-        handle: "@agungkurniawan.id",
-        url: "https://tiktok.com/@agungkurniawan.id",
-        icon: <SiTiktok size={28} />,
-        bgColor: "from-[#010101]/40 to-[#69C9D0]/10",
-        textColor: "text-[#69C9D0]",
-        borderColor: "border-[#69C9D0]/30",
-        glowColor: "hover:shadow-[#69C9D0]/20",
-        labelBg: "bg-[#010101]",
-      },
-      {
-        id: "spotify",
-        platform: "Spotify",
-        handle: "Agung Kurniawan",
-        url: "https://open.spotify.com/user/oiju6hh0r9laylelgztsrl3gk",
-        icon: <SiSpotify size={28} />,
-        bgColor: "from-[#1DB954]/20 to-[#1DB954]/5",
-        textColor: "text-[#1DB954]",
-        borderColor: "border-[#1DB954]/30",
-        glowColor: "hover:shadow-[#1DB954]/20",
-        labelBg: "bg-[#1DB954]",
-      },
-    ],
-  },
-  {
-    id: "instagram",
-    title: "Instagram",
-    emoji: "📸",
-    platforms: [
-      {
-        id: "instagram-main",
-        platform: "Instagram",
-        handle: "@gungzzleefy",
-        url: "https://instagram.com/gungzzleefy",
-        icon: <SiInstagram size={28} />,
-        bgColor: "from-[#E1306C]/20 via-[#C13584]/10 to-[#833AB4]/10",
-        textColor: "text-[#E1306C]",
-        borderColor: "border-[#E1306C]/30",
-        glowColor: "hover:shadow-[#E1306C]/20",
-        labelBg: "bg-gradient-to-r from-[#833AB4] via-[#E1306C] to-[#F77737]",
-        sublabel: "Akun Utama",
-        badge: "Most Active",
-      },
-      {
-        id: "instagram-personal",
-        platform: "Instagram",
-        handle: "@agungkurniawan.id",
-        url: "https://instagram.com/agungkurniawan.id",
-        icon: <SiInstagram size={28} />,
-        bgColor: "from-[#C13584]/20 via-[#833AB4]/10 to-[#405DE6]/10",
-        textColor: "text-[#C13584]",
-        borderColor: "border-[#C13584]/30",
-        glowColor: "hover:shadow-[#C13584]/20",
-        labelBg: "bg-gradient-to-r from-[#833AB4] via-[#E1306C] to-[#F77737]",
-        sublabel: "Personal",
-      },
-      {
-        id: "instagram-professional",
-        platform: "Instagram",
-        handle: "@agungkurniawan.me",
-        url: "https://instagram.com/agungkurniawan.me",
-        icon: <SiInstagram size={28} />,
-        bgColor: "from-[#405DE6]/20 via-[#5851DB]/10 to-[#833AB4]/10",
-        textColor: "text-[#405DE6]",
-        borderColor: "border-[#405DE6]/30",
-        glowColor: "hover:shadow-[#405DE6]/20",
-        labelBg: "bg-gradient-to-r from-[#833AB4] via-[#E1306C] to-[#F77737]",
-        sublabel: "Profesional",
-      },
-      {
-        id: "instagram-cats",
-        platform: "Instagram",
-        handle: "@catslify",
-        url: "https://instagram.com/catslify",
-        icon: <SiInstagram size={28} />,
-        bgColor: "from-[#F77737]/20 via-[#FCAF45]/10 to-[#FFDC80]/10",
-        textColor: "text-[#F77737]",
-        borderColor: "border-[#F77737]/30",
-        glowColor: "hover:shadow-[#F77737]/20",
-        labelBg: "bg-gradient-to-r from-[#833AB4] via-[#E1306C] to-[#F77737]",
-        sublabel: "🐱 Kucing",
-      },
-    ],
-  },
-  {
-    id: "professional",
-    title: "Profesional & Networking",
-    emoji: "💼",
-    platforms: [
-      {
-        id: "linkedin",
-        platform: "LinkedIn",
-        handle: "agung-k-74530028b",
-        url: "https://www.linkedin.com/in/agung-kurniawan-8a798a3b9/",
-        icon: <SiLinkedin size={28} />,
-        bgColor: "from-[#0A66C2]/20 to-[#0A66C2]/5",
-        textColor: "text-[#0A66C2]",
-        borderColor: "border-[#0A66C2]/30",
-        glowColor: "hover:shadow-[#0A66C2]/20",
-        labelBg: "bg-[#0A66C2]",
-        badge: "Professional",
-      },
-      {
-        id: "twitter",
-        platform: "X / Twitter",
-        handle: "@Gungzzleefy",
-        url: "https://x.com/Gungzzleefy",
-        icon: <FaXTwitter size={28} />,
-        bgColor: "from-black/30 to-zinc-900/20",
-        textColor: "text-white",
-        borderColor: "border-zinc-600/30",
-        glowColor: "hover:shadow-zinc-500/20",
-        labelBg: "bg-black",
-      },
-    ],
-  },
-  {
-    id: "messaging",
-    title: "Messaging & Chat",
-    emoji: "💬",
-    platforms: [
-      {
-        id: "whatsapp",
-        platform: "WhatsApp",
-        handle: "+62 813-3164-0909",
-        url: "https://wa.me/6281331640909",
-        icon: <SiWhatsapp size={28} />,
-        bgColor: "from-[#25D366]/20 to-[#128C7E]/10",
-        textColor: "text-[#25D366]",
-        borderColor: "border-[#25D366]/30",
-        glowColor: "hover:shadow-[#25D366]/20",
-        labelBg: "bg-[#25D366]",
-      },
-      {
-        id: "telegram",
-        platform: "Telegram",
-        handle: "@Gungzzleefy",
-        url: "https://t.me/Gungzzleefy",
-        icon: <SiTelegram size={28} />,
-        bgColor: "from-[#229ED9]/20 to-[#0088cc]/10",
-        textColor: "text-[#229ED9]",
-        borderColor: "border-[#229ED9]/30",
-        glowColor: "hover:shadow-[#229ED9]/20",
-        labelBg: "bg-[#229ED9]",
-      },
-    ],
-  },
-  {
-    id: "gaming",
-    title: "Gaming & Hobby",
-    emoji: "🎮",
-    platforms: [
-      {
-        id: "steam",
-        platform: "Steam",
-        handle: "76561199513134799",
-        url: "https://steamcommunity.com/profiles/76561199513134799",
-        icon: <SiSteam size={28} />,
-        bgColor: "from-[#1b2838]/60 to-[#2a3f5f]/20",
-        textColor: "text-[#66c0f4]",
-        borderColor: "border-[#66c0f4]/30",
-        glowColor: "hover:shadow-[#66c0f4]/20",
-        labelBg: "bg-[#1b2838]",
-      },
-      {
-        id: "pinterest",
-        platform: "Pinterest",
-        handle: "@agungkurniawan",
-        url: "https://pin.it/2DKW3zj0U",
-        icon: <SiPinterest size={28} />,
-        bgColor: "from-[#E60023]/20 to-[#ad081b]/10",
-        textColor: "text-[#E60023]",
-        borderColor: "border-[#E60023]/30",
-        glowColor: "hover:shadow-[#E60023]/20",
-        labelBg: "bg-[#E60023]",
-      },
-      {
-        id: "xiaohongshu",
-        platform: "Xiaohongshu",
-        handle: "RedNote / 小红书",
-        url: "https://xhslink.com/m/AqbhESzOU4E",
-        icon: (
-          <svg viewBox="0 0 24 24" width="28" height="28" fill="currentColor">
-            <path d="M12 0C5.373 0 0 5.373 0 12s5.373 12 12 12 12-5.373 12-12S18.627 0 12 0zm5.5 8.5h-2v7h-3v-7h-2V6h7v2.5zm-8.5 0V6H5v2.5h1.5V15H9V8.5H10.5z" />
-          </svg>
-        ),
-        bgColor: "from-[#FF2442]/20 to-[#ff6b81]/10",
-        textColor: "text-[#FF2442]",
-        borderColor: "border-[#FF2442]/30",
-        glowColor: "hover:shadow-[#FF2442]/20",
-        labelBg: "bg-[#FF2442]",
-      },
-    ],
-  },
-  {
-    id: "community",
-    title: "Komunitas",
-    emoji: "👥",
-    platforms: [
-      {
-        id: "facebook",
-        platform: "Facebook",
-        handle: "Agung Kurniawan",
-        url: "https://facebook.com/share/14EZyNqFjMT",
-        icon: <SiFacebook size={28} />,
-        bgColor: "from-[#1877F2]/20 to-[#0d6efd]/10",
-        textColor: "text-[#1877F2]",
-        borderColor: "border-[#1877F2]/30",
-        glowColor: "hover:shadow-[#1877F2]/20",
-        labelBg: "bg-[#1877F2]",
+        badge: "Email",
       },
     ],
   },
 ];
 
-/* ─────────────────── Social Card Component ─────────────────── */
+function StarRating({ value, onChange }: { value: number; onChange: (value: number) => void }) {
+  return (
+    <div className="flex items-center gap-1.5">
+      {[1, 2, 3, 4, 5].map((star) => (
+        <button
+          key={star}
+          type="button"
+          onClick={() => onChange(star)}
+          className="p-0.5 rounded-md transition-transform hover:scale-110 focus:outline-none focus:ring-2 focus:ring-accentColor/40"
+          aria-label={`Rate ${star}`}
+        >
+          <FaStar
+            size={20}
+            className={star <= value ? "text-yellow-400" : "text-gray-300 dark:text-gray-700"}
+          />
+        </button>
+      ))}
+    </div>
+  );
+}
 
 function SocialCard({ platform, index }: { platform: SocialPlatform; index: number }) {
-  const cardRef = useRef<HTMLDivElement>(null);
-  const t = useTranslations("contact");
-  const SUBLABEL: Record<string, string> = {
-    "Akun Utama": t("sublabel_main"),
-    "Personal": t("sublabel_personal"),
-    "Profesional": t("sublabel_professional"),
-    "🐱 Kucing": t("sublabel_cats"),
-  };
+  const cardRef = useRef<HTMLAnchorElement>(null);
 
   useEffect(() => {
     if (!cardRef.current) return;
     gsap.fromTo(
       cardRef.current,
-      { opacity: 0, y: 40, scale: 0.95 },
+      { opacity: 0, y: 24 },
       {
         opacity: 1,
         y: 0,
-        scale: 1,
-        duration: 0.5,
-        delay: index * 0.08,
-        ease: "power3.out",
+        duration: 0.45,
+        delay: index * 0.05,
+        ease: "power2.out",
         scrollTrigger: {
           trigger: cardRef.current,
           start: "top 90%",
+          once: true,
         },
       }
     );
   }, [index]);
 
   return (
-    <div
+    <a
       ref={cardRef}
-      className={`relative group overflow-hidden rounded-2xl border ${platform.borderColor} bg-gradient-to-br ${platform.bgColor} backdrop-blur-sm transition-all duration-300 hover:scale-[1.03] hover:shadow-xl ${platform.glowColor} cursor-pointer`}
+      href={platform.url}
+      target={platform.url.startsWith("http") ? "_blank" : undefined}
+      rel={platform.url.startsWith("http") ? "noopener noreferrer" : undefined}
+      className={`group relative overflow-hidden rounded-2xl border ${platform.borderColor} bg-gradient-to-br ${platform.bgColor} p-5 transition-all duration-300 hover:-translate-y-1 hover:shadow-xl ${platform.glowColor}`}
     >
-      {/* Top accent bar */}
-      <div className={`h-1 w-full ${platform.labelBg} opacity-80`} />
-
-      {/* Badge */}
-      {platform.badge && (
-        <div className="absolute top-3 right-3 z-10">
-          <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-accentColor text-white bg-opacity-90 shadow-sm">
+      <div className="flex items-start justify-between gap-4">
+        <div className={`shrink-0 ${platform.textColor}`}>{platform.icon}</div>
+        {platform.badge && (
+          <span className={`${platform.labelBg} text-white text-[10px] font-semibold px-2 py-1 rounded-full`}>
             {platform.badge}
           </span>
-        </div>
-      )}
-
-      <div className="p-5 flex flex-col gap-3">
-        {/* Icon + Platform name */}
-        <div className="flex items-center gap-3">
-          <div className={`${platform.textColor} transition-transform duration-300 group-hover:scale-110`}>
-            {platform.icon}
-          </div>
-          <div>
-            <div className="font-bold text-sm dark:text-white text-gray-800">
-              {platform.platform}
-            </div>
-            {platform.sublabel && (
-              <div className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
-                {SUBLABEL[platform.sublabel] ?? platform.sublabel}
-              </div>
-            )}
-          </div>
-        </div>
-
-        {/* Handle */}
-        <div className={`text-sm font-semibold ${platform.textColor} truncate`}>
-          {platform.handle}
-        </div>
-
-        {/* Visit button */}
-        <Link
-          href={platform.url}
-          target="_blank"
-          rel="noopener noreferrer"
-          className={`mt-1 flex items-center justify-center gap-2 py-2 px-4 rounded-xl text-xs font-semibold text-white transition-all duration-200 opacity-80 hover:opacity-100 ${platform.labelBg} group-hover:shadow-md`}
-          onClick={(e) => e.stopPropagation()}
-        >
-          <span>Kunjungi</span>
-          <FaExternalLinkAlt size={10} />
-        </Link>
+        )}
       </div>
-    </div>
-  );
-}
-
-/* ─────────────────── Star Rating ─────────────────── */
-function StarRating({ value, onChange }: { value: number; onChange: (v: number) => void }) {
-  const [hover, setHover] = useState(0);
-  const t = useTranslations("contact");
-  return (
-    <div className="flex gap-1" role="group" aria-label={t("star_rating_label")}>
-      {[1, 2, 3, 4, 5].map((star) => (
-        <button
-          type="button"
-          key={star}
-          aria-label={t("star_label").replace("{n}", String(star))}
-          onClick={() => onChange(star)}
-          onMouseEnter={() => setHover(star)}
-          onMouseLeave={() => setHover(0)}
-          className="transition-transform duration-150 hover:scale-110 focus:outline-none"
-        >
-          <FaStar
-            size={28}
-            className={`transition-colors duration-150 ${
-              star <= (hover || value) ? "text-yellow-400" : "text-gray-300 dark:text-gray-600"
-            }`}
-          />
-        </button>
-      ))}
-    </div>
+      <div className="mt-5">
+        <h3 className="text-base font-bold text-gray-900 dark:text-white">{platform.platform}</h3>
+        <p className="mt-1 text-sm text-gray-500 dark:text-gray-400 break-all">{platform.handle}</p>
+        {platform.sublabel && <p className="mt-1 text-xs text-gray-400">{platform.sublabel}</p>}
+      </div>
+      <div className="mt-4 inline-flex items-center gap-2 text-xs font-semibold text-accentColor">
+        Visit <FaExternalLinkAlt size={10} />
+      </div>
+    </a>
   );
 }
 
@@ -619,8 +379,8 @@ function ContactForm() {
               >
                 <option value="">{t("select_source")}</option>
                 <option value="Google Search">Google Search</option>
-                <option value="Instagram">Instagram</option>
-                <option value="LinkedIn">LinkedIn</option>
+                <option value="GitHub">GitHub</option>
+                <option value="Email">Email</option>
                 <option value="Referral / Friend">{t("source_referral")}</option>
                 <option value="Other">{t("source_other")}</option>
               </select>
@@ -784,9 +544,9 @@ export default function ContactPage() {
           {/* Quick stats */}
           <div className="hero-subtitle flex flex-wrap gap-6 mt-8">
             {[
-              { label: "Platforms", value: "15+" },
-              { label: "Response Time", value: "< 24h" },
-              { label: "Open For", value: "Collab" },
+              { label: "联系方式", value: "2" },
+              { label: "回复方式", value: "邮箱" },
+              { label: "欢迎交流", value: "SLAM" },
             ].map((stat) => (
               <div key={stat.label} className="flex flex-col">
                 <span className="text-2xl font-bold text-accentColor">{stat.value}</span>
@@ -825,14 +585,14 @@ export default function ContactPage() {
           <div className="flex-1 h-px bg-gray-200 dark:bg-white/10" />
         </div>
 
-        {/* ── Section 2: Social Media ── */}
+        {/* ── Section 2: Contact Links ── */}
         <section>
           <div className="text-center mb-14">
             <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full border border-accentColor/30 bg-accentColor/10 text-accentColor text-xs font-semibold mb-3">
-              🌐 Social Media & Platform
+              联系方式
             </div>
             <h2 className="text-3xl md:text-4xl font-bold dark:text-white text-gray-900 mb-3">
-              Find Me Online
+              GitHub 与邮箱
             </h2>
             <p className="text-gray-500 dark:text-gray-400 max-w-md mx-auto text-sm">
               {t("social_desc")}
@@ -875,10 +635,10 @@ export default function ContactPage() {
           <div className="inline-block">
             <div className="text-5xl mb-4">👋</div>
             <h3 className="text-2xl font-bold dark:text-white text-gray-900 mb-2">
-              Let&apos;s Build Something Great
+              欢迎交流
             </h3>
             <p className="text-gray-500 dark:text-gray-400 text-sm mb-6">
-              Make your happy ❤️ Today.
+              如果你也关注 SLAM、机器人感知或个人站开发，可以随时联系我。
             </p>
             <Link
               href="/"

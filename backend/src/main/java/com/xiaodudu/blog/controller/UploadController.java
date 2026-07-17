@@ -113,14 +113,35 @@ public class UploadController {
     if (file.isEmpty() || !ALLOWED.contains(file.getContentType())) {
       throw new RuntimeException("图库仅支持 png、jpg、webp、gif 图片");
     }
-    redis.requireRateLimit("rate:gallery-upload:" + request.getRemoteAddr(), Duration.ofSeconds(2));
+    if (file.getSize() > 15L * 1024 * 1024) {
+      throw new RuntimeException("单张图片不能超过 15MB");
+    }
+    redis.requireRateLimit("rate:gallery-upload:" + request.getRemoteAddr(), Duration.ofMillis(200));
     String original = file.getOriginalFilename() == null ? "gallery" : file.getOriginalFilename();
     String ext = original.contains(".") ? original.substring(original.lastIndexOf('.')) : ".png";
     String filename = UUID.randomUUID() + ext.toLowerCase();
     Path dir = Path.of(uploadDir).toAbsolutePath().resolve("gallery");
     Files.createDirectories(dir);
-    Files.copy(file.getInputStream(), dir.resolve(filename));
+    Files.copy(file.getInputStream(), dir.resolve(filename), java.nio.file.StandardCopyOption.REPLACE_EXISTING);
     return Result.success(Map.of("url", publicPrefix + "gallery/" + filename));
+  }
+
+  @PostMapping("/resume")
+  public Result<Map<String, String>> resume(@RequestParam("file") MultipartFile file) throws Exception {
+    if (file.isEmpty()) {
+      throw new RuntimeException("请选择简历 PDF");
+    }
+    if (!"application/pdf".equals(file.getContentType())) {
+      throw new RuntimeException("简历只支持 PDF 文件");
+    }
+    Path dir = Path.of(uploadDir).toAbsolutePath().resolve("resume");
+    Files.createDirectories(dir);
+    Path target = dir.resolve("resume.pdf");
+    Files.copy(file.getInputStream(), target, java.nio.file.StandardCopyOption.REPLACE_EXISTING);
+    return Result.success(Map.of(
+        "url", publicPrefix + "resume/resume.pdf",
+        "filename", "resume.pdf"
+    ));
   }
 
   @GetMapping("/images")

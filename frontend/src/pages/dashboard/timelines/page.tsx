@@ -16,6 +16,14 @@ import TimelineDeleteModal from "./TimelineDeleteModal"
 import { saveTimelineOnServer, deleteTimelineOnServer, bulkDeleteTimelinesOnServer } from "./timelineActions"
 
 const CATEGORIES = ["Pendidikan", "Kursus & Bootcamp", "Karir & Magang", "Pencapaian & Award", "Organisasi & Komunitas"]
+const CATEGORY_LABELS: Record<string, string> = {
+  Pendidikan: "教育",
+  "Kursus & Bootcamp": "课程与训练营",
+  "Karir & Magang": "工作与实习",
+  "Pencapaian & Award": "成果与奖项",
+  "Organisasi & Komunitas": "组织与社群",
+}
+const statusLabel = (status: string) => status === "Selesai" ? "已完成" : status === "Sedang Berlangsung" ? "进行中" : status
 
 const ITEMS_PER_PAGE = 6
 
@@ -72,7 +80,7 @@ export default function TimelineDashboardPage() {
       if (error) throw error
       setTimelines(data || [])
     } catch (err: any) {
-      setToast({ type: "error", text: `Gagal memuat data: ${err.message}` })
+      setToast({ type: "error", text: `加载数据失败：${err.message}` })
     } finally {
       setLoading(false)
     }
@@ -151,7 +159,7 @@ export default function TimelineDashboardPage() {
 
       await fetchTimelines()
       setFormModal({ open: false, mode: "create" })
-      setToast({ type: "success", text: formModal.mode === "create" ? "Data berhasil ditambahkan." : "Data berhasil diperbarui." })
+      setToast({ type: "success", text: formModal.mode === "create" ? "时间线记录已添加。" : "时间线记录已更新。" })
     } catch (err: any) {
       setToast({ type: "error", text: err.message })
     } finally {
@@ -171,7 +179,7 @@ export default function TimelineDashboardPage() {
       await fetchTimelines()
       setSelectedIds(prev => prev.filter(id => id !== item.id))
       setPage(1)
-      setToast({ type: "success", text: "Data berhasil dihapus." })
+      setToast({ type: "success", text: "时间线记录已删除。" })
     } catch (err: any) {
       setToast({ type: "error", text: err.message })
     } finally {
@@ -197,9 +205,9 @@ export default function TimelineDashboardPage() {
       const maxPage = Math.ceil(newTotal / ITEMS_PER_PAGE) || 1
       if (page > maxPage) setPage(maxPage)
 
-      setToast({ type: "success", text: `${result.count} data berhasil dihapus.` })
+      setToast({ type: "success", text: `已删除 ${result.count} 条时间线记录。` })
     } catch (err: any) {
-      setToast({ type: "error", text: `Gagal menghapus: ${err.message}` })
+      setToast({ type: "error", text: `删除失败：${err.message}` })
     } finally {
       setIsDeletingBulk(false)
       setBulkDeleteModal(false)
@@ -227,8 +235,8 @@ export default function TimelineDashboardPage() {
               <GraduationCap size={14} className="text-accentColor" />
             </div>
             <div>
-              <h1 className="text-sm font-semibold text-white leading-tight">Timeline & Journey</h1>
-              <p className="text-[10px] text-gray-500 leading-tight hidden sm:block">Kelola entri perjalanan hidup/karir</p>
+              <h1 className="text-sm font-semibold text-white leading-tight">时间线管理</h1>
+              <p className="text-[10px] text-gray-500 leading-tight hidden sm:block">管理教育与成长经历</p>
             </div>
           </div>
           
@@ -239,7 +247,7 @@ export default function TimelineDashboardPage() {
                 className="flex items-center gap-2 px-3 sm:px-4 py-2 text-xs sm:text-sm font-medium bg-red-500/10 text-red-400 border border-red-500/20 rounded-xl hover:bg-red-500/20 hover:border-red-500/30 transition-all"
               >
                 <Trash2 size={14} />
-                <span className="hidden sm:inline">Hapus ({selectedIds.length})</span>
+                <span className="hidden sm:inline">删除（{selectedIds.length}）</span>
                 <span className="sm:hidden">({selectedIds.length})</span>
               </button>
             )}
@@ -247,8 +255,8 @@ export default function TimelineDashboardPage() {
               onClick={() => setFormModal({ open: true, mode: "create" })}
               className="flex items-center gap-2 px-3 sm:px-4 py-2 text-xs sm:text-sm font-medium bg-accentColor text-white rounded-xl hover:brightness-[0.85] transition-all hover:shadow-lg hover:shadow-accentColor/20"
             >
-              <Plus size={14} /> <span className="hidden sm:inline">New Entry</span>
-              <span className="sm:hidden">Baru</span>
+              <Plus size={14} /> <span className="hidden sm:inline">新建记录</span>
+              <span className="sm:hidden">新建</span>
             </button>
           </div>
         </div>
@@ -258,10 +266,10 @@ export default function TimelineDashboardPage() {
           
           {/* ── Stats ── */}
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4">
-            <StatCard label="Total Entri" value={totalItems} icon={<Database size={15} className="text-gray-400" />} color="default" loading={loading} />
-            <StatCard label="Status Selesai" value={completedCount} icon={<CheckSquare size={15} className="text-emerald-400" />} color="green" loading={loading} />
-            <StatCard label="Pendidikan" value={eduCount} icon={<GraduationCap size={15} className="text-blue-400" />} color="blue" loading={loading} />
-            <StatCard label="Karir & Magang" value={workCount} icon={<Briefcase size={15} className="text-amber-400" />} color="yellow" loading={loading} />
+            <StatCard label="记录总数" value={totalItems} icon={<Database size={15} className="text-gray-400" />} color="default" loading={loading} />
+            <StatCard label="已完成" value={completedCount} icon={<CheckSquare size={15} className="text-emerald-400" />} color="green" loading={loading} />
+            <StatCard label="教育经历" value={eduCount} icon={<GraduationCap size={15} className="text-blue-400" />} color="blue" loading={loading} />
+            <StatCard label="工作与实习" value={workCount} icon={<Briefcase size={15} className="text-amber-400" />} color="yellow" loading={loading} />
           </div>
 
           {/* ── Toolbar ── */}
@@ -270,7 +278,7 @@ export default function TimelineDashboardPage() {
               <Search size={14} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-500 pointer-events-none" />
               <input
                 type="text" value={search} onChange={(e) => { setSearch(e.target.value); setPage(1) }}
-                placeholder="Cari judul / tipe..."
+                placeholder="搜索标题或类型"
                 className="w-full pl-9 pr-9 py-2.5 bg-white/[0.04] border border-white/[0.08] rounded-xl text-sm text-gray-200 placeholder:text-gray-600 outline-none focus:border-accentColor/50 transition-colors"
               />
               {search && (
@@ -282,14 +290,14 @@ export default function TimelineDashboardPage() {
 
             <div className="flex items-center gap-2">
               <select value={filterCategory} onChange={(e) => { setFilterCategory(e.target.value); setPage(1) }} className="flex-1 sm:w-auto px-3 py-2.5 bg-white/[0.04] border border-white/[0.08] rounded-xl text-sm text-gray-300 outline-none focus:border-accentColor/50 transition-colors appearance-none cursor-pointer">
-                <option value="all" className="bg-[#0d1a1a]">Semua Kategori</option>
-                {CATEGORIES.map(c => <option key={c} value={c} className="bg-[#0d1a1a]">{c}</option>)}
+                <option value="all" className="bg-[#0d1a1a]">全部分类</option>
+                {CATEGORIES.map(c => <option key={c} value={c} className="bg-[#0d1a1a]">{CATEGORY_LABELS[c]}</option>)}
               </select>
 
               {hasActiveFilters && (
                 <button onClick={resetFilters} className="flex items-center gap-1.5 px-3 py-2.5 text-xs text-gray-400 hover:text-gray-200 border border-white/[0.08] hover:border-white/20 rounded-xl transition-all shrink-0">
                   <RefreshCw size={12} />
-                  <span className="hidden sm:inline">Reset</span>
+                  <span className="hidden sm:inline">重置</span>
                 </button>
               )}
             </div>
@@ -339,11 +347,11 @@ export default function TimelineDashboardPage() {
                           />
                         </th>
                         <th className="text-left text-[10px] font-semibold text-gray-500 uppercase tracking-widest px-2 py-3.5 w-8">#</th>
-                        <th className="text-left text-[10px] font-semibold text-gray-500 uppercase tracking-widest px-4 py-3.5 min-w-[260px]">Informasi Timeline</th>
-                        <th className="text-left text-[10px] font-semibold text-gray-500 uppercase tracking-widest px-4 py-3.5 w-40">Kategori</th>
-                        <th className="text-left text-[10px] font-semibold text-gray-500 uppercase tracking-widest px-4 py-3.5 w-36">Periode</th>
-                        <th className="text-left text-[10px] font-semibold text-gray-500 uppercase tracking-widest px-4 py-3.5 w-24">Media</th>
-                        <th className="text-right text-[10px] font-semibold text-gray-500 uppercase tracking-widest px-5 py-3.5 w-24">Aksi</th>
+                        <th className="text-left text-[10px] font-semibold text-gray-500 uppercase tracking-widest px-4 py-3.5 min-w-[260px]">时间线信息</th>
+                        <th className="text-left text-[10px] font-semibold text-gray-500 uppercase tracking-widest px-4 py-3.5 w-40">分类</th>
+                        <th className="text-left text-[10px] font-semibold text-gray-500 uppercase tracking-widest px-4 py-3.5 w-36">时间段</th>
+                        <th className="text-left text-[10px] font-semibold text-gray-500 uppercase tracking-widest px-4 py-3.5 w-24">媒体</th>
+                        <th className="text-right text-[10px] font-semibold text-gray-500 uppercase tracking-widest px-5 py-3.5 w-24">操作</th>
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-white/[0.04]">
@@ -372,7 +380,7 @@ export default function TimelineDashboardPage() {
                 {/* Table Footer */}
                 <div className="flex flex-col sm:flex-row items-center justify-between gap-2 px-5 py-3.5 border-t border-white/[0.06] bg-white/[0.02]">
                   <p className="text-xs text-gray-500">
-                    Menampilkan <span className="text-gray-300 font-medium">{filtered.length === 0 ? 0 : Math.min((page - 1) * ITEMS_PER_PAGE + 1, filtered.length)}–{Math.min(page * ITEMS_PER_PAGE, filtered.length)}</span> dari <span className="text-gray-300 font-medium">{filtered.length}</span> entri
+                    显示第 <span className="text-gray-300 font-medium">{filtered.length === 0 ? 0 : Math.min((page - 1) * ITEMS_PER_PAGE + 1, filtered.length)}–{Math.min(page * ITEMS_PER_PAGE, filtered.length)}</span> 条，共 <span className="text-gray-300 font-medium">{filtered.length}</span> 条
                   </p>
                   <Pagination page={page} totalPages={totalPages} onPageChange={setPage} />
                 </div>
@@ -409,19 +417,19 @@ export default function TimelineDashboardPage() {
                 <AlertCircle size={26} className="text-red-400" />
               </div>
               <div>
-                <h3 className="text-lg font-semibold text-white mb-1.5">Hapus {selectedIds.length} Data?</h3>
+                <h3 className="text-lg font-semibold text-white mb-1.5">删除选中的 {selectedIds.length} 条记录？</h3>
                 <p className="text-sm text-gray-400 leading-relaxed">
-                  Apakah Anda yakin ingin menghapus {selectedIds.length} entri timeline beserta foto-fotonya? <br/>
-                  <span className="font-semibold text-gray-300">Tindakan ini tidak dapat dibatalkan.</span>
+                  时间线记录及关联照片将一并删除。<br/>
+                  <span className="font-semibold text-gray-300">此操作无法撤销。</span>
                 </p>
               </div>
             </div>
             <div className="flex items-center gap-3 px-6 py-4 bg-white/[0.02] border-t border-white/[0.06]">
               <button onClick={() => setBulkDeleteModal(false)} disabled={isDeletingBulk} className="flex-1 py-2.5 text-sm font-medium text-gray-400 hover:text-white bg-white/[0.04] hover:bg-white/[0.08] border border-white/[0.08] rounded-xl transition-all disabled:opacity-50">
-                Batal
+                取消
               </button>
               <button onClick={handleBulkDelete} disabled={isDeletingBulk} className="flex-1 flex items-center justify-center gap-2 py-2.5 text-sm font-medium text-white bg-red-500/90 hover:bg-red-500 rounded-xl transition-all disabled:opacity-50">
-                {isDeletingBulk ? <RefreshCw size={16} className="animate-spin" /> : "Ya, Hapus Semua"}
+                {isDeletingBulk ? <RefreshCw size={16} className="animate-spin" /> : "确认全部删除"}
               </button>
             </div>
           </div>
@@ -465,8 +473,8 @@ function EmptyState({ onReset }: { onReset: () => void }) {
   return (
     <div className="flex flex-col items-center gap-3 py-14 text-gray-500">
       <GraduationCap size={28} className="opacity-30" />
-      <p className="text-sm">Tidak ada data yang ditemukan.</p>
-      <button onClick={onReset} className="text-xs text-accentColor hover:underline">Reset filter</button>
+      <p className="text-sm">没有找到匹配的记录。</p>
+      <button onClick={onReset} className="text-xs text-accentColor hover:underline">重置筛选</button>
     </div>
   )
 }
@@ -510,8 +518,8 @@ function TimelineCard({ item, rowNum, onEdit, onDelete, isSelected, onToggle }: 
 
       <div className="flex flex-col gap-1.5 pl-7">
         <div className="flex items-center gap-2">
-          <span className="text-[10px] font-medium px-2 py-0.5 rounded-md bg-white/[0.05] border border-white/[0.08] text-gray-400">{item.category}</span>
-          <span className={cn("text-[10px] font-medium px-2 py-0.5 rounded-md border", item.status === "Selesai" ? "bg-emerald-500/15 text-emerald-400 border-emerald-500/20" : "bg-blue-500/15 text-blue-400 border-blue-500/20")}>{item.status}</span>
+          <span className="text-[10px] font-medium px-2 py-0.5 rounded-md bg-white/[0.05] border border-white/[0.08] text-gray-400">{CATEGORY_LABELS[item.category] || item.category}</span>
+          <span className={cn("text-[10px] font-medium px-2 py-0.5 rounded-md border", item.status === "Selesai" ? "bg-emerald-500/15 text-emerald-400 border-emerald-500/20" : "bg-blue-500/15 text-blue-400 border-blue-500/20")}>{statusLabel(item.status)}</span>
         </div>
         <div className="flex items-center gap-2 mt-1">
           <MapPin size={12} className="text-gray-500" />
@@ -547,28 +555,28 @@ function TimelineTableRow({ item, rowNum, onEdit, onDelete, isSelected, onToggle
       </td>
 
       <td className="px-4 py-3.5">
-        <span className="text-[11px] font-medium px-2 py-1 rounded bg-white/[0.05] border border-white/[0.08] text-gray-400">{item.category}</span>
+        <span className="text-[11px] font-medium px-2 py-1 rounded bg-white/[0.05] border border-white/[0.08] text-gray-400">{CATEGORY_LABELS[item.category] || item.category}</span>
       </td>
 
       <td className="px-4 py-3.5">
         <div className="flex flex-col gap-1">
           <span className="text-[11px] text-gray-300 font-mono">{item.period_start} - {item.period_end}</span>
-          <span className={cn("inline-flex w-fit px-1.5 py-0.5 rounded text-[9px] font-medium", item.status === "Selesai" ? "bg-emerald-500/10 text-emerald-400" : "bg-blue-500/10 text-blue-400")}>{item.status}</span>
+          <span className={cn("inline-flex w-fit px-1.5 py-0.5 rounded text-[9px] font-medium", item.status === "Selesai" ? "bg-emerald-500/10 text-emerald-400" : "bg-blue-500/10 text-blue-400")}>{statusLabel(item.status)}</span>
         </div>
       </td>
 
       <td className="px-4 py-3.5">
         <div className="flex items-center gap-1.5 text-[11px] text-gray-400">
-          <ImageIcon size={12} /> {item.photos?.length || 0} Foto
+          <ImageIcon size={12} /> {item.photos?.length || 0} 张照片
         </div>
       </td>
 
       <td className="px-5 py-3.5">
         <div className="flex items-center justify-end gap-1.5">
-          <button onClick={onEdit} title="Edit" className="p-2 rounded-xl text-gray-500 hover:text-accentColor hover:bg-accentColor/10 border border-transparent hover:border-accentColor/20 transition-all">
+          <button onClick={onEdit} title="编辑" className="p-2 rounded-xl text-gray-500 hover:text-accentColor hover:bg-accentColor/10 border border-transparent hover:border-accentColor/20 transition-all">
             <Edit2 size={13} />
           </button>
-          <button onClick={onDelete} title="Hapus" className="p-2 rounded-xl text-gray-500 hover:text-red-400 hover:bg-red-500/10 border border-transparent hover:border-red-500/20 transition-all">
+          <button onClick={onDelete} title="删除" className="p-2 rounded-xl text-gray-500 hover:text-red-400 hover:bg-red-500/10 border border-transparent hover:border-red-500/20 transition-all">
             <Trash2 size={13} />
           </button>
         </div>

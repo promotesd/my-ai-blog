@@ -127,7 +127,7 @@ function GalleryDashboardContent() {
       if (error) throw error
       setPhotos(data || [])
     } catch (err: any) {
-      setToast({ type: "error", text: `Gagal memuat data: ${err.message}` })
+      setToast({ type: "error", text: `加载照片失败：${err.message}` })
     } finally {
       setLoading(false)
     }
@@ -144,7 +144,7 @@ function GalleryDashboardContent() {
       if (error) throw error
       setAlbums(data || [])
     } catch (err: any) {
-      setToast({ type: "error", text: `Gagal memuat data album: ${err.message}` })
+      setToast({ type: "error", text: `加载相册失败：${err.message}` })
     } finally {
       setLoadingAlbums(false)
     }
@@ -156,7 +156,7 @@ function GalleryDashboardContent() {
       const data = await fetchGalleryGuests()
       setGuests(data || [])
     } catch (err: any) {
-      setToast({ type: "error", text: `Gagal memuat data tamu: ${err.message}` })
+      setToast({ type: "error", text: `加载访客失败：${err.message}` })
     } finally {
       setLoadingGuests(false)
     }
@@ -238,7 +238,7 @@ function GalleryDashboardContent() {
 
       await fetchPhotos()
       setFormModal({ open: false, mode: "create" })
-      setToast({ type: "success", text: formModal.mode === "create" ? "Data berhasil disimpan." : "Data berhasil diperbarui." })
+      setToast({ type: "success", text: formModal.mode === "create" ? "照片已保存。" : "照片已更新。" })
     } catch (err: any) {
       setToast({ type: "error", text: err.message })
     } finally {
@@ -258,7 +258,7 @@ function GalleryDashboardContent() {
       await fetchPhotos()
       setSelectedIds(prev => prev.filter(id => id !== item.id))
       setPage(1)
-      setToast({ type: "success", text: "Data berhasil dihapus." })
+      setToast({ type: "success", text: "照片已删除。" })
     } catch (err: any) {
       setToast({ type: "error", text: err.message })
     } finally {
@@ -284,9 +284,9 @@ function GalleryDashboardContent() {
       const maxPage = Math.ceil(newTotal / ITEMS_PER_PAGE) || 1
       if (page > maxPage) setPage(maxPage)
 
-      setToast({ type: "success", text: `${result.count} data berhasil dihapus.` })
+      setToast({ type: "success", text: `已删除 ${result.count} 张照片。` })
     } catch (err: any) {
-      setToast({ type: "error", text: `Gagal menghapus: ${err.message}` })
+      setToast({ type: "error", text: `删除失败：${err.message}` })
     } finally {
       setIsDeletingBulk(false)
       setBulkDeleteModal(false)
@@ -318,7 +318,7 @@ function GalleryDashboardContent() {
       if (!res.success) throw new Error(res.error)
       await fetchAlbums()
       setAlbumFormModal({ open: false, mode: "create" })
-      setToast({ type: "success", text: albumFormModal.mode === "create" ? "Album berhasil disimpan." : "Album berhasil diperbarui." })
+      setToast({ type: "success", text: albumFormModal.mode === "create" ? "相册创建成功。" : "相册更新成功。" })
     } catch (err: any) {
       setToast({ type: "error", text: err.message })
     } finally {
@@ -334,7 +334,7 @@ function GalleryDashboardContent() {
       if (!res.success) throw new Error(res.error)
       await fetchAlbums()
       setSelectedAlbumIds(prev => prev.filter(slug => slug !== item.slug))
-      setToast({ type: "success", text: "Album berhasil dihapus." })
+      setToast({ type: "success", text: "相册删除成功。" })
     } catch (err: any) {
       setToast({ type: "error", text: err.message })
     } finally {
@@ -349,9 +349,9 @@ function GalleryDashboardContent() {
       if (!result.success) throw new Error(result.error as string)
       await fetchAlbums()
       setSelectedAlbumIds([])
-      setToast({ type: "success", text: `${result.count} album berhasil dihapus.` })
+      setToast({ type: "success", text: `已删除 ${result.count} 个相册。` })
     } catch (err: any) {
-      setToast({ type: "error", text: `Gagal menghapus: ${err.message}` })
+      setToast({ type: "error", text: `删除失败：${err.message}` })
     } finally {
       setIsDeletingBulkAlbums(false)
       setBulkDeleteAlbumsModal(false)
@@ -368,7 +368,7 @@ function GalleryDashboardContent() {
 
       await fetchGuests()
       setGuestFormModal({ open: false, mode: "create" })
-      setToast({ type: "success", text: guestFormModal.mode === "create" ? "Tamu berhasil didaftarkan." : "Profil tamu berhasil diperbarui." })
+      setToast({ type: "success", text: guestFormModal.mode === "create" ? "访客添加成功。" : "访客资料更新成功。" })
     } catch (err: any) {
       setToast({ type: "error", text: err.message })
     } finally {
@@ -389,7 +389,7 @@ function GalleryDashboardContent() {
       await fetchAlbums()
       
       setSelectedGuestIds(prev => prev.filter(id => id !== item.id))
-      setToast({ type: "success", text: "Tamu dan seluruh datanya berhasil dihapus." })
+      setToast({ type: "success", text: "访客及其图库数据已删除。" })
     } catch (err: any) {
       setToast({ type: "error", text: err.message })
     } finally {
@@ -408,9 +408,9 @@ function GalleryDashboardContent() {
       await fetchAlbums()
       
       setSelectedGuestIds([])
-      setToast({ type: "success", text: `${result.count} tamu berhasil dihapus.` })
+      setToast({ type: "success", text: `已删除 ${result.count} 位访客。` })
     } catch (err: any) {
-      setToast({ type: "error", text: `Gagal menghapus: ${err.message}` })
+      setToast({ type: "error", text: `删除失败：${err.message}` })
     } finally {
       setIsDeletingBulkGuests(false)
       setBulkDeleteGuestsModal(false)
@@ -430,8 +430,8 @@ function GalleryDashboardContent() {
               <ImageIcon size={14} className="text-accentColor" />
             </div>
             <div>
-              <h1 className="text-sm font-semibold text-white leading-tight">Gallery Manager</h1>
-              <p className="text-[10px] text-gray-500 leading-tight hidden sm:block">Kelola foto personal & kiriman tamu</p>
+              <h1 className="text-sm font-semibold text-white leading-tight">图库管理</h1>
+              <p className="text-[10px] text-gray-500 leading-tight hidden sm:block">管理个人照片与访客投稿</p>
             </div>
           </div>
           
@@ -439,38 +439,38 @@ function GalleryDashboardContent() {
             {view === "photos" && selectedIds.length > 0 && (
               <button onClick={() => setBulkDeleteModal(true)} className="flex items-center gap-2 px-3 sm:px-4 py-2 text-xs sm:text-sm font-medium bg-red-500/10 text-red-400 border border-red-500/20 rounded-xl hover:bg-red-500/20 transition-all">
                 <Trash2 size={14} />
-                <span className="hidden sm:inline">Hapus ({selectedIds.length})</span>
+                <span className="hidden sm:inline">删除（{selectedIds.length}）</span>
                 <span className="sm:hidden">({selectedIds.length})</span>
               </button>
             )}
             {view === "albums" && selectedAlbumIds.length > 0 && (
               <button onClick={() => setBulkDeleteAlbumsModal(true)} className="flex items-center gap-2 px-3 sm:px-4 py-2 text-xs sm:text-sm font-medium bg-red-500/10 text-red-400 border border-red-500/20 rounded-xl hover:bg-red-500/20 transition-all">
                 <Trash2 size={14} />
-                <span className="hidden sm:inline">Hapus ({selectedAlbumIds.length})</span>
+                <span className="hidden sm:inline">删除（{selectedAlbumIds.length}）</span>
                 <span className="sm:hidden">({selectedAlbumIds.length})</span>
               </button>
             )}
             {view === "guests" && selectedGuestIds.length > 0 && (
               <button onClick={() => setBulkDeleteGuestsModal(true)} className="flex items-center gap-2 px-3 sm:px-4 py-2 text-xs sm:text-sm font-medium bg-red-500/10 text-red-400 border border-red-500/20 rounded-xl hover:bg-red-500/20 transition-all">
                 <Trash2 size={14} />
-                <span className="hidden sm:inline">Hapus ({selectedGuestIds.length})</span>
+                <span className="hidden sm:inline">删除（{selectedGuestIds.length}）</span>
                 <span className="sm:hidden">({selectedGuestIds.length})</span>
               </button>
             )}
             {view === "photos" ? (
               <button onClick={() => setFormModal({ open: true, mode: "create" })} className="flex items-center gap-2 px-3 sm:px-4 py-2 text-xs sm:text-sm font-medium bg-accentColor text-white rounded-xl hover:brightness-[0.85] transition-all hover:shadow-lg hover:shadow-accentColor/20">
-                <Plus size={14} /> <span className="hidden sm:inline">New Photo</span>
-                <span className="sm:hidden">Baru</span>
+                <Plus size={14} /> <span className="hidden sm:inline">添加照片</span>
+                <span className="sm:hidden">添加</span>
               </button>
             ) : view === "albums" ? (
               <button onClick={() => setAlbumFormModal({ open: true, mode: "create" })} className="flex items-center gap-2 px-3 sm:px-4 py-2 text-xs sm:text-sm font-medium bg-accentColor text-white rounded-xl hover:brightness-[0.85] transition-all hover:shadow-lg hover:shadow-accentColor/20">
-                <Plus size={14} /> <span className="hidden sm:inline">New Album</span>
-                <span className="sm:hidden">Baru</span>
+                <Plus size={14} /> <span className="hidden sm:inline">新建相册</span>
+                <span className="sm:hidden">新建</span>
               </button>
             ) : (
               <button onClick={() => setGuestFormModal({ open: true, mode: "create" })} className="flex items-center gap-2 px-3 sm:px-4 py-2 text-xs sm:text-sm font-medium bg-accentColor text-white rounded-xl hover:brightness-[0.85] transition-all hover:shadow-lg hover:shadow-accentColor/20">
-                <Plus size={14} /> <span className="hidden sm:inline">New Guest</span>
-                <span className="sm:hidden">Baru</span>
+                <Plus size={14} /> <span className="hidden sm:inline">添加访客</span>
+                <span className="sm:hidden">添加</span>
               </button>
             )}
           </div>
@@ -490,7 +490,7 @@ function GalleryDashboardContent() {
                   : "text-gray-400 hover:text-gray-200 hover:bg-white/[0.04]"
               )}
             >
-              <ImageIcon size={14} /> <span>Photos</span>
+              <ImageIcon size={14} /> <span>照片</span>
               <span className={cn("text-[10px] px-1.5 py-0.5 rounded-md tabular-nums", view === "photos" ? "bg-white/20" : "bg-white/[0.06] text-gray-500")}>{photos.length}</span>
             </button>
             <button
@@ -502,7 +502,7 @@ function GalleryDashboardContent() {
                   : "text-gray-400 hover:text-gray-200 hover:bg-white/[0.04]"
               )}
             >
-              <Folder size={14} /> <span>Albums</span>
+              <Folder size={14} /> <span>相册</span>
               <span className={cn("text-[10px] px-1.5 py-0.5 rounded-md tabular-nums", view === "albums" ? "bg-white/20" : "bg-white/[0.06] text-gray-500")}>{albums.length}</span>
             </button>
             <button
@@ -514,7 +514,7 @@ function GalleryDashboardContent() {
                   : "text-gray-400 hover:text-gray-200 hover:bg-white/[0.04]"
               )}
             >
-              <User size={14} /> <span>Guests</span>
+              <User size={14} /> <span>访客</span>
               <span className={cn("text-[10px] px-1.5 py-0.5 rounded-md tabular-nums", view === "guests" ? "bg-white/20" : "bg-white/[0.06] text-gray-500")}>{guests.length}</span>
             </button>
           </div>
@@ -522,24 +522,24 @@ function GalleryDashboardContent() {
           {/* ── Stats ── */}
           {view === "photos" ? (
             <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4">
-              <StatCard label="Total Photos" value={totalItems} icon={<Database size={15} className="text-gray-400" />} color="default" loading={loading} />
-              <StatCard label="Personal Photos" value={personalCount} icon={<ImageIcon size={15} className="text-emerald-400" />} color="green" loading={loading} />
-              <StatCard label="Guest Uploads" value={guestCount} icon={<Users size={15} className="text-blue-400" />} color="blue" loading={loading} />
-              <StatCard label="Menunggu Approval" value={pendingCount} icon={<AlertCircle size={15} className="text-red-400" />} color="red" loading={loading} />
+              <StatCard label="照片总数" value={totalItems} icon={<Database size={15} className="text-gray-400" />} color="default" loading={loading} />
+              <StatCard label="个人照片" value={personalCount} icon={<ImageIcon size={15} className="text-emerald-400" />} color="green" loading={loading} />
+              <StatCard label="访客上传" value={guestCount} icon={<Users size={15} className="text-blue-400" />} color="blue" loading={loading} />
+              <StatCard label="待审核" value={pendingCount} icon={<AlertCircle size={15} className="text-red-400" />} color="red" loading={loading} />
             </div>
           ) : view === "albums" ? (
             <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4">
-              <StatCard label="Total Album" value={albums.length} icon={<Folder size={15} className="text-gray-400" />} color="default" loading={loadingAlbums} />
-              <StatCard label="Album dengan Foto" value={albums.filter(a => photos.some(p => p.album_slug === a.slug)).length} icon={<ImageIcon size={15} className="text-emerald-400" />} color="green" loading={loadingAlbums} />
-              <StatCard label="Album Kosong" value={albums.filter(a => !photos.some(p => p.album_slug === a.slug)).length} icon={<Folder size={15} className="text-amber-400" />} color="yellow" loading={loadingAlbums} />
-              <StatCard label="Total Foto di Album" value={photos.filter(p => p.album_slug).length} icon={<CheckSquare size={15} className="text-blue-400" />} color="blue" loading={loadingAlbums} />
+              <StatCard label="相册总数" value={albums.length} icon={<Folder size={15} className="text-gray-400" />} color="default" loading={loadingAlbums} />
+              <StatCard label="非空相册" value={albums.filter(a => photos.some(p => p.album_slug === a.slug)).length} icon={<ImageIcon size={15} className="text-emerald-400" />} color="green" loading={loadingAlbums} />
+              <StatCard label="空相册" value={albums.filter(a => !photos.some(p => p.album_slug === a.slug)).length} icon={<Folder size={15} className="text-amber-400" />} color="yellow" loading={loadingAlbums} />
+              <StatCard label="相册照片数" value={photos.filter(p => p.album_slug).length} icon={<CheckSquare size={15} className="text-blue-400" />} color="blue" loading={loadingAlbums} />
             </div>
           ) : (
             <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4">
-              <StatCard label="Total Guests" value={guests.length} icon={<Users size={15} className="text-gray-400" />} color="default" loading={loadingGuests} />
-              <StatCard label="Guest dengan Foto" value={guests.filter(g => g.photoCount > 0).length} icon={<ImageIcon size={15} className="text-emerald-400" />} color="green" loading={loadingGuests} />
-              <StatCard label="Guest dengan Album" value={guests.filter(g => g.albumCount > 0).length} icon={<Folder size={15} className="text-blue-400" />} color="blue" loading={loadingGuests} />
-              <StatCard label="Guest Pasif" value={guests.filter(g => g.photoCount === 0 && g.albumCount === 0).length} icon={<User size={15} className="text-amber-400" />} color="yellow" loading={loadingGuests} />
+              <StatCard label="访客总数" value={guests.length} icon={<Users size={15} className="text-gray-400" />} color="default" loading={loadingGuests} />
+              <StatCard label="上传过照片" value={guests.filter(g => g.photoCount > 0).length} icon={<ImageIcon size={15} className="text-emerald-400" />} color="green" loading={loadingGuests} />
+              <StatCard label="创建过相册" value={guests.filter(g => g.albumCount > 0).length} icon={<Folder size={15} className="text-blue-400" />} color="blue" loading={loadingGuests} />
+              <StatCard label="暂无内容" value={guests.filter(g => g.photoCount === 0 && g.albumCount === 0).length} icon={<User size={15} className="text-amber-400" />} color="yellow" loading={loadingGuests} />
             </div>
           )}
 
@@ -550,7 +550,7 @@ function GalleryDashboardContent() {
                 <Search size={14} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-500 pointer-events-none" />
                 <input
                   type="text" value={search} onChange={(e) => { setSearch(e.target.value); setPage(1) }}
-                  placeholder="Cari foto, album, atau nama tamu..."
+                  placeholder="搜索照片、相册或访客"
                   className="w-full pl-9 pr-9 py-2.5 bg-white/[0.04] border border-white/[0.08] rounded-xl text-sm text-gray-200 placeholder:text-gray-600 outline-none focus:border-accentColor/50 transition-colors"
                 />
                 {search && (
@@ -560,21 +560,21 @@ function GalleryDashboardContent() {
 
               <div className="flex items-center gap-2">
                 <select value={filterOwner} onChange={(e) => { setFilterOwner(e.target.value); setPage(1) }} className="flex-1 sm:w-auto px-3 py-2.5 bg-white/[0.04] border border-white/[0.08] rounded-xl text-sm text-gray-300 outline-none focus:border-accentColor/50 transition-colors appearance-none cursor-pointer">
-                  <option value="all" className="bg-[#0d1a1a]">Semua Owner</option>
-                  <option value="personal" className="bg-[#0d1a1a]">Personal (Saya)</option>
-                  <option value="guest" className="bg-[#0d1a1a]">Guest (Tamu)</option>
+                  <option value="all" className="bg-[#0d1a1a]">全部来源</option>
+                  <option value="personal" className="bg-[#0d1a1a]">个人（小嘟嘟）</option>
+                  <option value="guest" className="bg-[#0d1a1a]">访客</option>
                 </select>
 
                 <select value={filterStatus} onChange={(e) => { setFilterStatus(e.target.value); setPage(1) }} className="flex-1 sm:w-auto px-3 py-2.5 bg-white/[0.04] border border-white/[0.08] rounded-xl text-sm text-gray-300 outline-none focus:border-accentColor/50 transition-colors appearance-none cursor-pointer">
-                  <option value="all" className="bg-[#0d1a1a]">Semua Status</option>
-                  <option value="approved" className="bg-[#0d1a1a]">Approved</option>
-                  <option value="pending" className="bg-[#0d1a1a]">Pending</option>
+                  <option value="all" className="bg-[#0d1a1a]">全部状态</option>
+                  <option value="approved" className="bg-[#0d1a1a]">已通过</option>
+                  <option value="pending" className="bg-[#0d1a1a]">待审核</option>
                 </select>
 
                 {hasActiveFilters && (
                   <button onClick={resetFilters} className="flex items-center gap-1.5 px-3 py-2.5 text-xs text-gray-400 hover:text-gray-200 border border-white/[0.08] hover:border-white/20 rounded-xl transition-all shrink-0">
                     <RefreshCw size={12} />
-                    <span className="hidden sm:inline">Reset</span>
+                    <span className="hidden sm:inline">重置</span>
                   </button>
                 )}
               </div>
@@ -589,7 +589,7 @@ function GalleryDashboardContent() {
                 <Search size={14} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-500 pointer-events-none" />
                 <input
                   type="text" value={searchAlbum} onChange={(e) => setSearchAlbum(e.target.value)}
-                  placeholder="Cari nama album, kategori, atau slug..."
+                  placeholder="搜索相册名称、分类或标识"
                   className="w-full pl-9 pr-9 py-2.5 bg-white/[0.04] border border-white/[0.08] rounded-xl text-sm text-gray-200 placeholder:text-gray-600 outline-none focus:border-accentColor/50 transition-colors"
                 />
                 {searchAlbum && (
@@ -598,7 +598,7 @@ function GalleryDashboardContent() {
               </div>
               <button onClick={fetchAlbums} className="flex items-center gap-1.5 px-3 py-2.5 text-xs text-gray-400 hover:text-gray-200 border border-white/[0.08] hover:border-white/20 rounded-xl transition-all shrink-0">
                 <RefreshCw size={12} />
-                <span className="hidden sm:inline">Refresh</span>
+                <span className="hidden sm:inline">刷新</span>
               </button>
             </div>
           ) : (
@@ -607,7 +607,7 @@ function GalleryDashboardContent() {
                 <Search size={14} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-500 pointer-events-none" />
                 <input
                   type="text" value={searchGuest} onChange={(e) => setSearchGuest(e.target.value)}
-                  placeholder="Cari nama tamu..."
+                  placeholder="搜索访客名称"
                   className="w-full pl-9 pr-9 py-2.5 bg-white/[0.04] border border-white/[0.08] rounded-xl text-sm text-gray-200 placeholder:text-gray-600 outline-none focus:border-accentColor/50 transition-colors"
                 />
                 {searchGuest && (
@@ -616,7 +616,7 @@ function GalleryDashboardContent() {
               </div>
               <button onClick={fetchGuests} className="flex items-center gap-1.5 px-3 py-2.5 text-xs text-gray-400 hover:text-gray-200 border border-white/[0.08] hover:border-white/20 rounded-xl transition-all shrink-0">
                 <RefreshCw size={12} />
-                <span className="hidden sm:inline">Refresh</span>
+                <span className="hidden sm:inline">刷新</span>
               </button>
             </div>
           )}
@@ -651,11 +651,11 @@ function GalleryDashboardContent() {
                         <tr className="bg-white/[0.04] border-b border-white/[0.06]">
                           <th className="px-4 py-3.5 w-12 text-left"><input type="checkbox" checked={paginated.length > 0 && selectedIds.length === paginated.length} onChange={toggleSelectAll} className="w-4 h-4 rounded cursor-pointer accent-accentColor bg-white/[0.05] border-white/[0.1]" /></th>
                           <th className="text-left text-[10px] font-semibold text-gray-500 uppercase tracking-widest px-2 py-3.5 w-8">#</th>
-                          <th className="text-left text-[10px] font-semibold text-gray-500 uppercase tracking-widest px-4 py-3.5 min-w-[280px]">Informasi Foto</th>
-                          <th className="text-left text-[10px] font-semibold text-gray-500 uppercase tracking-widest px-4 py-3.5 w-40">Album & Dimensi</th>
-                          <th className="text-left text-[10px] font-semibold text-gray-500 uppercase tracking-widest px-4 py-3.5 w-32">Owner</th>
-                          <th className="text-left text-[10px] font-semibold text-gray-500 uppercase tracking-widest px-4 py-3.5 w-28">Status</th>
-                          <th className="text-right text-[10px] font-semibold text-gray-500 uppercase tracking-widest px-5 py-3.5 w-24">Aksi</th>
+                          <th className="text-left text-[10px] font-semibold text-gray-500 uppercase tracking-widest px-4 py-3.5 min-w-[280px]">照片信息</th>
+                          <th className="text-left text-[10px] font-semibold text-gray-500 uppercase tracking-widest px-4 py-3.5 w-40">相册与尺寸</th>
+                          <th className="text-left text-[10px] font-semibold text-gray-500 uppercase tracking-widest px-4 py-3.5 w-32">所有者</th>
+                          <th className="text-left text-[10px] font-semibold text-gray-500 uppercase tracking-widest px-4 py-3.5 w-28">状态</th>
+                          <th className="text-right text-[10px] font-semibold text-gray-500 uppercase tracking-widest px-5 py-3.5 w-24">操作</th>
                         </tr>
                       </thead>
                       <tbody className="divide-y divide-white/[0.04]">
@@ -676,7 +676,7 @@ function GalleryDashboardContent() {
                   </div>
                   
                   <div className="flex flex-col sm:flex-row items-center justify-between gap-2 px-5 py-3.5 border-t border-white/[0.06] bg-white/[0.02]">
-                    <p className="text-xs text-gray-500">Menampilkan <span className="text-gray-300 font-medium">{filtered.length === 0 ? 0 : Math.min((page - 1) * ITEMS_PER_PAGE + 1, filtered.length)}–{Math.min(page * ITEMS_PER_PAGE, filtered.length)}</span> dari <span className="text-gray-300 font-medium">{filtered.length}</span> entri</p>
+                    <p className="text-xs text-gray-500">显示第 <span className="text-gray-300 font-medium">{filtered.length === 0 ? 0 : Math.min((page - 1) * ITEMS_PER_PAGE + 1, filtered.length)}–{Math.min(page * ITEMS_PER_PAGE, filtered.length)}</span> 条，共 <span className="text-gray-300 font-medium">{filtered.length}</span> 条</p>
                     <Pagination page={page} totalPages={totalPages} onPageChange={setPage} />
                   </div>
                 </div>
@@ -751,14 +751,14 @@ function GalleryDashboardContent() {
             <div className="p-6 text-center space-y-4 mt-2">
               <div className="w-14 h-14 rounded-full bg-red-500/10 flex items-center justify-center mx-auto border border-red-500/20"><AlertCircle size={26} className="text-red-400" /></div>
               <div>
-                <h3 className="text-lg font-semibold text-white mb-1.5">Hapus {selectedIds.length} Foto?</h3>
-                <p className="text-sm text-gray-400 leading-relaxed">Apakah Anda yakin ingin menghapus {selectedIds.length} foto beserta file gambarnya secara permanen dari Storage?</p>
+                <h3 className="text-lg font-semibold text-white mb-1.5">删除选中的 {selectedIds.length} 张照片？</h3>
+                <p className="text-sm text-gray-400 leading-relaxed">确定永久删除选中的 {selectedIds.length} 张照片及其对应文件吗？</p>
               </div>
             </div>
             <div className="flex items-center gap-3 px-6 py-4 bg-white/[0.02] border-t border-white/[0.06]">
-              <button onClick={() => setBulkDeleteModal(false)} disabled={isDeletingBulk} className="flex-1 py-2.5 text-sm font-medium text-gray-400 hover:text-white bg-white/[0.04] hover:bg-white/[0.08] border border-white/[0.08] rounded-xl transition-all">Batal</button>
+              <button onClick={() => setBulkDeleteModal(false)} disabled={isDeletingBulk} className="flex-1 py-2.5 text-sm font-medium text-gray-400 hover:text-white bg-white/[0.04] hover:bg-white/[0.08] border border-white/[0.08] rounded-xl transition-all">取消</button>
               <button onClick={handleBulkDelete} disabled={isDeletingBulk} className="flex-1 flex items-center justify-center gap-2 py-2.5 text-sm font-medium text-white bg-red-500/90 hover:bg-red-500 rounded-xl transition-all">
-                {isDeletingBulk ? <RefreshCw size={16} className="animate-spin" /> : "Ya, Hapus Semua"}
+                {isDeletingBulk ? <RefreshCw size={16} className="animate-spin" /> : "确认全部删除"}
               </button>
             </div>
           </div>
@@ -773,14 +773,14 @@ function GalleryDashboardContent() {
             <div className="p-6 text-center space-y-4 mt-2">
               <div className="w-14 h-14 rounded-full bg-red-500/10 flex items-center justify-center mx-auto border border-red-500/20"><AlertCircle size={26} className="text-red-400" /></div>
               <div>
-                <h3 className="text-lg font-semibold text-white mb-1.5">Hapus {selectedAlbumIds.length} Album?</h3>
-                <p className="text-sm text-gray-400 leading-relaxed">Album akan dihapus secara permanen. Foto-foto yang ada di dalamnya tidak ikut dihapus, namun akan kehilangan tautan ke album.</p>
+                <h3 className="text-lg font-semibold text-white mb-1.5">删除选中的 {selectedAlbumIds.length} 个相册？</h3>
+                <p className="text-sm text-gray-400 leading-relaxed">相册将永久删除，其中照片会保留，但不再归属于该相册。</p>
               </div>
             </div>
             <div className="flex items-center gap-3 px-6 py-4 bg-white/[0.02] border-t border-white/[0.06]">
-              <button onClick={() => setBulkDeleteAlbumsModal(false)} disabled={isDeletingBulkAlbums} className="flex-1 py-2.5 text-sm font-medium text-gray-400 hover:text-white bg-white/[0.04] hover:bg-white/[0.08] border border-white/[0.08] rounded-xl transition-all">Batal</button>
+              <button onClick={() => setBulkDeleteAlbumsModal(false)} disabled={isDeletingBulkAlbums} className="flex-1 py-2.5 text-sm font-medium text-gray-400 hover:text-white bg-white/[0.04] hover:bg-white/[0.08] border border-white/[0.08] rounded-xl transition-all">取消</button>
               <button onClick={handleBulkDeleteAlbums} disabled={isDeletingBulkAlbums} className="flex-1 flex items-center justify-center gap-2 py-2.5 text-sm font-medium text-white bg-red-500/90 hover:bg-red-500 rounded-xl transition-all">
-                {isDeletingBulkAlbums ? <RefreshCw size={16} className="animate-spin" /> : "Ya, Hapus Semua"}
+                {isDeletingBulkAlbums ? <RefreshCw size={16} className="animate-spin" /> : "确认全部删除"}
               </button>
             </div>
           </div>
@@ -795,14 +795,14 @@ function GalleryDashboardContent() {
             <div className="p-6 text-center space-y-4 mt-2">
               <div className="w-14 h-14 rounded-full bg-red-500/10 flex items-center justify-center mx-auto border border-red-500/20"><AlertCircle size={26} className="text-red-400" /></div>
               <div>
-                <h3 className="text-lg font-semibold text-white mb-1.5">Hapus {selectedGuestIds.length} Tamu?</h3>
-                <p className="text-sm text-gray-400 leading-relaxed">Tamu yang dipilih beserta semua foto dan albumnya akan ikut terhapus secara permanen dari database dan storage.</p>
+                <h3 className="text-lg font-semibold text-white mb-1.5">删除选中的 {selectedGuestIds.length} 位访客？</h3>
+                <p className="text-sm text-gray-400 leading-relaxed">选中访客及其全部照片和相册将从数据库与文件存储中永久删除。</p>
               </div>
             </div>
             <div className="flex items-center gap-3 px-6 py-4 bg-white/[0.02] border-t border-white/[0.06]">
-              <button onClick={() => setBulkDeleteGuestsModal(false)} disabled={isDeletingBulkGuests} className="flex-1 py-2.5 text-sm font-medium text-gray-400 hover:text-white bg-white/[0.04] hover:bg-white/[0.08] border border-white/[0.08] rounded-xl transition-all">Batal</button>
+              <button onClick={() => setBulkDeleteGuestsModal(false)} disabled={isDeletingBulkGuests} className="flex-1 py-2.5 text-sm font-medium text-gray-400 hover:text-white bg-white/[0.04] hover:bg-white/[0.08] border border-white/[0.08] rounded-xl transition-all">取消</button>
               <button onClick={handleBulkDeleteGuests} disabled={isDeletingBulkGuests} className="flex-1 flex items-center justify-center gap-2 py-2.5 text-sm font-medium text-white bg-red-500/90 hover:bg-red-500 rounded-xl transition-all">
-                {isDeletingBulkGuests ? <RefreshCw size={16} className="animate-spin" /> : "Ya, Hapus Semua"}
+                {isDeletingBulkGuests ? <RefreshCw size={16} className="animate-spin" /> : "确认全部删除"}
               </button>
             </div>
           </div>
@@ -851,8 +851,8 @@ function EmptyState({ onReset }: { onReset: () => void }) {
   return (
     <div className="flex flex-col items-center gap-3 py-14 text-gray-500">
       <ImageIcon size={28} className="opacity-30" />
-      <p className="text-sm">Tidak ada foto yang ditemukan.</p>
-      <button onClick={onReset} className="text-xs text-accentColor hover:underline">Reset filter</button>
+      <p className="text-sm">没有找到匹配的照片。</p>
+      <button onClick={onReset} className="text-xs text-accentColor hover:underline">重置筛选</button>
     </div>
   )
 }
@@ -898,19 +898,19 @@ function GalleryCard({ item, rowNum, onEdit, onDelete, isSelected, onToggle }: a
       <div className="flex flex-col pl-7 gap-1.5">
         <div className="flex items-center gap-2">
           <span className="inline-flex items-center gap-1.5 text-[10px] font-medium px-2 py-0.5 rounded-md bg-white/[0.05] border border-white/[0.08] text-gray-300">
-            <Folder size={10} className="text-gray-500" /> {item.album || "No Album"}
+            <Folder size={10} className="text-gray-500" /> {item.album || "未加入相册"}
           </span>
         </div>
         <div className="flex items-center gap-2 flex-wrap mt-1">
           {item.owner_type === "personal" ? (
-            <span className="text-[10px] text-accentColor bg-accentColor/10 border border-accentColor/20 px-1.5 py-0.5 rounded">Personal</span>
+            <span className="text-[10px] text-accentColor bg-accentColor/10 border border-accentColor/20 px-1.5 py-0.5 rounded">个人</span>
           ) : (
-            <span className="text-[10px] text-blue-400 bg-blue-500/10 border border-blue-500/20 px-1.5 py-0.5 rounded flex items-center gap-1"><Users size={10}/> Guest: {item.uploader_name}</span>
+            <span className="text-[10px] text-blue-400 bg-blue-500/10 border border-blue-500/20 px-1.5 py-0.5 rounded flex items-center gap-1"><Users size={10}/> 访客：{item.uploader_name}</span>
           )}
           {item.is_approved ? (
-            <span className="text-[10px] text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 px-1.5 py-0.5 rounded flex items-center gap-1"><CheckSquare size={10}/> Approved</span>
+            <span className="text-[10px] text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 px-1.5 py-0.5 rounded flex items-center gap-1"><CheckSquare size={10}/> 已通过</span>
           ) : (
-            <span className="text-[10px] text-red-400 bg-red-500/10 border border-red-500/20 px-1.5 py-0.5 rounded flex items-center gap-1"><EyeOff size={10}/> Pending</span>
+            <span className="text-[10px] text-red-400 bg-red-500/10 border border-red-500/20 px-1.5 py-0.5 rounded flex items-center gap-1"><EyeOff size={10}/> 待审核</span>
           )}
         </div>
       </div>
@@ -950,26 +950,26 @@ function GalleryTableRow({ item, rowNum, onEdit, onDelete, isSelected, onToggle 
 
       <td className="px-4 py-3.5">
         {item.owner_type === "personal" ? (
-          <span className="inline-flex px-2 py-1 rounded-md text-[10px] font-semibold bg-accentColor/10 text-accentColor border border-accentColor/20">Personal</span>
+          <span className="inline-flex px-2 py-1 rounded-md text-[10px] font-semibold bg-accentColor/10 text-accentColor border border-accentColor/20">个人</span>
         ) : (
-          <span className="inline-flex items-center gap-1 px-2 py-1 rounded-md text-[10px] font-semibold bg-blue-500/10 text-blue-400 border border-blue-500/20"><Users size={10}/> Guest: {item.uploader_name?.split(' ')[0] || "Unknown"}</span>
+          <span className="inline-flex items-center gap-1 px-2 py-1 rounded-md text-[10px] font-semibold bg-blue-500/10 text-blue-400 border border-blue-500/20"><Users size={10}/> 访客：{item.uploader_name?.split(' ')[0] || "未知"}</span>
         )}
       </td>
 
       <td className="px-4 py-3.5">
         {item.is_approved ? (
-          <span className="inline-flex px-2 py-0.5 rounded text-[10px] font-medium bg-emerald-500/10 border border-emerald-500/20 text-emerald-400"><CheckSquare size={10} className="mr-1"/> Approved</span>
+          <span className="inline-flex px-2 py-0.5 rounded text-[10px] font-medium bg-emerald-500/10 border border-emerald-500/20 text-emerald-400"><CheckSquare size={10} className="mr-1"/> 已通过</span>
         ) : (
-          <span className="inline-flex px-2 py-0.5 rounded text-[10px] font-medium bg-red-500/10 border border-red-500/20 text-red-400"><EyeOff size={10} className="mr-1"/> Pending</span>
+          <span className="inline-flex px-2 py-0.5 rounded text-[10px] font-medium bg-red-500/10 border border-red-500/20 text-red-400"><EyeOff size={10} className="mr-1"/> 待审核</span>
         )}
       </td>
 
       <td className="px-5 py-3.5">
         <div className="flex items-center justify-end gap-1.5">
-          <button onClick={onEdit} title="Edit" className="p-2 rounded-xl text-gray-500 hover:text-accentColor hover:bg-accentColor/10 border border-transparent hover:border-accentColor/20 transition-all">
+          <button onClick={onEdit} title="编辑" className="p-2 rounded-xl text-gray-500 hover:text-accentColor hover:bg-accentColor/10 border border-transparent hover:border-accentColor/20 transition-all">
             <Edit2 size={13} />
           </button>
-          <button onClick={onDelete} title="Hapus" className="p-2 rounded-xl text-gray-500 hover:text-red-400 hover:bg-red-500/10 border border-transparent hover:border-red-500/20 transition-all">
+          <button onClick={onDelete} title="删除" className="p-2 rounded-xl text-gray-500 hover:text-red-400 hover:bg-red-500/10 border border-transparent hover:border-red-500/20 transition-all">
             <Trash2 size={13} />
           </button>
         </div>
@@ -985,7 +985,7 @@ function GalleryLoadingFallback() {
     <div className="flex items-center justify-center h-full min-h-[400px]">
       <div className="flex flex-col items-center gap-3">
         <div className="w-6 h-6 border-2 border-accentColor border-t-transparent rounded-full animate-spin" />
-        <p className="text-xs text-gray-500">Memuat halaman...</p>
+        <p className="text-xs text-gray-500">正在加载页面...</p>
       </div>
     </div>
   )

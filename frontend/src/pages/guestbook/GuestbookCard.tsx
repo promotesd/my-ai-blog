@@ -1,9 +1,8 @@
 "use client"
 
 import { formatDistanceToNow } from "date-fns"
-import { id as localeId, enUS as localeEn, de as localeDe } from "date-fns/locale"
+import { id as localeId, enUS as localeEn } from "date-fns/locale"
 import { MapPin, Briefcase, Star, ExternalLink, Clock, Phone } from "lucide-react"
-import { FaInstagram as Instagram } from "react-icons/fa"
 import Image from "next/image"
 import { useEffect, useRef, useState } from "react"
 import { useTranslations } from "next-intl"
@@ -91,6 +90,27 @@ function InitialAvatar({
   )
 }
 
+function MessageBody({ text }: { text: string }) {
+  const parts = text.split(/(!\[[^\]]*]\([^)]+\)|\[GIF]\([^)]+\))/g).filter(Boolean)
+  return (
+    <div className="text-sm text-gray-700 dark:text-gray-300 leading-relaxed pl-4 space-y-2">
+      {parts.map((part, index) => {
+        const imageMatch = part.match(/^!\[[^\]]*]\(([^)]+)\)$/)
+        const gifMatch = part.match(/^\[GIF]\(([^)]+)\)$/)
+        const src = imageMatch?.[1] ?? gifMatch?.[1]
+        if (src) {
+          return (
+            <a key={`${part}-${index}`} href={src} target="_blank" rel="noopener noreferrer" className="block">
+              <Image src={src} alt="留言图片" width={420} height={240} className="max-h-60 w-full rounded-xl object-cover" />
+            </a>
+          )
+        }
+        return <p key={`${part}-${index}`}>{part}</p>
+      })}
+    </div>
+  )
+}
+
 export function StarRating({ rating }: { rating: number }) {
   return (
     <div className="flex items-center gap-0.5">
@@ -112,10 +132,16 @@ export function StarRating({ rating }: { rating: number }) {
 export default function GuestbookCard({ entry, isNew = false }: Props) {
   const t = useTranslations("guestbookPage")
   const { locale } = useLanguageStore()
-  const dateFnsLocale = locale === "de" ? localeDe : locale === "en" ? localeEn : localeId
+  const dateFnsLocale = locale === "en" ? localeEn : localeId
   const cardRef = useRef<HTMLDivElement>(null)
   const [translatedMessage, setTranslatedMessage] = useState<string | null>(null)
-  const rgb = hexToRgb(entry.card_color)
+  const cardColor = entry.card_color || "#6366f1"
+  const city = entry.city || "未填写地址"
+  const profession = entry.profession || "访客"
+  const mood = entry.mood || "Senang"
+  const rating = Number(entry.rating || 5)
+  const referralSource = entry.referral_source || "xiaodudu.top"
+  const rgb = hexToRgb(cardColor)
   const bgStyle = rgb
     ? {
         background: `linear-gradient(135deg, rgba(${rgb.r},${rgb.g},${rgb.b},0.12) 0%, rgba(${rgb.r},${rgb.g},${rgb.b},0.05) 100%)`,
@@ -123,7 +149,7 @@ export default function GuestbookCard({ entry, isNew = false }: Props) {
       }
     : {}
 
-  const moodInfo = MOOD_MAP[entry.mood] ?? { emoji: "😊", label: entry.mood }
+  const moodInfo = MOOD_MAP[mood] ?? { emoji: "😊", label: mood }
 
   useEffect(() => {
     if (!cardRef.current) return
@@ -165,7 +191,7 @@ export default function GuestbookCard({ entry, isNew = false }: Props) {
       {/* Color accent top bar */}
       <div
         className="absolute top-0 left-0 right-0 h-1 rounded-t-2xl"
-        style={{ backgroundColor: entry.card_color }}
+        style={{ backgroundColor: cardColor }}
       />
 
       {/* Header: avatar + name + mood */}
@@ -174,7 +200,7 @@ export default function GuestbookCard({ entry, isNew = false }: Props) {
           {entry.avatar_url ? (
             <div
               className="relative w-12 h-12 rounded-full overflow-hidden ring-2 ring-offset-1"
-              style={{ outlineColor: entry.card_color }}
+                style={{ outlineColor: cardColor }}
             >
               <Image
                 src={entry.avatar_url}
@@ -185,7 +211,7 @@ export default function GuestbookCard({ entry, isNew = false }: Props) {
               />
             </div>
           ) : (
-            <InitialAvatar name={entry.name} color={entry.card_color} />
+            <InitialAvatar name={entry.name} color={cardColor} />
           )}
         </div>
         <div className="flex-1 min-w-0">
@@ -195,13 +221,13 @@ export default function GuestbookCard({ entry, isNew = false }: Props) {
             </span>
             <span
               className="text-base leading-none"
-              title={t(`mood_${entry.mood.toLowerCase()}`)}
+              title={moodInfo.label}
             >
               {moodInfo.emoji}
             </span>
           </div>
           <div className="flex items-center gap-1 mt-0.5">
-            <StarRating rating={entry.rating} />
+            <StarRating rating={rating} />
           </div>
         </div>
       </div>
@@ -210,11 +236,11 @@ export default function GuestbookCard({ entry, isNew = false }: Props) {
       <div className="flex flex-col gap-1.5">
         <div className="flex items-center gap-1.5 text-xs text-gray-500 dark:text-gray-400">
           <MapPin size={11} className="shrink-0" />
-          <span className="truncate">{entry.city}</span>
+          <span className="truncate">{city}</span>
         </div>
         <div className="flex items-center gap-1.5 text-xs text-gray-500 dark:text-gray-400">
           <Briefcase size={11} className="shrink-0" />
-          <span className="truncate">{entry.profession}</span>
+          <span className="truncate">{profession}</span>
         </div>
       </div>
 
@@ -224,9 +250,7 @@ export default function GuestbookCard({ entry, isNew = false }: Props) {
           <span className="absolute -top-1 -left-0.5 text-3xl leading-none text-gray-200 dark:text-gray-700 font-serif select-none">
             "
           </span>
-          <p className="text-sm text-gray-700 dark:text-gray-300 leading-relaxed line-clamp-4 pl-4">
-            {translatedMessage ?? entry.message}
-          </p>
+          <MessageBody text={translatedMessage ?? entry.message} />
         </blockquote>
         <div className="mt-1.5 flex justify-end">
           <TranslateWidget
@@ -240,24 +264,10 @@ export default function GuestbookCard({ entry, isNew = false }: Props) {
 
       {/* Contact */}
       {entry.contact && (
-        entry.contact.startsWith("@") ? (
-          <a
-            href={`https://instagram.com/${entry.contact.slice(1)}`}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="flex items-center gap-1.5 text-xs hover:opacity-70 transition-opacity w-fit"
-            style={{ color: entry.card_color }}
-            onClick={(e) => e.stopPropagation()}
-          >
-            <Instagram size={11} className="shrink-0" />
-            <span className="truncate font-medium underline underline-offset-2">{entry.contact}</span>
-          </a>
-        ) : (
-          <div className="flex items-center gap-1.5 text-xs" style={{ color: entry.card_color }}>
-            <Phone size={11} className="shrink-0" />
-            <span className="truncate font-medium">{entry.contact}</span>
-          </div>
-        )
+        <div className="flex items-center gap-1.5 text-xs" style={{ color: cardColor }}>
+          <Phone size={11} className="shrink-0" />
+          <span className="truncate font-medium">{entry.contact}</span>
+        </div>
       )}
 
       {/* Footer */}
@@ -266,12 +276,12 @@ export default function GuestbookCard({ entry, isNew = false }: Props) {
         <span
           className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-medium"
           style={{
-            backgroundColor: `${entry.card_color}20`,
-            color: entry.card_color,
+            backgroundColor: `${cardColor}20`,
+            color: cardColor,
           }}
         >
           <ExternalLink size={9} />
-          {entry.referral_source}
+          {referralSource}
         </span>
 
         {/* Time */}

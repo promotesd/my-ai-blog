@@ -8,36 +8,20 @@ import Image from "next/image"
 
 const LANGUAGES = [
   {
-    code: "id" as Locale,
-    label: "Indonesia",
-    native: "Bahasa Indonesia",
-    short: "ID",
-    flagUrl: "https://flagcdn.com/id.svg",
-    region: "ID",
-  },
-  {
-    code: "en" as Locale,
-    label: "English",
-    native: "English (UK)",
-    short: "EN",
-    flagUrl: "https://flagcdn.com/gb.svg",
-    region: "GB",
-  },
-  {
-    code: "de" as Locale,
-    label: "Deutsch",
-    native: "Deutsch",
-    short: "DE",
-    flagUrl: "https://flagcdn.com/de.svg",
-    region: "DE",
-  },
-  {
     code: "zh" as Locale,
     label: "中文",
     native: "简体中文",
     short: "ZH",
     flagUrl: "https://flagcdn.com/cn.svg",
     region: "CN",
+  },
+  {
+    code: "en" as Locale,
+    label: "English",
+    native: "English",
+    short: "EN",
+    flagUrl: "https://flagcdn.com/gb.svg",
+    region: "GB",
   },
 ]
 
@@ -75,7 +59,7 @@ export default function LanguageSwitcher() {
     return () => document.removeEventListener("mousedown", handleOutside)
   }, [open])
 
-  const current = LANGUAGES.find((l) => l.code === locale)!
+  const current = LANGUAGES.find((l) => l.code === locale) ?? LANGUAGES[0]
 
   if (!mounted) {
     return (
@@ -125,7 +109,7 @@ export default function LanguageSwitcher() {
         {/* Header */}
         <div className="px-3.5 pt-3 pb-2">
           <p className="text-[10px] font-bold uppercase tracking-[0.15em] text-gray-400 dark:text-gray-500">
-            Select Language
+            {locale === "zh" ? "选择语言" : "Select Language"}
           </p>
         </div>
 

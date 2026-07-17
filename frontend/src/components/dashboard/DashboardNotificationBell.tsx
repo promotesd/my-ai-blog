@@ -26,11 +26,11 @@ export const TYPE_CONFIG: Record<string, { icon: React.ReactNode; color: string;
 function timeAgo(dateStr: string) {
   const diff = Date.now() - new Date(dateStr).getTime()
   const mins = Math.floor(diff / 60000)
-  if (mins < 1) return "baru saja"
-  if (mins < 60) return `${mins} mnt lalu`
+  if (mins < 1) return "刚刚"
+  if (mins < 60) return `${mins} 分钟前`
   const hours = Math.floor(mins / 60)
-  if (hours < 24) return `${hours} jam lalu`
-  return `${Math.floor(hours / 24)} hari lalu`
+  if (hours < 24) return `${hours} 小时前`
+  return `${Math.floor(hours / 24)} 天前`
 }
 
 interface Props {
@@ -114,7 +114,7 @@ export default function DashboardNotificationBell({ onManageClick, notifications
             ? "bg-white/[0.08] border-white/[0.14] text-white"
             : "bg-white/[0.03] border-white/[0.08] text-gray-400 hover:text-white hover:bg-white/[0.06] hover:border-white/[0.12]"
         )}
-        title="Notifikasi"
+        title="通知"
       >
         <Bell size={16} />
         {unreadCount > 0 && (
@@ -131,10 +131,10 @@ export default function DashboardNotificationBell({ onManageClick, notifications
           <div className="flex items-center justify-between px-4 py-3.5 border-b border-white/[0.07]">
             <div className="flex items-center gap-2">
               <Bell size={13} className="text-accentColor" />
-              <p className="text-sm font-semibold text-white">Notifikasi</p>
+              <p className="text-sm font-semibold text-white">通知</p>
               {unreadCount > 0 && (
                 <span className="text-[10px] font-bold bg-red-500/15 text-red-400 border border-red-500/25 px-1.5 py-0.5 rounded-full">
-                  {unreadCount} baru
+                  {unreadCount} 条新通知
                 </span>
               )}
             </div>
@@ -143,18 +143,18 @@ export default function DashboardNotificationBell({ onManageClick, notifications
                 <button
                   onClick={clearAllRead}
                   className="text-[10px] text-gray-500 hover:text-gray-300 px-2 py-1 rounded-lg hover:bg-white/[0.05] transition-colors"
-                  title="Hapus semua yang sudah dibaca"
+                  title="清除所有已读通知"
                 >
-                  Bersihkan
+                  清除已读
                 </button>
               )}
               {unreadCount > 0 && (
                 <button
                   onClick={markAllRead}
                   className="text-[10px] text-accentColor hover:brightness-125 px-2 py-1 rounded-lg hover:bg-accentColor/10 transition-colors flex items-center gap-1"
-                  title="Tandai semua sudah dibaca"
+                  title="全部标为已读"
                 >
-                  <CheckCheck size={11} /> Baca semua
+                  <CheckCheck size={11} /> 全部已读
                 </button>
               )}
             </div>
@@ -173,8 +173,8 @@ export default function DashboardNotificationBell({ onManageClick, notifications
                 <div className="w-12 h-12 rounded-xl bg-white/[0.04] border border-white/[0.08] flex items-center justify-center">
                   <Bell size={18} className="text-gray-600" />
                 </div>
-                <p className="text-sm text-gray-500">Belum ada notifikasi</p>
-                <p className="text-xs text-gray-600">Notifikasi akan muncul saat ada input baru dari tamu</p>
+                <p className="text-sm text-gray-500">暂无通知</p>
+                <p className="text-xs text-gray-600">访客提交新内容后，通知会显示在这里</p>
               </div>
             ) : (
               <div className="p-2 space-y-1">
@@ -224,13 +224,13 @@ export default function DashboardNotificationBell({ onManageClick, notifications
           {/* Footer */}
           <div className="px-4 py-3 border-t border-white/[0.07] flex items-center justify-between bg-white/[0.01]">
             <p className="text-[10px] text-gray-600">
-              {notifications.length} total notifikasi
+              共 {notifications.length} 条通知
             </p>
             <button 
               onClick={() => { onManageClick(); setOpen(false) }}
               className="flex items-center gap-1.5 px-3 py-1.5 text-[10px] font-medium text-accentColor hover:text-white bg-accentColor/5 hover:bg-accentColor border border-accentColor/10 rounded-lg transition-all"
             >
-              <Settings2 size={11} /> Manage
+              <Settings2 size={11} /> 管理
             </button>
           </div>
         </div>

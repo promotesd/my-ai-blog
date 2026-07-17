@@ -72,11 +72,11 @@ function GuestCard({ guest, onClick }: { guest: GalleryGuest; onClick: () => voi
         <div className="flex items-center gap-3 mt-1 text-xs text-gray-500 dark:text-gray-400">
           <span className="flex items-center gap-1">
             <FolderOpen className="w-3.5 h-3.5" />
-            {guest.albumCount} album
+            {guest.albumCount} 个相册
           </span>
           <span className="flex items-center gap-1">
             <ImageIcon className="w-3.5 h-3.5" />
-            {guest.photoCount} foto
+            {guest.photoCount} 张照片
           </span>
         </div>
       </div>
@@ -194,7 +194,7 @@ export default function GuestDirectory({ guests, albums, loading }: GuestDirecto
             <div>
               <p className="font-bold text-gray-900 dark:text-white">{selectedGuest.name}</p>
               <p className="text-xs text-gray-500 dark:text-gray-400">
-                {guestAlbums.length} album
+                {guestAlbums.length} 个相册
               </p>
             </div>
           </div>
@@ -227,7 +227,7 @@ export default function GuestDirectory({ guests, albums, loading }: GuestDirecto
           <h3 className="font-semibold text-gray-900 dark:text-white">
             {t("guest_dir_title")}
           </h3>
-          <span className="text-xs text-gray-400 font-normal">({guests.length} tamu)</span>
+          <span className="text-xs text-gray-400 font-normal">({guests.length} 位访客)</span>
         </div>
       </div>
 
@@ -243,7 +243,7 @@ export default function GuestDirectory({ guests, albums, loading }: GuestDirecto
                 : "bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-700"
             )}
           >
-            Semua
+            全部
           </button>
           {allLetters.map((letter) => (
             <button

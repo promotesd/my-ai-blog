@@ -3,10 +3,11 @@
 import { useState, useMemo, useEffect } from "react"
 import { useDiaryStore } from "@/stores/DiaryStore"
 import { DiaryMood } from "@/types/diary"
-import { Search, BookMarked, ChevronDown, X } from "lucide-react"
+import { Search, BookMarked, ChevronDown, X, Plus } from "lucide-react"
 import { useTranslations } from "next-intl"
 import { formatDate } from "@/lib/utils"
 import DiaryEntryModal from "@/components/diary/DiaryEntryModal"
+import Link from "next/link"
 
 const MOODS: DiaryMood[] = ["Reflective", "Happy", "Thoughtful", "Melancholic", "Inspired", "Grateful"]
 const ITEMS_PER_PAGE = 10
@@ -48,7 +49,7 @@ export default function DiaryPage() {
 
   useEffect(() => {
     fetchDiaries().then(() => setMounted(true))
-  }, [])
+  }, [fetchDiaries])
 
   // Reset page when filters change
   useEffect(() => {
@@ -63,10 +64,9 @@ export default function DiaryPage() {
 
   const availableMonths = useMemo(() => {
     return Array.from({ length: 12 }, (_, i) => {
-      const date = new Date(2000, i, 1)
       return {
         value: (i + 1).toString().padStart(2, '0'),
-        label: date.toLocaleString('default', { month: 'long' })
+        label: `${i + 1}月`
       }
     })
   }, [])
@@ -110,7 +110,7 @@ export default function DiaryPage() {
     }
 
     return result
-  }, [diaries, search, selectedMood, sortOrder])
+  }, [diaries, search, selectedMood, sortOrder, selectedYear, selectedMonth])
 
   const totalPages = Math.ceil(filtered.length / ITEMS_PER_PAGE)
   const paginated = filtered.slice((page - 1) * ITEMS_PER_PAGE, page * ITEMS_PER_PAGE)
@@ -148,7 +148,7 @@ export default function DiaryPage() {
                 <h1 className="text-4xl md:text-5xl font-bold dark:text-white leading-tight">
                   {t("title1")}{" "}
                   <span className="text-accentColor">{t("title_accent")}</span>
-                  <br />{t("title2")}
+                  {t("title2") && <><br />{t("title2")}</>}
                 </h1>
                 <p className="mt-4 text-gray-600 dark:text-gray-400 max-w-xl leading-relaxed">
                   {t("description")}
@@ -194,7 +194,7 @@ export default function DiaryPage() {
               <h1 className="text-4xl md:text-5xl font-bold dark:text-white leading-tight">
                 {t("title1")}{" "}
                 <span className="text-accentColor">{t("title_accent")}</span>
-                <br />{t("title2")}
+                {t("title2") && <><br />{t("title2")}</>}
               </h1>
               <p className="mt-4 text-gray-600 dark:text-gray-400 max-w-xl leading-relaxed">
                 {t("description")}
@@ -203,7 +203,22 @@ export default function DiaryPage() {
                 <span>{filtered.length} {t("entries_count")}</span>
               </div>
             </div>
+            <Link
+              href="/dashboard/diary"
+              className="hidden sm:inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-accentColor text-white text-sm font-semibold hover:brightness-95 transition-all shadow-lg shadow-accentColor/15"
+            >
+              <Plus size={16} />
+              写日记
+            </Link>
           </div>
+
+          <Link
+            href="/dashboard/diary"
+            className="sm:hidden mt-6 inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-accentColor text-white text-sm font-semibold hover:brightness-95 transition-all shadow-lg shadow-accentColor/15"
+          >
+            <Plus size={16} />
+            写日记
+          </Link>
 
           {/* Search */}
           <div className="mt-8 relative">
@@ -240,7 +255,7 @@ export default function DiaryPage() {
                 onChange={(e) => setSelectedMood(e.target.value as DiaryMood | "All")}
                 className="w-full appearance-none bg-transparent py-2 px-3 text-sm font-medium outline-none cursor-pointer text-gray-900 dark:text-white"
               >
-                <option value="All">{t("filter_mood") || "All Moods"}</option>
+                <option value="All">{t("filter_mood") || "全部心情"}</option>
                 {MOODS.map((mood) => (
                   <option key={mood} value={mood}>
                     {getMoodIcon(mood)} {getMoodLabel(mood)}
@@ -257,7 +272,7 @@ export default function DiaryPage() {
                 onChange={(e) => setSelectedYear(e.target.value)}
                 className="w-full appearance-none bg-transparent py-2 px-3 text-sm font-medium outline-none cursor-pointer text-gray-900 dark:text-white"
               >
-                <option value="All">All Years</option>
+                <option value="All">全部年份</option>
                 {availableYears.map((year) => (
                   <option key={year} value={year}>{year}</option>
                 ))}
@@ -272,7 +287,7 @@ export default function DiaryPage() {
                 onChange={(e) => setSelectedMonth(e.target.value)}
                 className="w-full appearance-none bg-transparent py-2 px-3 text-sm font-medium outline-none cursor-pointer text-gray-900 dark:text-white"
               >
-                <option value="All">All Months</option>
+                <option value="All">全部月份</option>
                 {availableMonths.map((m) => (
                   <option key={m.value} value={m.value}>{m.label}</option>
                 ))}

@@ -30,6 +30,15 @@ const MOOD_ICONS: Record<DiaryMood, string> = {
   Grateful: "🙏",
 }
 
+const MOOD_LABELS: Record<DiaryMood, string> = {
+  Reflective: "思考",
+  Happy: "开心",
+  Thoughtful: "沉思",
+  Melancholic: "低落",
+  Inspired: "受到启发",
+  Grateful: "感恩",
+}
+
 const EMPTY_FORM: DiaryFormData = {
   id: "",
   title: "",
@@ -88,9 +97,9 @@ export default function DiaryFormModal({ isOpen, mode, initialData, onClose, onS
         <div className="flex items-center justify-between px-6 py-4 border-b border-white/[0.06] shrink-0">
           <div>
             <h2 className="text-base font-semibold text-white">
-              {mode === "create" ? t("form_title_new") || "New Diary Entry" : t("form_title_edit") || "Edit Diary Entry"}
+              {mode === "create" ? t("form_title_new") || "写新日记" : t("form_title_edit") || "编辑日记"}
             </h2>
-            <p className="text-xs text-gray-500 mt-0.5">Catat perjalanan, pikiran, dan cerita hari ini</p>
+            <p className="text-xs text-gray-500 mt-0.5">记录今天的想法、故事、图片和心情</p>
           </div>
           <button onClick={onClose} className="p-2 rounded-xl hover:bg-white/[0.06] text-gray-400 hover:text-white transition-colors">
             <X size={16} />
@@ -99,12 +108,12 @@ export default function DiaryFormModal({ isOpen, mode, initialData, onClose, onS
 
         {/* Body */}
         <div className="flex-1 overflow-y-auto scrollbar-none px-6 py-5 space-y-6">
-          <FormField label={t("form_title") || "Judul Catatan"} icon={<Type size={12} className="text-gray-500" />} required>
-            <TextInput value={form.title} onChange={(v) => setField("title", v)} placeholder={t("form_title_placeholder") || "Masukkan judul..."} />
+          <FormField label={t("form_title") || "标题"} icon={<Type size={12} className="text-gray-500" />} required>
+            <TextInput value={form.title} onChange={(v) => setField("title", v)} placeholder={t("form_title_placeholder") || "输入日记标题..."} />
           </FormField>
 
           <div className="grid grid-cols-2 gap-4">
-            <FormField label={t("form_date") || "Tanggal"} icon={<Calendar size={12} className="text-gray-500" />} required>
+            <FormField label={t("form_date") || "日期"} icon={<Calendar size={12} className="text-gray-500" />} required>
               <input
                 type="date" value={form.entry_date} onChange={(e) => setField("entry_date", e.target.value)}
                 className="w-full bg-white/[0.04] border border-white/[0.08] rounded-xl px-3 py-2.5 text-sm text-gray-200 outline-none focus:border-accentColor/60 transition-colors"
@@ -112,23 +121,23 @@ export default function DiaryFormModal({ isOpen, mode, initialData, onClose, onS
             </FormField>
             <div>
               <label className="flex items-center gap-1.5 text-xs font-medium text-gray-400 mb-2">
-                <Smile size={12} className="text-gray-500" /> {t("form_mood") || "Mood"}
+                <Smile size={12} className="text-gray-500" /> {t("form_mood") || "心情"}
               </label>
               <select
                 value={form.mood} onChange={(e) => setField("mood", e.target.value as DiaryMood | "")}
                 className="w-full bg-white/[0.04] border border-white/[0.08] rounded-xl px-3 py-2.5 text-sm text-gray-200 outline-none focus:border-accentColor/60 transition-colors appearance-none cursor-pointer"
               >
-                <option value="" className="bg-[#0e1c1c]">{t("form_mood_select") || "Pilih mood..."}</option>
+                <option value="" className="bg-[#0e1c1c]">{t("form_mood_select") || "选择心情..."}</option>
                 {MOODS.map((m) => (
                   <option key={m} value={m} className="bg-[#0e1c1c]">
-                    {MOOD_ICONS[m]} {m}
+                    {MOOD_ICONS[m]} {MOOD_LABELS[m]}
                   </option>
                 ))}
               </select>
             </div>
           </div>
 
-          <FormField label={t("form_tags") || "Tags"} icon={<Tag size={12} className="text-gray-500" />} hint="Tekan Enter">
+          <FormField label={t("form_tags") || "标签"} icon={<Tag size={12} className="text-gray-500" />} hint="按 Enter 添加">
             <div className="bg-white/[0.04] border border-white/[0.08] rounded-xl p-2.5 space-y-2 focus-within:border-accentColor/60 transition-colors">
               {form.tags.length > 0 && (
                 <div className="flex flex-wrap gap-1.5">
@@ -141,14 +150,14 @@ export default function DiaryFormModal({ isOpen, mode, initialData, onClose, onS
               )}
               <input 
                 value={tagInput} onChange={(e) => setTagInput(e.target.value)} onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); addTag(); } }} 
-                placeholder={t("form_tags_placeholder") || "Ketik tag lalu Enter..."} className="w-full bg-transparent text-sm text-gray-200 placeholder:text-gray-600 outline-none" 
+                placeholder={t("form_tags_placeholder") || "输入标签后按 Enter..."} className="w-full bg-transparent text-sm text-gray-200 placeholder:text-gray-600 outline-none"
               />
             </div>
           </FormField>
 
           <div>
             <label className="flex items-center gap-1.5 text-xs font-medium text-gray-400 mb-2">
-              <Type size={12} className="text-gray-500" /> {t("form_content") || "Content"} <span className="text-red-400">*</span>
+              <Type size={12} className="text-gray-500" /> {t("form_content") || "内容"} <span className="text-red-400">*</span>
             </label>
             <div className="border border-white/[0.08] rounded-xl overflow-hidden focus-within:border-accentColor/60 transition-colors">
               {/* Kita asumsikan RichTextEditor ini komponen kustom yang backgroundnya transparan */}
@@ -156,7 +165,7 @@ export default function DiaryFormModal({ isOpen, mode, initialData, onClose, onS
                 <RichTextEditor
                   content={form.content}
                   onChange={(html: string) => setField("content", html)}
-                  placeholder={t("form_content_placeholder") || "Tulis cerita Anda hari ini..."}
+                  placeholder={t("form_content_placeholder") || "写下今天的故事，支持 emoji、图片上传和图片链接..."}
                 />
               </div>
             </div>
@@ -166,10 +175,10 @@ export default function DiaryFormModal({ isOpen, mode, initialData, onClose, onS
 
         {/* Footer */}
         <div className="flex items-center justify-between px-6 py-4 border-t border-white/[0.06] shrink-0 bg-[#0a1515]">
-          <p className="text-xs text-gray-600"><span className="text-red-400">*</span> Wajib diisi</p>
+          <p className="text-xs text-gray-600"><span className="text-red-400">*</span> 必填项</p>
           <div className="flex gap-3">
             <button onClick={onClose} className="px-4 py-2 text-sm text-gray-400 hover:text-gray-200 rounded-xl hover:bg-white/[0.06]">
-              {t("btn_cancel") || "Batal"}
+              {t("btn_cancel") || "取消"}
             </button>
             <button
               onClick={() => onSave(form)}
@@ -177,7 +186,7 @@ export default function DiaryFormModal({ isOpen, mode, initialData, onClose, onS
               className="flex items-center gap-2 px-5 py-2 text-sm font-medium bg-accentColor text-white rounded-xl hover:brightness-110 disabled:opacity-50 transition-all"
             >
               {externalSaving && <Loader2 size={13} className="animate-spin" />}
-              {mode === "create" ? "Simpan Entry" : "Simpan Perubahan"}
+              {mode === "create" ? "保存日记" : "保存修改"}
             </button>
           </div>
         </div>

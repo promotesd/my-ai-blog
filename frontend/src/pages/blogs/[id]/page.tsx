@@ -17,14 +17,14 @@ import { cn } from "@/lib/utils"
 import { useTranslate } from "@/hooks/useTranslate"
 import TranslateButton from "@/components/blog/TranslateButton"
 
-const ID_MONTHS = [
-  "Januari", "Februari", "Maret", "April", "Mei", "Juni",
-  "Juli", "Agustus", "September", "Oktober", "November", "Desember",
-]
 function formatDate(iso: string) {
   const d = new Date(iso)
   if (Number.isNaN(d.getTime())) return ""
-  return `${d.getDate()} ${ID_MONTHS[d.getMonth()]} ${d.getFullYear()}`
+  return new Intl.DateTimeFormat("zh-CN", {
+    year: "numeric",
+    month: "long",
+    day: "numeric",
+  }).format(d)
 }
 
 export default function BlogDetailPage({ params }: { params: { id: string } }) {
@@ -35,7 +35,7 @@ export default function BlogDetailPage({ params }: { params: { id: string } }) {
 
   useEffect(() => {
     fetchBlogs().then(() => setMounted(true))
-  }, [])
+  }, [fetchBlogs])
 
   const blog = useMemo(() => {
     return blogs.find((b) => String(b.id) === String(id)) || getBlogById(id)
@@ -56,8 +56,8 @@ export default function BlogDetailPage({ params }: { params: { id: string } }) {
 
   const displayTitle   = translatedTitle   ?? blog?.title   ?? ""
   const displayContent = translatedContent ?? blog?.content ?? ""
-  const author = blog?.author ?? { name: "Agung Kurniawan", type: "developer" as const }
-  const authorName = author.name || "Agung Kurniawan"
+  const author = blog?.author ?? { name: "小嘟嘟", type: "developer" as const }
+  const authorName = author.name || "小嘟嘟"
 
   const handleTranslate = useCallback(async () => {
     if (!blog) return

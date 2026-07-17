@@ -12,7 +12,7 @@
  * Uses the native `fetch` available in Node 18+ / Next.js runtime.
  */
 
-const GITHUB_USERNAME = "agungkurniawanid";
+const GITHUB_USERNAME = "promotesd";
 const GITHUB_API_BASE = "https://api.github.com";
 
 export interface RepoRecord {

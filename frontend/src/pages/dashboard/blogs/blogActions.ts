@@ -14,12 +14,12 @@ export async function saveBlogOnServer(row: any, mode: "create" | "edit", idToUp
   if (mode === "create") {
     const { data, error } = await supabaseAdmin.from("blogs").insert(row).select()
     if (error) return { success: false, error: error.message }
-    if (!data || data.length === 0) return { success: false, error: "Gagal membuat blog di database." }
+    if (!data || data.length === 0) return { success: false, error: "无法在数据库中创建文章。" }
     return { success: true, data }
   } else {
     const { data, error } = await supabaseAdmin.from("blogs").update(row).eq("id", idToUpdate).select()
     if (error) return { success: false, error: error.message }
-    if (!data || data.length === 0) return { success: false, error: "Gagal mengubah blog di database." }
+    if (!data || data.length === 0) return { success: false, error: "无法在数据库中更新文章。" }
     return { success: true, data }
   }
 }
@@ -31,7 +31,7 @@ export async function deleteBlogOnServer(id: string, storageBucket?: string, fil
   
   const { data, error } = await supabaseAdmin.from("blogs").delete().eq("id", id).select()
   if (error) return { success: false, error: error.message }
-  if (!data || data.length === 0) return { success: false, error: "Data gagal dihapus di database." }
+  if (!data || data.length === 0) return { success: false, error: "无法从数据库中删除文章。" }
   
   return { success: true }
 }

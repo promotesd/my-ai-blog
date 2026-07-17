@@ -4,7 +4,6 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react"
 import Masonry from "react-masonry-css"
 import { useTranslations } from "next-intl"
 import {
-  BookOpen,
   Users,
   MapPin,
   Star,
@@ -12,14 +11,11 @@ import {
   Search,
   SlidersHorizontal,
   Edit3,
-  CheckCircle2,
   ChevronDown,
   X,
-  Pencil,
-  Sparkles,
 } from "lucide-react"
 import { cn } from "@/lib/utils"
-import { supabase } from "@/lib/supabase"
+import { guestbookApi } from "@/services/portfolioApi"
 import GuestbookCard, { GuestbookEntry } from "./GuestbookCard"
 import GuestbookFormModal, { MOODS } from "./GuestbookFormModal"
 
@@ -117,50 +113,6 @@ function AnimatedStat({
   )
 }
 
-// ─── Not-Submitted Callout ───────────────────────────────────────────────────
-
-function NotSubmittedCallout({ onOpen }: { onOpen: () => void }) {
-  const t = useTranslations("guestbookPage")
-  return (
-    <div className="relative overflow-hidden rounded-2xl border border-amber-200 dark:border-amber-500/30 bg-gradient-to-br from-amber-50 to-orange-50 dark:from-amber-900/20 dark:to-orange-900/10 px-5 py-4">
-      {/* Decorative blob */}
-      <div className="absolute -right-8 -top-8 w-32 h-32 bg-amber-300/20 dark:bg-amber-400/10 rounded-full blur-2xl pointer-events-none" />
-
-      <div className="relative flex flex-col sm:flex-row sm:items-center gap-4">
-        {/* Left: icon + text */}
-        <div className="flex items-start gap-3 flex-1">
-          {/* Pulsing dot */}
-          <div className="relative mt-0.5 shrink-0">
-            <span className="flex h-3 w-3">
-              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-amber-400 opacity-75" />
-              <span className="relative inline-flex rounded-full h-3 w-3 bg-amber-500" />
-            </span>
-          </div>
-
-          <div className="flex flex-col gap-1">
-            <p className="text-sm font-semibold text-amber-800 dark:text-amber-300 flex items-center gap-1.5">
-              <Sparkles size={13} className="shrink-0" />
-              {t("callout_title")}
-            </p>
-            <p className="text-xs text-amber-700/80 dark:text-amber-400/80 leading-relaxed">
-              {t("callout_desc")}
-            </p>
-          </div>
-        </div>
-
-        {/* Right: CTA */}
-        <button
-          onClick={onOpen}
-          className="group shrink-0 inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-amber-500 hover:bg-amber-600 dark:bg-amber-500 dark:hover:bg-amber-400 text-white text-xs font-semibold transition-all duration-200 shadow-sm hover:shadow-amber-400/30 hover:shadow-md hover:-translate-y-0.5 active:translate-y-0 self-start sm:self-center"
-        >
-          <Pencil size={13} className="transition-transform group-hover:rotate-12" />
-          {t("callout_btn")}
-        </button>
-      </div>
-    </div>
-  )
-}
-
 // ─── Main Page ──────────────────────────────────────────────────────────────────
 
 export default function GuestbookPage() {
@@ -174,7 +126,6 @@ export default function GuestbookPage() {
 
   const [entries, setEntries] = useState<GuestbookEntry[]>([])
   const [loading, setLoading] = useState(true)
-  const [hasSubmitted, setHasSubmitted] = useState(false)
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [newEntryIds, setNewEntryIds] = useState<Set<string>>(new Set())
   const [toast, setToast] = useState<{ message: string; type: "success" | "error" } | null>(null)
@@ -198,78 +149,16 @@ export default function GuestbookPage() {
   useEffect(() => {
     const fetchEntries = async () => {
       setLoading(true)
-      const { data, error } = await supabase
-        .from("guestbook")
-        .select("*")
-        .eq("is_approved", true)
-        .order("created_at", { ascending: false })
-
-      if (!error && data) setEntries(data as GuestbookEntry[])
+      try {
+        const data = await guestbookApi.list<GuestbookEntry>()
+        setEntries(data)
+      } catch (error) {
+        console.error("[guestbook] fetch failed:", error)
+        setEntries([])
+      }
       setLoading(false)
     }
     fetchEntries()
-  }, [])
-
-  // ── Check if already submitted (localStorage + fingerprint server-side) ──────
-  useEffect(() => {
-    if (typeof window === "undefined") return
-
-    // 1. Cek localStorage terlebih dahulu (cepat)
-    if (localStorage.getItem("guestbook_submitted") === "true") {
-      setHasSubmitted(true)
-      return
-    }
-
-    // 2. Cek fingerprint server-side — mencegah bypass dengan hapus localStorage.
-    //    Fingerprint unik per perangkat/browser, tidak terpengaruh shared IP.
-    const checkFingerprint = async () => {
-      try {
-        const { generateFingerprint } = await import("@/lib/fingerprint")
-        const fp  = await generateFingerprint()
-        const res = await fetch(`/api/visitor-check?type=guestbook_submitted&fp=${fp}`)
-        const data = await res.json()
-        if (data.checked) {
-          // Fingerprint sudah tercatat → sync localStorage & tandai sudah submit
-          localStorage.setItem("guestbook_submitted", "true")
-          setHasSubmitted(true)
-        }
-      } catch {
-        // Gagal cek → fail-open, biarkan user mengisi (tidak blok)
-      }
-    }
-
-    checkFingerprint()
-  }, [])
-
-  // ── Supabase Realtime subscription ──────────────────────────────────────────
-  useEffect(() => {
-    const channel = supabase
-      .channel("guestbook_realtime")
-      .on(
-        "postgres_changes",
-        { event: "INSERT", schema: "public", table: "guestbook" },
-        (payload) => {
-          const newEntry = payload.new as GuestbookEntry
-          if (!newEntry.is_approved) return
-          setEntries((prev) => {
-            if (prev.find((e) => e.id === newEntry.id)) return prev
-            return [newEntry, ...prev]
-          })
-          setNewEntryIds((prev) => new Set([...prev, newEntry.id]))
-          setTimeout(() => {
-            setNewEntryIds((prev) => {
-              const next = new Set(prev)
-              next.delete(newEntry.id)
-              return next
-            })
-          }, 3000)
-        }
-      )
-      .subscribe()
-
-    return () => {
-      supabase.removeChannel(channel)
-    }
   }, [])
 
   // ── Confetti ─────────────────────────────────────────────────────────────────
@@ -301,13 +190,12 @@ export default function GuestbookPage() {
   // ── Handle successful submission ──────────────────────────────────────────────
   const handleSuccess = useCallback(
     (entry: GuestbookEntry) => {
-      setHasSubmitted(true)
       setEntries((prev) => [entry, ...prev])
       setNewEntryIds((prev) => new Set([...prev, entry.id]))
       triggerConfetti()
       showToast(t("toast_success"))
     },
-    [triggerConfetti, showToast]
+    [triggerConfetti, showToast, t]
   )
 
   // ── Stats ─────────────────────────────────────────────────────────────────────
@@ -392,14 +280,6 @@ export default function GuestbookPage() {
         <div className="absolute -top-20 -right-32 w-80 h-80 bg-indigo-400/10 rounded-full blur-3xl pointer-events-none" />
 
         <div className="max-w-4xl mx-auto text-center relative z-10">
-          {/* Icon + Tag */}
-          <div className="flex items-center justify-center gap-2 mb-4">
-            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-accentColor/10 text-accentColor text-xs font-medium border border-accentColor/20">
-              <BookOpen size={12} />
-              {t("tag")}
-            </span>
-          </div>
-
           {/* Title */}
           <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold text-gray-900 dark:text-white leading-tight mb-4">
             {t("title")}
@@ -413,23 +293,13 @@ export default function GuestbookPage() {
 
           {/* CTA Button */}
           <div className="flex justify-center mb-10">
-            {hasSubmitted ? (
-              <button
-                disabled
-                className="inline-flex items-center gap-2 px-7 py-3.5 rounded-2xl bg-gray-100 dark:bg-gray-800 text-gray-400 dark:text-gray-500 text-sm font-medium cursor-not-allowed border border-gray-200 dark:border-gray-700"
-              >
-                <CheckCircle2 size={17} />
-                {t("cta_filled")}
-              </button>
-            ) : (
-              <button
-                onClick={scrollToForm}
-                className="group inline-flex items-center gap-2.5 px-7 py-3.5 rounded-2xl bg-accentColor text-white text-sm font-semibold border-2 border-accentColor hover:bg-transparent hover:text-accentColor transition-all duration-200 shadow-lg hover:shadow-accentColor/20 hover:shadow-xl hover:-translate-y-0.5 active:translate-y-0"
-              >
-                <Edit3 size={16} className="transition-transform group-hover:rotate-12" />
-                {t("cta_fill")}
-              </button>
-            )}
+            <button
+              onClick={scrollToForm}
+              className="group inline-flex items-center gap-2.5 px-7 py-3.5 rounded-2xl bg-accentColor text-white text-sm font-semibold border-2 border-accentColor hover:bg-transparent hover:text-accentColor transition-all duration-200 shadow-lg hover:shadow-accentColor/20 hover:shadow-xl hover:-translate-y-0.5 active:translate-y-0"
+            >
+              <Edit3 size={16} className="transition-transform group-hover:rotate-12" />
+              {t("cta_fill")}
+            </button>
           </div>
 
           {/* Animated Stats */}
@@ -466,13 +336,6 @@ export default function GuestbookPage() {
           )}
         </div>
       </section>
-
-      {/* ─────────────── NOT-SUBMITTED CALLOUT ──────────────────────── */}
-      {!loading && !hasSubmitted && (
-        <section className="max-w-7xl mx-auto px-4 pb-4">
-          <NotSubmittedCallout onOpen={() => setIsModalOpen(true)} />
-        </section>
-      )}
 
       {/* ───────────────────── SEARCH & FILTER ─────────────────────── */}
       <section ref={gridRef} className="max-w-7xl mx-auto px-4 pb-6">
@@ -695,7 +558,7 @@ export default function GuestbookPage() {
                   : t("empty_try_filter")}
               </p>
             </div>
-            {entries.length === 0 && !hasSubmitted && (
+            {entries.length === 0 && (
               <button
                 onClick={() => setIsModalOpen(true)}
                 className="mt-2 inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-accentColor text-white text-sm font-medium hover:bg-accentColor/90 transition-all"

@@ -9,7 +9,6 @@ import { fetchOpenLibraryBook } from "@/lib/entertainmentApi";
 import { SupabaseBook, BookStatus } from "@/types/entertainment";
 import { BookCardSkeleton } from "./EntertainmentSkeletons";
 
-// 1. TAMBAHKAN WARNA UNTUK "reading" DI SINI
 const STATUS_COLOR: Record<BookStatus, string> = {
   finished: "bg-green-100 text-green-700 dark:bg-green-900/40 dark:text-green-300",
   wishlist: "bg-purple-100 text-purple-700 dark:bg-purple-900/40 dark:text-purple-300",
@@ -32,12 +31,11 @@ function StarRating({ value, max = 5 }: { value: number; max?: number }) {
 export default function BooksSection({ globalSearch }: { globalSearch?: string }) {
   const t = useTranslations("entertainment");
   
-  // 2. TAMBAHKAN LABEL UNTUK "reading" DI SINI
   const STATUS_LABEL: Record<BookStatus, string> = {
     finished: t("book_status_finished"),
     wishlist: t("book_status_wishlist"),
     favorite: t("book_status_favorite"),
-    reading: t("book_status_reading") || "Sedang Dibaca", // Pastikan kamu menambahkan "book_status_reading" di file terjemahan JSON kamu nanti
+    reading: t("book_status_reading") || "阅读中",
   };
 
   const [books, setBooks] = useState<SupabaseBook[]>([]);
@@ -49,7 +47,7 @@ export default function BooksSection({ globalSearch }: { globalSearch?: string }
   const sortRef = useRef<HTMLDivElement>(null);
   const enrichedRef = useRef(false);
 
-  // Fetch from Supabase via API
+  // Load the Spring Boot collection, then enrich covers from Open Library.
   useEffect(() => {
     fetch("/api/books-data")
       .then((r) => r.json())
@@ -79,7 +77,7 @@ export default function BooksSection({ globalSearch }: { globalSearch?: string }
         )
       );
     });
-  }, [loading, books.length]);
+  }, [loading, books]);
 
   useEffect(() => {
     function handler(e: MouseEvent) {

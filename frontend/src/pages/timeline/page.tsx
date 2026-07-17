@@ -4,7 +4,6 @@ import { useEffect, useRef, useState, useCallback, useMemo } from "react"
 import Link from "next/link"
 import dynamic from "next/dynamic"
 import { useTranslations } from "next-intl"
-import { portfolioApi } from "@/services/portfolioApi"
 import {
   GraduationCap, Briefcase, BookOpen, Trophy, Users,
   MapPin, CheckCircle2, Star, Quote as QuoteIcon,
@@ -23,6 +22,7 @@ import {
   categoryMeta,
   colorMap,
   computeStats,
+  timelineData,
   type TimelineItem,
   type TimelineCategory,
   type TimelineColor,
@@ -773,9 +773,8 @@ export default function TimelinePage() {
   const [activeCategory, setActiveCategory] = useState<TimelineCategory>("Semua")
   const [sortOrder, setSortOrder] = useState<"asc" | "desc">("asc")
   
-  // State untuk Supabase Data
   const [rawItems, setRawItems] = useState<TimelineItem[]>([])
-  const [isLoading, setIsLoading] = useState(true)
+  const [isLoading, setIsLoading] = useState(false)
 
   const contentRef = useRef<HTMLDivElement>(null)
 
@@ -783,21 +782,9 @@ export default function TimelinePage() {
     contentRef.current?.scrollIntoView({ behavior: "smooth" })
   }, [])
 
-  // Fetch dari Supabase pada saat mount
   useEffect(() => {
-    const fetchTimeline = async () => {
-      setIsLoading(true)
-      try {
-        const data = await portfolioApi.list<TimelineItem & { id: number }>("timelines")
-        setRawItems(data as TimelineItem[])
-      } catch (err) {
-        console.error("Gagal mengambil data timeline:", err)
-      } finally {
-        setIsLoading(false)
-      }
-    }
-
-    fetchTimeline()
+    setRawItems(timelineData)
+    setIsLoading(false)
   }, [])
 
   // Hitung stats secara dinamis dari rawItems

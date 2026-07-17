@@ -17,10 +17,11 @@ import {
   Check,
   User,
 } from "lucide-react"
-import { FaWhatsapp, FaTwitter, FaInstagram } from "react-icons/fa"
+import { FaTwitter } from "react-icons/fa"
 import { cn } from "@/lib/utils"
 import { useTranslations } from "next-intl"
 import TranslateWidget from "@/components/TranslateWidget"
+import { getGalleryCategoryLabel } from "@/data/galleryData"
 
 interface GalleryLightboxProps {
   photos: GalleryPhoto[]
@@ -108,13 +109,6 @@ export default function GalleryLightbox({
     await navigator.clipboard.writeText(window.location.origin + "/gallery")
     setCopied(true)
     setTimeout(() => setCopied(false), 2000)
-  }
-
-  const shareWhatsApp = () => {
-    window.open(
-      `https://wa.me/?text=${encodeURIComponent(`${photo.title} — ${window.location.origin}/gallery`)}`,
-      "_blank"
-    )
   }
 
   const shareTwitter = () => {
@@ -261,7 +255,7 @@ export default function GalleryLightbox({
                 <div>
                   <p className="text-gray-400 dark:text-white/40 text-xs mb-0.5">{t("lightbox_category")}</p>
                   <span className="inline-flex text-xs px-2.5 py-1 rounded-full bg-accentColor/20 text-accentColor border border-accentColor/30 font-medium">
-                    {photo.category}
+                    {getGalleryCategoryLabel(photo.category)}
                   </span>
                 </div>
               </div>
@@ -350,25 +344,11 @@ export default function GalleryLightbox({
                     {copied ? t("lightbox_copied") : t("lightbox_copy_link")}
                   </button>
                   <button
-                    onClick={shareWhatsApp}
-                    className="flex items-center justify-center gap-2 px-3 py-2 rounded-lg bg-green-600/80 hover:bg-green-600 text-white text-xs font-medium transition-all duration-200"
-                  >
-                    <FaWhatsapp className="w-3.5 h-3.5" />
-                    WhatsApp
-                  </button>
-                  <button
                     onClick={shareTwitter}
                     className="flex items-center justify-center gap-2 px-3 py-2 rounded-lg bg-sky-600/80 hover:bg-sky-600 text-white text-xs font-medium transition-all duration-200"
                   >
                     <FaTwitter className="w-3.5 h-3.5" />
                     Twitter/X
-                  </button>
-                  <button
-                    onClick={() => window.open("https://www.instagram.com/", "_blank")}
-                    className="flex items-center justify-center gap-2 px-3 py-2 rounded-lg bg-gradient-to-br from-purple-600/80 to-pink-600/80 hover:from-purple-600 hover:to-pink-600 text-white text-xs font-medium transition-all duration-200"
-                  >
-                    <FaInstagram className="w-3.5 h-3.5" />
-                    Instagram
                   </button>
                 </div>
               )}
@@ -379,5 +359,3 @@ export default function GalleryLightbox({
     </div>
   )
 }
-
-

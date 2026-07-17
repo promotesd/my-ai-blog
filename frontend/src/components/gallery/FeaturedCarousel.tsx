@@ -5,6 +5,7 @@ import Image from "next/image"
 import { GalleryPhoto } from "@/types/gallery"
 import { MapPin, ChevronLeft, ChevronRight } from "lucide-react"
 import { cn } from "@/lib/utils"
+import { getGalleryCategoryLabel } from "@/data/galleryData"
 
 interface FeaturedCarouselProps {
   photos: GalleryPhoto[]
@@ -72,14 +73,14 @@ export default function FeaturedCarousel({ photos, onPhotoClick }: FeaturedCarou
         )}
       >
         <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-accentColor/90 text-white backdrop-blur-sm">
-          {photo.category}
+          {getGalleryCategoryLabel(photo.category)}
         </span>
       </div>
 
       {/* Featured badge */}
       <div className="absolute top-5 right-5">
         <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-semibold bg-yellow-400/90 text-yellow-900 backdrop-blur-sm">
-          ⭐ Featured
+          ⭐ 精选
         </span>
       </div>
 
@@ -108,7 +109,7 @@ export default function FeaturedCarousel({ photos, onPhotoClick }: FeaturedCarou
             onClick={() => onPhotoClick(photo)}
             className="shrink-0 px-5 py-2.5 rounded-xl bg-white/20 hover:bg-accentColor backdrop-blur-sm text-white text-sm font-semibold transition-all duration-200 hover:scale-105 border border-white/20"
           >
-            Lihat Foto
+            查看照片
           </button>
         </div>
 

@@ -55,7 +55,7 @@ export default function GuestbookFormModal({ isOpen, initialData, onClose, onSav
             const { data: { publicUrl } } = supabase.storage.from(bucket).getPublicUrl(fileName)
             setField("avatar_url", publicUrl)
         } catch (error: any) {
-            alert(`Gagal upload avatar: ${error.message}`)
+            alert(`头像上传失败：${error.message}`)
         } finally {
             setUploadingField(false)
         }
@@ -71,8 +71,8 @@ export default function GuestbookFormModal({ isOpen, initialData, onClose, onSav
             <div className="relative w-full max-w-3xl max-h-[90vh] flex flex-col bg-[#0e1c1c] border border-white/[0.08] rounded-2xl shadow-2xl overflow-hidden animate-in fade-in zoom-in-95 duration-200">
                 <div className="flex items-center justify-between px-6 py-4 border-b border-white/[0.06] shrink-0">
                     <div>
-                        <h2 className="text-base font-semibold text-white">Edit Buku Tamu</h2>
-                        <p className="text-xs text-gray-500 mt-0.5">Edit dan moderasi entri Guestbook</p>
+                        <h2 className="text-base font-semibold text-white">编辑留言</h2>
+                        <p className="text-xs text-gray-500 mt-0.5">编辑内容并设置公开状态</p>
                     </div>
                     <button onClick={onClose} className="p-2 rounded-xl hover:bg-white/[0.06] text-gray-400 hover:text-white transition-colors"><X size={16} /></button>
                 </div>
@@ -86,8 +86,8 @@ export default function GuestbookFormModal({ isOpen, initialData, onClose, onSav
                                 <ShieldCheck size={20} />
                             </div>
                             <div>
-                                <p className="text-sm font-semibold text-gray-200">Status Visibilitas Publik</p>
-                                <p className="text-xs text-gray-500 mt-0.5">{form.is_approved ? "Entri ini TAMPIL di beranda publik." : "Entri ini DISEMBUNYIKAN (pending/ditolak)."}</p>
+                                <p className="text-sm font-semibold text-gray-200">公开状态</p>
+                                <p className="text-xs text-gray-500 mt-0.5">{form.is_approved ? "这条留言会在公开页面显示。" : "这条留言处于隐藏或待审核状态。"}</p>
                             </div>
                         </div>
                         <label className="relative inline-flex items-center cursor-pointer">
@@ -97,55 +97,55 @@ export default function GuestbookFormModal({ isOpen, initialData, onClose, onSav
                     </div>
 
                     <div className="grid grid-cols-2 gap-4">
-                        <FormField label="Nama Pengunjung" icon={<User size={12} className="text-gray-500" />} required>
+                        <FormField label="访客名称" icon={<User size={12} className="text-gray-500" />} required>
                             <TextInput value={form.name || ""} onChange={(v) => setField("name", v)} />
                         </FormField>
-                        <FormField label="Asal Kota" icon={<MapPin size={12} className="text-gray-500" />}>
+                        <FormField label="地址" icon={<MapPin size={12} className="text-gray-500" />}>
                             <TextInput value={form.city || ""} onChange={(v) => setField("city", v)} />
                         </FormField>
                     </div>
 
                     <div className="grid grid-cols-2 gap-4">
-                        <FormField label="Profesi" icon={<Briefcase size={12} className="text-gray-500" />}>
+                        <FormField label="职业" icon={<Briefcase size={12} className="text-gray-500" />}>
                             <TextInput value={form.profession || ""} onChange={(v) => setField("profession", v)} />
                         </FormField>
-                        <FormField label="Kontak / Sosmed" icon={<Link2 size={12} className="text-gray-500" />}>
+                        <FormField label="联系方式" icon={<Link2 size={12} className="text-gray-500" />}>
                             <TextInput value={form.contact || ""} onChange={(v) => setField("contact", v)} />
                         </FormField>
                     </div>
 
-                    <FormField label="Pesan Ulasan" icon={<MessageSquare size={12} className="text-gray-500" />} required>
+                    <FormField label="留言内容" icon={<MessageSquare size={12} className="text-gray-500" />} required>
                         <textarea value={form.message || ""} onChange={(e) => setField("message", e.target.value)} rows={4} className="w-full bg-white/[0.04] border border-white/[0.08] rounded-xl px-3 py-2.5 text-sm text-gray-200 outline-none focus:border-accentColor/60 transition-colors resize-none placeholder:text-gray-600" />
                     </FormField>
 
                     <div className="grid grid-cols-3 gap-4">
-                        <FormField label="Rating" icon={<Star size={12} className="text-gray-500" />}>
+                        <FormField label="评分" icon={<Star size={12} className="text-gray-500" />}>
                             <select value={form.rating || 5} onChange={(e) => setField("rating", parseInt(e.target.value))} className="w-full bg-white/[0.04] border border-white/[0.08] rounded-xl px-3 py-2.5 text-sm text-gray-200 outline-none focus:border-accentColor/60 transition-colors appearance-none">
-                                {[1, 2, 3, 4, 5].map(v => <option key={v} value={v} className="bg-[#0e1c1c]">{v} Bintang</option>)}
+                                {[1, 2, 3, 4, 5].map(v => <option key={v} value={v} className="bg-[#0e1c1c]">{v} 星</option>)}
                             </select>
                         </FormField>
-                        <FormField label="Mood" icon={<Smile size={12} className="text-gray-500" />}>
+                        <FormField label="心情" icon={<Smile size={12} className="text-gray-500" />}>
                             <TextInput value={form.mood || ""} onChange={(v) => setField("mood", v)} />
                         </FormField>
-                        <FormField label="Referensi" icon={<Link2 size={12} className="text-gray-500" />}>
+                        <FormField label="来源" icon={<Link2 size={12} className="text-gray-500" />}>
                             <TextInput value={form.referral_source || ""} onChange={(v) => setField("referral_source", v)} disabled />
                         </FormField>
                     </div>
 
                     <div className="grid grid-cols-2 gap-4">
-                        <FormField label="Warna Kartu (Hex)" icon={<ImageIcon size={12} className="text-gray-500" />}>
+                        <FormField label="卡片颜色（Hex）" icon={<ImageIcon size={12} className="text-gray-500" />}>
                             <div className="flex gap-2">
                                 <div className="w-10 h-10 rounded-xl shrink-0 border border-white/10" style={{ backgroundColor: form.card_color }} />
                                 <TextInput value={form.card_color || ""} onChange={(v) => setField("card_color", v)} />
                             </div>
                         </FormField>
-                        <FormField label="Gambar Avatar" icon={<ImageIcon size={12} className="text-gray-500" />}>
+                        <FormField label="头像图片" icon={<ImageIcon size={12} className="text-gray-500" />}>
                             <div className="space-y-3">
                                 <div className="relative flex items-center">
                                     <input type="file" accept="image/*" onChange={(e) => e.target.files && handleFileUpload(e.target.files[0])} disabled={uploadingField} className="w-full bg-white/[0.04] border border-white/[0.08] rounded-xl px-3 py-2 text-sm text-gray-200 outline-none focus:border-accentColor/60 file:mr-3 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-accentColor/10 file:text-accentColor hover:file:bg-accentColor/20 file:cursor-pointer disabled:opacity-50" />
                                     {uploadingField && <Loader2 size={14} className="absolute right-3 animate-spin text-accentColor" />}
                                 </div>
-                                <TextInput value={form.avatar_url || ""} onChange={(v) => setField("avatar_url", v)} placeholder="Atau paste URL..." />
+                                <TextInput value={form.avatar_url || ""} onChange={(v) => setField("avatar_url", v)} placeholder="也可以粘贴图片地址" />
                             </div>
                         </FormField>
                     </div>
@@ -153,12 +153,12 @@ export default function GuestbookFormModal({ isOpen, initialData, onClose, onSav
                 </div>
 
                 <div className="flex items-center justify-between px-6 py-4 border-t border-white/[0.06] shrink-0 bg-[#0a1515]">
-                    <p className="text-xs text-gray-600"><span className="text-red-400">*</span> Wajib diisi</p>
+                    <p className="text-xs text-gray-600"><span className="text-red-400">*</span> 必填</p>
                     <div className="flex gap-3">
-                        <button onClick={onClose} className="px-4 py-2 text-sm text-gray-400 hover:text-gray-200 rounded-xl hover:bg-white/[0.06]">Batal</button>
+                        <button onClick={onClose} className="px-4 py-2 text-sm text-gray-400 hover:text-gray-200 rounded-xl hover:bg-white/[0.06]">取消</button>
                         <button onClick={() => onSave(initialData.id, form)} disabled={externalSaving || !isValid} className="flex items-center gap-2 px-5 py-2 text-sm font-medium bg-accentColor text-white rounded-xl hover:brightness-110 disabled:opacity-50 transition-all">
                             {externalSaving && <Loader2 size={13} className="animate-spin" />}
-                            Simpan Perubahan
+                            保存修改
                         </button>
                     </div>
                 </div>

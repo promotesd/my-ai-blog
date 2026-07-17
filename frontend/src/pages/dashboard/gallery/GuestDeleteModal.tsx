@@ -37,17 +37,17 @@ export default function GuestDeleteModal({ isOpen, guestName, photoCount, albumC
           </div>
           <div>
             <h3 className="text-lg font-semibold text-white mb-1.5">
-              Hapus Tamu {guestName}?
+              删除访客 {guestName}？
             </h3>
             <p className="text-sm text-gray-400 leading-relaxed mb-3">
-              Apakah Anda yakin ingin menghapus tamu ini permanen? 
+              确定要永久删除这位访客吗？
             </p>
             {(photoCount > 0 || albumCount > 0) && (
               <div className="p-3 bg-red-500/10 border border-red-500/20 rounded-xl mt-3 text-left">
-                <p className="text-xs text-red-400 font-medium">⚠️ Peringatan Kritis:</p>
+                <p className="text-xs text-red-400 font-medium">重要提醒：</p>
                 <p className="text-xs text-gray-300 mt-1">
-                  Tamu ini memiliki <b className="text-white">{photoCount} foto</b> dan <b className="text-white">{albumCount} album</b>. 
-                  Menghapus tamu ini <b>akan ikut menghapus semua foto dan albumnya secara permanen</b> dari database dan storage.
+                  该访客拥有 <b className="text-white">{photoCount} 张照片</b>和 <b className="text-white">{albumCount} 个相册</b>。
+                  删除该访客时，将同时从数据库和文件存储中<b>永久删除其全部照片和相册</b>。
                 </p>
               </div>
             )}
@@ -60,14 +60,14 @@ export default function GuestDeleteModal({ isOpen, guestName, photoCount, albumC
             disabled={isDeleting}
             className="flex-1 py-2.5 text-sm font-medium text-gray-400 hover:text-white bg-white/[0.04] hover:bg-white/[0.08] border border-white/[0.08] rounded-xl transition-all disabled:opacity-50"
           >
-            Batal
+            取消
           </button>
           <button
             onClick={handleConfirm}
             disabled={isDeleting}
             className="flex-1 flex items-center justify-center gap-2 py-2.5 text-sm font-medium text-white bg-red-500/90 hover:bg-red-500 rounded-xl transition-all disabled:opacity-50"
           >
-            {isDeleting ? <RefreshCw size={16} className="animate-spin" /> : "Ya, Hapus Tamu"}
+            {isDeleting ? <RefreshCw size={16} className="animate-spin" /> : "确认删除访客"}
           </button>
         </div>
       </div>

@@ -4,9 +4,8 @@ import { useState, useCallback, useRef, useEffect, KeyboardEvent } from "react"
 import Image from "next/image"
 import { X, Upload, Check, FolderPlus, ImagePlus, User, AlertCircle, Loader2, Tag } from "lucide-react"
 import { cn } from "@/lib/utils"
-import { supabase } from "@/lib/supabase"
 import { generateFingerprint } from "@/lib/fingerprint"
-import { GALLERY_CATEGORIES } from "@/data/galleryData"
+import { GALLERY_CATEGORIES, getGalleryCategoryLabel } from "@/data/galleryData"
 import { GalleryGuest, GalleryAlbum } from "@/types/gallery"
 import { fetchGalleryAlbums } from "@/lib/galleryApi"
 
@@ -43,6 +42,24 @@ interface Props {
   isOpen: boolean
   onClose: () => void
   onSuccess?: (guest: GalleryGuest) => void
+}
+
+async function uploadGalleryImage(file: File): Promise<string> {
+  const formData = new FormData()
+  formData.append("file", file)
+  const response = await fetch("/api/upload/gallery", {
+    method: "POST",
+    body: formData,
+  })
+  const body = await response.json().catch(() => null) as { data?: { url?: string }, url?: string, message?: string } | null
+  if (!response.ok) {
+    throw new Error(body?.message || "图片上传失败")
+  }
+  const url = body?.data?.url || body?.url
+  if (!url) {
+    throw new Error("上传接口没有返回图片地址")
+  }
+  return url
 }
 
 // ─── Local Storage & Cookie Keys ─────────────────────────────────────────────
@@ -168,7 +185,7 @@ function TagChipInput({
         value={tagInput}
         onChange={(e) => onTagInputChange(e.target.value)}
         onKeyDown={handleKeyDown}
-        placeholder={tags.length === 0 ? "Ketik tag lalu Enter..." : ""}
+        placeholder={tags.length === 0 ? "输入标签后按回车..." : ""}
         className="flex-1 min-w-[80px] text-[11px] bg-transparent outline-none text-gray-900 dark:text-white placeholder:text-gray-400"
       />
     </div>
@@ -207,7 +224,7 @@ function PhotoRow({
     <div className="flex gap-3 p-3 rounded-xl bg-gray-50 dark:bg-gray-800/60 border border-gray-100 dark:border-gray-700">
       {/* Thumbnail */}
       <div className="relative w-16 h-16 rounded-lg overflow-hidden shrink-0">
-        <Image src={photo.preview} alt={photo.title || "foto"} fill className="object-cover" sizes="64px" />
+        <Image src={photo.preview} alt={photo.title || "照片"} fill className="object-cover" sizes="64px" />
       </div>
 
       {/* Fields */}
@@ -217,7 +234,7 @@ function PhotoRow({
             type="text"
             value={photo.title}
             onChange={(e) => onUpdateField(idx, "title", e.target.value)}
-            placeholder="Judul foto... (wajib diisi)"
+            placeholder="照片标题...（必填）"
             className={cn(
               "w-full px-2 py-1 text-xs rounded-lg bg-white dark:bg-gray-700 border text-gray-900 dark:text-white outline-none transition-colors",
               titleError && !photo.title.trim()
@@ -227,7 +244,7 @@ function PhotoRow({
           />
           {titleError && !photo.title.trim() && (
             <p className="mt-0.5 text-[10px] text-red-400 flex items-center gap-1">
-              <AlertCircle className="w-3 h-3" /> Judul wajib diisi
+              <AlertCircle className="w-3 h-3" /> 请填写照片标题
             </p>
           )}
         </div>
@@ -235,7 +252,7 @@ function PhotoRow({
           value={photo.description}
           onChange={(e) => onUpdateField(idx, "description", e.target.value)}
           rows={2}
-          placeholder="Deskripsi foto (opsional)..."
+          placeholder="照片描述（选填）..."
           className="w-full px-2 py-1 text-xs rounded-lg bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 text-gray-900 dark:text-white outline-none focus:border-accentColor resize-none"
         />
         <div className="flex gap-1.5">
@@ -243,7 +260,7 @@ function PhotoRow({
             type="text"
             value={photo.location}
             onChange={(e) => onUpdateField(idx, "location", e.target.value)}
-            placeholder="Lokasi (opsional)"
+            placeholder="地点（选填）"
             className="flex-1 px-2 py-1 text-xs rounded-lg bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 text-gray-900 dark:text-white outline-none focus:border-accentColor"
           />
           <input
@@ -257,7 +274,7 @@ function PhotoRow({
         {/* Tag chip input */}
         <div>
           <p className="text-[10px] text-gray-400 mb-1 flex items-center gap-1">
-            <Tag className="w-2.5 h-2.5" /> Tags (opsional)
+            <Tag className="w-2.5 h-2.5" /> 标签（选填）
           </p>
           <TagChipInput
             tags={photo.tags}
@@ -315,11 +332,11 @@ function PhotoDropZone({
           </div>
           <div>
             <p className="text-sm font-medium text-gray-700 dark:text-gray-300">
-              Seret foto atau{" "}
-              <span className="text-accentColor underline">pilih dari perangkat</span>
+              拖拽照片到这里，或{" "}
+              <span className="text-accentColor underline">从设备选择</span>
             </p>
             <p className="text-xs text-gray-400 mt-0.5">
-              JPG, PNG, WebP, GIF · maks 15MB per foto · bisa pilih banyak
+              支持 JPG、PNG、WebP、GIF，每张最大 15MB，可多选
             </p>
           </div>
         </div>
@@ -486,7 +503,7 @@ export default function GuestRegistrationModal({ isOpen, onClose, onSuccess }: P
 
   const validateProfile = () => {
     const errs: typeof profileErrors = {}
-    if (!profileForm.name.trim()) errs.name = "Nama wajib diisi"
+    if (!profileForm.name.trim()) errs.name = "请填写名称"
     setProfileErrors(errs)
     return Object.keys(errs).length === 0
   }
@@ -501,16 +518,7 @@ export default function GuestRegistrationModal({ isOpen, onClose, onSuccess }: P
 
       let avatarUrl: string | null = null
       if (profileForm.avatarFile) {
-        const ext = profileForm.avatarFile.name.split(".").pop()
-        const path = `avatar/${fp.slice(0, 16)}-${Date.now()}.${ext}`
-        const { error: uploadErr } = await supabase.storage
-          .from("gallery-guests")
-          .upload(path, profileForm.avatarFile, { contentType: profileForm.avatarFile.type, upsert: false })
-
-        if (!uploadErr) {
-          const { data } = supabase.storage.from("gallery-guests").getPublicUrl(path)
-          avatarUrl = data.publicUrl
-        }
+        avatarUrl = await uploadGalleryImage(profileForm.avatarFile)
       }
 
       const res = await fetch("/api/gallery/guest/register", {
@@ -523,14 +531,14 @@ export default function GuestRegistrationModal({ isOpen, onClose, onSuccess }: P
         }),
       })
       const data = await res.json()
-      if (!res.ok) throw new Error(data.error || "Gagal mendaftar")
+      if (!res.ok) throw new Error(data.error || "创建访客资料失败")
 
       setGuest(data.guest)
       saveLocalGuest(data.guest)
       saveGuestCookie(data.guest.id)
       setStep("photos")
     } catch (e: unknown) {
-      setSubmitError(e instanceof Error ? e.message : "Terjadi kesalahan")
+      setSubmitError(e instanceof Error ? e.message : "操作失败，请稍后再试")
     } finally {
       setIsSubmitting(false)
     }
@@ -555,7 +563,7 @@ export default function GuestRegistrationModal({ isOpen, onClose, onSuccess }: P
       height: 800,
     }))
     if (items.length === 0) {
-      setPhotoError("Format yang didukung: JPG, PNG, WebP, GIF")
+      setPhotoError("仅支持 JPG、PNG、WebP、GIF 图片")
       return
     }
     setPhotoError("")
@@ -602,8 +610,8 @@ export default function GuestRegistrationModal({ isOpen, onClose, onSuccess }: P
 
   const validateAlbumInline = () => {
     const errs: typeof albumErrors = {}
-    if (!albumForm.name.trim()) errs.name = "Nama album wajib diisi"
-    if (!albumForm.category) errs.category = "Pilih kategori terlebih dahulu"
+    if (!albumForm.name.trim()) errs.name = "请填写相册名称"
+    if (!albumForm.category) errs.category = "请先选择分类"
     setAlbumErrors(errs)
     return Object.keys(errs).length === 0
   }
@@ -611,14 +619,14 @@ export default function GuestRegistrationModal({ isOpen, onClose, onSuccess }: P
   // ─── Submit photos ────────────────────────────────────────────────────────
   const handlePhotosSubmit = useCallback(async () => {
     if (!photos.length) {
-      setPhotoError("Tambahkan setidaknya 1 foto")
+      setPhotoError("请至少添加 1 张照片")
       return
     }
 
     const emptyTitles = photos.filter((p) => !p.title.trim())
     if (emptyTitles.length > 0) {
       setShowTitleErrors(true)
-      setPhotoError(`${emptyTitles.length} foto belum memiliki judul.`)
+      setPhotoError(`还有 ${emptyTitles.length} 张照片没有填写标题。`)
       return
     }
     setShowTitleErrors(false)
@@ -626,7 +634,7 @@ export default function GuestRegistrationModal({ isOpen, onClose, onSuccess }: P
     // Validate inline album form if creating new
     if (selectedAlbumSlug === "new" || showInlineAlbumForm) {
       if (!validateAlbumInline()) {
-        setSubmitError("Lengkapi data album baru terlebih dahulu")
+        setSubmitError("请先补全新相册信息")
         return
       }
     }
@@ -654,7 +662,7 @@ export default function GuestRegistrationModal({ isOpen, onClose, onSuccess }: P
           }),
         })
         const data = await res.json()
-        if (!res.ok) throw new Error(data.error || "Gagal membuat album")
+        if (!res.ok) throw new Error(data.error || "创建相册失败")
 
         finalAlbumSlug = data.album.slug
         finalAlbumName = data.album.name
@@ -673,19 +681,7 @@ export default function GuestRegistrationModal({ isOpen, onClose, onSuccess }: P
       const uploaded: any[] = []
 
       for (const photo of photos) {
-        const ext = photo.file.name.split(".").pop()
-        const path = `photos/${guest.id}/${Date.now()}-${Math.random().toString(36).slice(2, 8)}.${ext}`
-
-        const { error: uploadErr } = await supabase.storage
-          .from("gallery-photos")
-          .upload(path, photo.file, { contentType: photo.file.type, upsert: false })
-
-        if (uploadErr) {
-          console.error("Upload error:", uploadErr.message)
-          continue
-        }
-
-        const { data } = supabase.storage.from("gallery-photos").getPublicUrl(path)
+        const imageUrl = await uploadGalleryImage(photo.file)
 
         // Merge tagInput into tags if there's remaining text
         const finalTags = photo.tagInput.trim()
@@ -693,8 +689,8 @@ export default function GuestRegistrationModal({ isOpen, onClose, onSuccess }: P
           : photo.tags
 
         uploaded.push({
-          imageUrl: data.publicUrl,
-          thumbnailUrl: data.publicUrl,
+          imageUrl,
+          thumbnailUrl: imageUrl,
           title: photo.title,
           description: photo.description,
           location: photo.location,
@@ -705,7 +701,7 @@ export default function GuestRegistrationModal({ isOpen, onClose, onSuccess }: P
         })
       }
 
-      if (!uploaded.length) throw new Error("Tidak ada foto yang berhasil diupload")
+      if (!uploaded.length) throw new Error("没有照片上传成功")
 
       const res = await fetch("/api/gallery/guest/photo", {
         method: "POST",
@@ -720,7 +716,7 @@ export default function GuestRegistrationModal({ isOpen, onClose, onSuccess }: P
         }),
       })
       const data2 = await res.json()
-      if (!res.ok) throw new Error(data2.error || "Gagal menyimpan foto")
+      if (!res.ok) throw new Error(data2.error || "保存照片失败")
 
       // Update local guest counts
       const updatedGuest: GalleryGuest = {
@@ -734,7 +730,7 @@ export default function GuestRegistrationModal({ isOpen, onClose, onSuccess }: P
 
       setStep("success")
     } catch (e: unknown) {
-      setSubmitError(e instanceof Error ? e.message : "Terjadi kesalahan")
+      setSubmitError(e instanceof Error ? e.message : "操作失败，请稍后再试")
     } finally {
       setIsSubmitting(false)
     }
@@ -784,7 +780,7 @@ export default function GuestRegistrationModal({ isOpen, onClose, onSuccess }: P
           {step === "checking" && (
             <div className="flex flex-col items-center justify-center py-10 gap-4">
               <Loader2 className="w-10 h-10 text-accentColor animate-spin" />
-              <p className="text-gray-500 dark:text-gray-400 text-sm">Memeriksa status tamu...</p>
+              <p className="text-gray-500 dark:text-gray-400 text-sm">正在检查访客状态...</p>
             </div>
           )}
 
@@ -796,16 +792,16 @@ export default function GuestRegistrationModal({ isOpen, onClose, onSuccess }: P
                 <div className="inline-flex items-center justify-center w-12 h-12 rounded-2xl bg-accentColor/10 mb-3">
                   <User className="w-6 h-6 text-accentColor" />
                 </div>
-                <h2 className="text-xl font-bold text-gray-900 dark:text-white">Buat Profil Tamu</h2>
+                <h2 className="text-xl font-bold text-gray-900 dark:text-white">创建访客资料</h2>
                 <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
-                  Daftarkan dirimu untuk mulai berbagi foto
+                  填写名称后就可以分享照片
                 </p>
               </div>
 
               {/* Name */}
               <div className="mb-4">
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">
-                  Nama <span className="text-red-400">*</span>
+                  名称 <span className="text-red-400">*</span>
                 </label>
                 <input
                   type="text"
@@ -814,7 +810,7 @@ export default function GuestRegistrationModal({ isOpen, onClose, onSuccess }: P
                     setProfileForm((p) => ({ ...p, name: e.target.value }))
                     setProfileErrors((p) => ({ ...p, name: "" }))
                   }}
-                  placeholder="Masukkan nama kamu..."
+                  placeholder="请输入你的名称..."
                   className={cn(
                     "w-full px-4 py-3 rounded-xl text-sm",
                     "bg-gray-50 dark:bg-gray-800",
@@ -836,16 +832,16 @@ export default function GuestRegistrationModal({ isOpen, onClose, onSuccess }: P
               {/* Avatar */}
               <div className="mb-6">
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">
-                  Foto Profil <span className="text-gray-400 font-normal">(opsional)</span>
+                  头像 <span className="text-gray-400 font-normal">（选填）</span>
                 </label>
 
                 {profileForm.avatarPreview ? (
                   <div className="flex items-center gap-4">
                     <div className="relative w-16 h-16 rounded-full overflow-hidden ring-2 ring-accentColor ring-offset-2 dark:ring-offset-gray-900">
-                      <Image src={profileForm.avatarPreview} alt="Preview" fill className="object-cover" sizes="64px" />
+                      <Image src={profileForm.avatarPreview} alt="头像预览" fill className="object-cover" sizes="64px" />
                     </div>
                     <div>
-                      <p className="text-sm text-gray-700 dark:text-gray-300 font-medium">Foto dipilih</p>
+                      <p className="text-sm text-gray-700 dark:text-gray-300 font-medium">已选择头像</p>
                       <button
                         type="button"
                         onClick={() => {
@@ -854,7 +850,7 @@ export default function GuestRegistrationModal({ isOpen, onClose, onSuccess }: P
                         }}
                         className="text-xs text-red-400 hover:text-red-500 underline mt-0.5"
                       >
-                        Hapus
+                        删除
                       </button>
                     </div>
                   </div>
@@ -866,10 +862,10 @@ export default function GuestRegistrationModal({ isOpen, onClose, onSuccess }: P
                       className="flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-medium border border-dashed border-gray-300 dark:border-gray-600 text-gray-500 dark:text-gray-400 hover:border-accentColor hover:text-accentColor transition-colors w-full justify-center"
                     >
                       <Upload className="w-4 h-4" />
-                      Upload foto profil
+                      上传头像
                     </button>
                     <p className="text-xs text-gray-400 mt-1.5 text-center">
-                      Jika kosong, akan menggunakan inisial nama · JPG, PNG, WebP maksimal 5MB
+                      不上传时会使用名称首字母，支持 JPG、PNG、WebP，最大 5MB
                     </p>
                     <input
                       ref={avatarInputRef}
@@ -903,9 +899,9 @@ export default function GuestRegistrationModal({ isOpen, onClose, onSuccess }: P
                 )}
               >
                 {isSubmitting ? (
-                  <><Loader2 className="w-4 h-4 animate-spin" /> Mendaftarkan...</>
+                  <><Loader2 className="w-4 h-4 animate-spin" /> 正在提交...</>
                 ) : (
-                  "Selanjutnya: Upload Foto →"
+                  "下一步：上传照片 →"
                 )}
               </button>
             </>
@@ -928,19 +924,19 @@ export default function GuestRegistrationModal({ isOpen, onClose, onSuccess }: P
                   )}
                   <div>
                     <p className="text-sm font-semibold text-gray-900 dark:text-white">
-                      Selamat datang, {guest.name}!
+                      欢迎回来，{guest.name}！
                     </p>
                     <p className="text-xs text-gray-500 dark:text-gray-400">
-                      {guest.albumCount ?? 0} album · {guest.photoCount ?? 0} foto
+                      {guest.albumCount ?? 0} 个相册 · {guest.photoCount ?? 0} 张照片
                     </p>
                   </div>
                 </div>
               )}
 
               <div className="flex flex-col gap-1 mb-5">
-                <h2 className="text-xl font-bold text-gray-900 dark:text-white">Upload Foto</h2>
+                <h2 className="text-xl font-bold text-gray-900 dark:text-white">上传照片</h2>
                 <p className="text-sm text-gray-500 dark:text-gray-400">
-                  Pilih atau buat album, lalu tambahkan foto
+                  选择或创建相册，然后添加照片
                 </p>
               </div>
 
@@ -948,7 +944,7 @@ export default function GuestRegistrationModal({ isOpen, onClose, onSuccess }: P
               <div className="mb-5 bg-gray-50 dark:bg-gray-800/50 p-4 rounded-xl border border-gray-100 dark:border-gray-700">
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                   <FolderPlus className="w-4 h-4 inline mr-1.5 text-accentColor" />
-                  Album
+                  相册
                 </label>
 
                 {guestAlbums.length > 0 ? (
@@ -962,13 +958,13 @@ export default function GuestRegistrationModal({ isOpen, onClose, onSuccess }: P
                       {guestAlbums.map((a) => (
                         <option key={a.slug} value={a.slug}>{a.name}</option>
                       ))}
-                      <option value="new">+ Buat Album Baru</option>
+                      <option value="new">+ 创建新相册</option>
                     </select>
                   </>
                 ) : (
                   /* No existing albums — always show new album form */
                   <p className="text-xs text-gray-500 dark:text-gray-400 mb-3">
-                    Belum ada album. Buat album pertama kamu di bawah ini.
+                    暂无相册，请先在下方创建第一个相册。
                   </p>
                 )}
 
@@ -977,7 +973,7 @@ export default function GuestRegistrationModal({ isOpen, onClose, onSuccess }: P
                   <div className={cn("space-y-3", guestAlbums.length > 0 && "mt-4 pt-4 border-t border-gray-200 dark:border-gray-700")}>
                     <div>
                       <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">
-                        Nama Album <span className="text-red-400">*</span>
+                        相册名称 <span className="text-red-400">*</span>
                       </label>
                       <input
                         type="text"
@@ -986,7 +982,7 @@ export default function GuestRegistrationModal({ isOpen, onClose, onSuccess }: P
                           setAlbumForm((p) => ({ ...p, name: e.target.value }))
                           setAlbumErrors((p) => ({ ...p, name: "" }))
                         }}
-                        placeholder="Contoh: Liburan Bali"
+                        placeholder="例如：校园生活"
                         className={cn(
                           "w-full px-3 py-2.5 rounded-lg text-sm border bg-white dark:bg-gray-800 text-gray-900 dark:text-white outline-none transition-colors",
                           albumErrors.name ? "border-red-400" : "border-gray-200 dark:border-gray-700 focus:border-accentColor"
@@ -997,7 +993,7 @@ export default function GuestRegistrationModal({ isOpen, onClose, onSuccess }: P
 
                     <div>
                       <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">
-                        Kategori <span className="text-red-400">*</span>
+                        分类 <span className="text-red-400">*</span>
                       </label>
                       <select
                         value={albumForm.category}
@@ -1010,9 +1006,9 @@ export default function GuestRegistrationModal({ isOpen, onClose, onSuccess }: P
                           albumErrors.category ? "border-red-400" : "border-gray-200 dark:border-gray-700 focus:border-accentColor"
                         )}
                       >
-                        <option value="">Pilih kategori...</option>
+                        <option value="">请选择分类...</option>
                         {GALLERY_CATEGORIES.filter((c) => c !== "Semua").map((cat) => (
-                          <option key={cat} value={cat}>{cat}</option>
+                          <option key={cat} value={cat}>{getGalleryCategoryLabel(cat)}</option>
                         ))}
                       </select>
                       {albumErrors.category && <p className="mt-1 text-[10px] text-red-400">{albumErrors.category}</p>}
@@ -1020,13 +1016,13 @@ export default function GuestRegistrationModal({ isOpen, onClose, onSuccess }: P
 
                     <div>
                       <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">
-                        Deskripsi <span className="text-gray-400 font-normal">(opsional)</span>
+                        描述 <span className="text-gray-400 font-normal">(选填)</span>
                       </label>
                       <textarea
                         value={albumForm.description}
                         onChange={(e) => setAlbumForm((p) => ({ ...p, description: e.target.value }))}
                         rows={2}
-                        placeholder="Ceritakan tentang album ini..."
+                        placeholder="简单介绍这个相册..."
                         className="w-full px-3 py-2 rounded-lg text-sm border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-white outline-none focus:border-accentColor resize-none transition-colors"
                       />
                     </div>
@@ -1078,9 +1074,9 @@ export default function GuestRegistrationModal({ isOpen, onClose, onSuccess }: P
                 )}
               >
                 {isSubmitting ? (
-                  <><Loader2 className="w-4 h-4 animate-spin" /> Mengupload {photos.length} foto...</>
+                  <><Loader2 className="w-4 h-4 animate-spin" /> 正在上传 {photos.length} 张照片...</>
                 ) : (
-                  `Kirim ${photos.length} Foto`
+                  `提交 ${photos.length} 张照片`
                 )}
               </button>
             </>
@@ -1093,20 +1089,19 @@ export default function GuestRegistrationModal({ isOpen, onClose, onSuccess }: P
                 <Check className="w-8 h-8 text-emerald-500" />
               </div>
               <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-2">
-                Foto Berhasil Dikirim!
+                照片提交成功！
               </h2>
               <p className="text-sm text-gray-500 dark:text-gray-400 mb-1">
-                {photos.length} foto di album{" "}
-                <span className="font-semibold text-accentColor">{createdAlbum?.name}</span> sudah terkirim.
+                已向相册 <span className="font-semibold text-accentColor">{createdAlbum?.name}</span> 提交 {photos.length} 张照片。
               </p>
               <p className="text-xs text-gray-400 mb-6">
-                Foto akan ditampilkan setelah disetujui admin. Terima kasih!
+                照片审核通过后会显示在图库中，谢谢！
               </p>
               <button
                 onClick={handleClose}
                 className="px-8 py-3 rounded-xl bg-accentColor hover:bg-accentColor/80 text-white text-sm font-semibold transition-all"
               >
-                Tutup
+                关闭
               </button>
             </div>
           )}

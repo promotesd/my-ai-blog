@@ -6,7 +6,7 @@ import Image from "@tiptap/extension-image"
 import Link from "@tiptap/extension-link"
 import Underline from "@tiptap/extension-underline"
 import Placeholder from "@tiptap/extension-placeholder"
-import { useEffect } from "react"
+import { useEffect, useRef } from "react"
 import {
   Bold,
   Italic,
@@ -23,6 +23,8 @@ import {
   Heading4,
   Link as LinkIcon,
   ImageIcon,
+  ImageUp,
+  SmilePlus,
   Undo,
   Redo,
 } from "lucide-react"
@@ -39,6 +41,7 @@ export default function RichTextEditor({
   onChange,
   placeholder = "Tulis konten artikel di sini...",
 }: RichTextEditorProps) {
+  const imageInputRef = useRef<HTMLInputElement>(null)
   const editor = useEditor({
     immediatelyRender: false,
     extensions: [
@@ -95,8 +98,33 @@ export default function RichTextEditor({
   )
 
   const addImage = () => {
-    const url = window.prompt("Masukkan URL gambar:")
+    const url = window.prompt("输入图片 URL:")
     if (url) editor.chain().focus().setImage({ src: url }).run()
+  }
+
+  const uploadImage = async (file?: File) => {
+    if (!file) return
+    const formData = new FormData()
+    formData.append("file", file)
+    formData.append("category", "general")
+    const token = localStorage.getItem("portfolio-admin-token")
+    const response = await fetch("/api/upload/files", {
+      method: "POST",
+      headers: token ? { Authorization: `Bearer ${token}` } : {},
+      body: formData,
+    })
+    const body = await response.json().catch(() => null)
+    if (!response.ok || body?.code >= 400) {
+      window.alert(body?.message || "图片上传失败")
+      return
+    }
+    const url = body?.data?.url
+    if (url) editor.chain().focus().setImage({ src: url }).run()
+  }
+
+  const addEmoji = () => {
+    const emoji = window.prompt("输入 emoji:", "😊")
+    if (emoji) editor.chain().focus().insertContent(emoji).run()
   }
 
   const setLink = () => {
@@ -220,6 +248,22 @@ export default function RichTextEditor({
         </ToolbarBtn>
         <ToolbarBtn title="Insert Image (URL)" onClick={addImage}>
           <ImageIcon size={15} />
+        </ToolbarBtn>
+        <input
+          ref={imageInputRef}
+          type="file"
+          accept="image/png,image/jpeg,image/webp,image/gif"
+          className="hidden"
+          onChange={(event) => {
+            uploadImage(event.target.files?.[0])
+            event.target.value = ""
+          }}
+        />
+        <ToolbarBtn title="Upload Image" onClick={() => imageInputRef.current?.click()}>
+          <ImageUp size={15} />
+        </ToolbarBtn>
+        <ToolbarBtn title="Emoji" onClick={addEmoji}>
+          <SmilePlus size={15} />
         </ToolbarBtn>
       </div>
 

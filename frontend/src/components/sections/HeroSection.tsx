@@ -2,7 +2,6 @@
 
 import HeroLines from "@/assets/hero/hero-lines.png"
 import Image from "next/image"
-import SocialLinks from "../SocialLinks" 
 import HeroContent from "./HeroContent"
 import HeroTool from "./HeroTools"
 
@@ -21,7 +20,6 @@ export default function HeroSection() {
       />
       <HeroTool />
       <HeroContent />
-      <SocialLinks />
     </section>
   )
 }

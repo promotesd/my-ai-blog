@@ -31,6 +31,16 @@ const CATEGORY_EMOJI: Record<WatchReadCategory | "all", string> = {
   Cartoon: "🎨",
 };
 
+const CATEGORY_LABEL: Record<WatchReadCategory | "all", string> = {
+  all: "全部",
+  Movie: "电影",
+  Anime: "动漫",
+  Manhwa: "韩漫",
+  Donghua: "国漫",
+  Manga: "漫画",
+  Cartoon: "动画",
+};
+
 const STATUS_COLOR: Record<WatchReadStatus, string> = {
   watching: "bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-300",
   completed: "bg-green-100 text-green-700 dark:bg-green-900/40 dark:text-green-300",
@@ -146,10 +156,10 @@ export default function WatchReadSection({ globalSearch }: { globalSearch?: stri
   const STATUSES: (WatchReadStatus | "all")[] = ["all", "watching", "reading", "completed", "plan_to_watch"];
   
   const SORT_OPTIONS: { value: SortOption; label: string }[] = [
-    { value: "newest", label: "Terbaru" },
-    { value: "rating", label: "Rating Tertinggi" },
+    { value: "newest", label: "最新添加" },
+    { value: "rating", label: "评分最高" },
     { value: "az",     label: "A - Z" },
-    { value: "oldest", label: "Terlama" },
+    { value: "oldest", label: "最早添加" },
   ];
 
   return (
@@ -233,7 +243,7 @@ export default function WatchReadSection({ globalSearch }: { globalSearch?: stri
             )}
           >
             <span>{CATEGORY_EMOJI[cat]}</span>
-            {cat === "all" ? t("all") : cat}
+            {cat === "all" ? t("all") : CATEGORY_LABEL[cat]}
           </button>
         ))}
       </div>
@@ -323,7 +333,7 @@ function WatchReadCard({
         
         {/* Category badge */}
         <span className="absolute top-2 left-2 text-[9px] font-bold px-1.5 py-0.5 rounded-md bg-black/60 text-white backdrop-blur-sm">
-          {item.category}
+          {CATEGORY_LABEL[item.category as WatchReadCategory] ?? item.category}
         </span>
         
         {/* TMDB Rating overlay */}

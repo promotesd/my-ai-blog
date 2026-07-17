@@ -167,19 +167,5 @@ CREATE TABLE IF NOT EXISTS popular_project (
   CONSTRAINT fk_popular_project_project FOREIGN KEY (project_id) REFERENCES project(id) ON DELETE CASCADE
 );
 
-INSERT IGNORE INTO blog (slug, title, payload, status, sort_order, visible) VALUES
-('building-scalable-backends', 'Building Scalable Backends',
- JSON_OBJECT('description', 'Notes about API design, caching, and maintainable backend systems.', 'content', 'This portfolio is now backed by Spring Boot, MySQL, and Redis.', 'author', 'Agung Kurniawan'),
- 'published', 1, 1);
-
-INSERT IGNORE INTO skill (title, payload, sort_order, visible) VALUES
-('Java', JSON_OBJECT('name', 'Java', 'category', 'Backend', 'level', 88), 1, 1),
-('Spring Boot', JSON_OBJECT('name', 'Spring Boot', 'category', 'Backend', 'level', 86), 2, 1),
-('MySQL', JSON_OBJECT('name', 'MySQL', 'category', 'Database', 'level', 84), 3, 1),
-('Redis', JSON_OBJECT('name', 'Redis', 'category', 'Database', 'level', 72), 4, 1);
-
 INSERT IGNORE INTO portfolio_stats (title, payload, sort_order, visible) VALUES
-('Portfolio Stats', JSON_OBJECT('projects', 12, 'years_experience', 4, 'technologies', 20, 'certificates', 3), 1, 1);
-
-INSERT IGNORE INTO guestbook (name, message, fingerprint, visible) VALUES
-('Portfolio Visitor', 'Welcome to the Spring Boot powered guestbook.', 'seed-guestbook-entry', 1);
+('Portfolio Stats', JSON_OBJECT('projects', 0, 'years_experience', 0, 'technologies', 0, 'certificates', 0, 'contributions', 0), 1, 1);

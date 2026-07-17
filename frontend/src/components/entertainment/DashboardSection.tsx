@@ -5,7 +5,7 @@ import { Gamepad2, MonitorPlay, Music, BookOpen, Clock } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { cn } from "@/lib/utils";
 import { EntertainmentTab } from "@/types/entertainment";
-import { STEAM_GAMES_FALLBACK } from "@/data/entertainmentData";
+import { fetchSteamGames } from "@/lib/entertainmentApi";
 import { StatCardSkeleton } from "./EntertainmentSkeletons";
 
 interface StatCardProps {
@@ -68,7 +68,7 @@ function StatCard({ icon, label, value, suffix = "", color, bgColor, tab, descri
         <div className={cn("p-2.5 rounded-xl", bgColor, "bg-opacity-15 dark:bg-opacity-20")}>
           <span className={cn(color)}>{icon}</span>
         </div>
-        <span className="text-[10px] text-gray-400 dark:text-gray-500 opacity-0 group-hover:opacity-100 transition-opacity">{description ?? "Click to view"} →</span>
+        <span className="text-[10px] text-gray-400 dark:text-gray-500 opacity-0 group-hover:opacity-100 transition-opacity">{description ?? "查看详情"} →</span>
       </div>
       <p className={cn("text-3xl font-extrabold tracking-tight", color)}>
         {count.toLocaleString()}<span className="text-lg ml-0.5">{suffix}</span>
@@ -89,16 +89,14 @@ export default function DashboardSection({ onTabClick }: { onTabClick: (tab: Ent
 
   // Steam games
   useEffect(() => {
-    fetch("/api/steam-games")
-      .then((r) => r.json())
-      .then((data) => {
-        const games = data.response?.games ?? STEAM_GAMES_FALLBACK;
-        setTotalGames(games.length || STEAM_GAMES_FALLBACK.length);
-        setTotalHours(Math.floor(games.reduce((s: number, g: { playtime_forever: number }) => s + g.playtime_forever, 0) / 60) || Math.floor(STEAM_GAMES_FALLBACK.reduce((s, g) => s + g.playtime_forever, 0) / 60));
+    fetchSteamGames()
+      .then((games) => {
+        setTotalGames(games.length);
+        setTotalHours(Math.floor(games.reduce((sum, game) => sum + game.playtime_forever, 0) / 60));
       })
       .catch(() => {
-        setTotalGames(STEAM_GAMES_FALLBACK.length);
-        setTotalHours(Math.floor(STEAM_GAMES_FALLBACK.reduce((s, g) => s + g.playtime_forever, 0) / 60));
+        setTotalGames(0);
+        setTotalHours(0);
       })
       .finally(() => setSteamLoaded(true));
   }, []);

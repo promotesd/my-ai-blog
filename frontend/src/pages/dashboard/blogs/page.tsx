@@ -3,7 +3,7 @@
 import React, { useState, useMemo, useEffect } from "react"
 import {
   Search, Plus, Edit2, Trash2, BookOpen, Clock,
-  Users, Shield, ChevronLeft, ChevronRight, X,
+  Shield, ChevronLeft, ChevronRight, X,
   Tag, RefreshCw, ListFilter, Database, Menu,
   AlertCircle, CheckCircle2, CheckSquare
 } from "lucide-react"
@@ -38,15 +38,15 @@ interface BlogEntry {
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
 function blogToEntry(blog: any): BlogEntry {
-  const authorName = blog.author?.name || blog.author_name || "Unknown Author"
+  const authorName = blog.author?.name || blog.author_name || "小嘟嘟"
   const authorEmail = blog.author?.email || blog.author_email || ""
   const authorPhone = blog.author?.phone || blog.author_phone || ""
   const authorAvatar = blog.author?.avatar || blog.author_avatar || ""
-  const authorType = blog.author?.type || blog.author_type || "visitor"
+  const authorType = blog.author?.type || blog.author_type || "developer"
 
   return {
     id: blog.id,
-    title: blog.title || "Untitled",
+    title: blog.title || "无标题文章",
     excerpt: blog.excerpt || "",
     content: blog.content || "",
     thumbnail: blog.thumbnail || "",
@@ -69,6 +69,18 @@ const CATEGORIES = [
   "Programming", "Design", "General", "News", "Career",
 ]
 
+const CATEGORY_LABELS: Record<string, string> = {
+  All: "全部分类",
+  Technology: "技术",
+  Tutorial: "教程",
+  "Tips & Tricks": "技巧",
+  Programming: "编程",
+  Design: "设计",
+  General: "随笔",
+  News: "动态",
+  Career: "学习规划",
+}
+
 const CATEGORY_STYLE: Record<string, string> = {
   Technology:      "bg-blue-500/15 text-blue-400 border-blue-500/20",
   Tutorial:        "bg-emerald-500/15 text-emerald-400 border-emerald-500/20",
@@ -82,16 +94,11 @@ const CATEGORY_STYLE: Record<string, string> = {
 
 const ITEMS_PER_PAGE = 5
 
-const MONTHS_SHORT = ["Jan","Feb","Mar","Apr","Mei","Jun","Jul","Agu","Sep","Okt","Nov","Des"]
+const MONTHS_SHORT = ["1月","2月","3月","4月","5月","6月","7月","8月","9月","10月","11月","12月"]
 
 function formatDate(iso: string) {
   const d = new Date(iso)
   return `${d.getDate()} ${MONTHS_SHORT[d.getMonth()]} ${d.getFullYear()}`
-}
-
-function getInitials(name: string) {
-  if (!name) return "U"
-  return name.split(" ").slice(0, 2).map((n) => n[0]).join("").toUpperCase()
 }
 
 function generateId() {
@@ -120,13 +127,12 @@ export default function BlogsDashboardPage() {
 
   const [search, setSearch] = useState("")
   const [filterCategory, setFilterCategory] = useState("All")
-  const [filterType, setFilterType] = useState<"all" | "developer" | "visitor">("all")
   const [page, setPage] = useState(1)
   
   const [saving, setSaving] = useState(false)
   const [isDeletingBulk, setIsDeletingBulk] = useState(false)
   const [toast, setToast] = useState<ToastMsg | null>(null)
-  const STORAGE_BUCKET = process.env.NEXT_PUBLIC_SUPABASE_STORAGE_BUCKET || "blog-thumbnails"
+  const STORAGE_BUCKET = "blog-thumbnails"
 
   // Checkbox State
   const [selectedIds, setSelectedIds] = useState<string[]>([])
@@ -154,7 +160,7 @@ export default function BlogsDashboardPage() {
   // Reset checkboxes if page or filter changes
   useEffect(() => {
     setSelectedIds([])
-  }, [page, search, filterCategory, filterType])
+  }, [page, search, filterCategory])
 
   // Auto-dismiss toast
   useEffect(() => {
@@ -175,17 +181,15 @@ export default function BlogsDashboardPage() {
         (b.category?.toLowerCase() || "").includes(q) ||
         (b.tags || []).some((t) => (t?.toLowerCase() || "").includes(q))
       const matchCat = filterCategory === "All" || b.category === filterCategory
-      const matchType = filterType === "all" || b.author_type === filterType
-      return matchSearch && matchCat && matchType
+      return matchSearch && matchCat
     })
-  }, [blogs, search, filterCategory, filterType])
+  }, [blogs, search, filterCategory])
 
   const totalPages = Math.ceil(filtered.length / ITEMS_PER_PAGE)
   const paginated = filtered.slice((page - 1) * ITEMS_PER_PAGE, page * ITEMS_PER_PAGE)
 
   const totalBlogs = blogs.length
   const devBlogs = blogs.filter((b) => b.author_type === "developer").length
-  const visitorBlogs = blogs.filter((b) => b.author_type === "visitor").length
   const categoryCount = new Set(blogs.map((b) => b.category)).size
 
   // ─── Selection Handlers ───────────────────────────────────────────────────
@@ -270,7 +274,7 @@ export default function BlogsDashboardPage() {
         if (!result.success) error = { message: result.error as string }
       } else {
         const idToUpdate = data.id || formModal.data?.id
-        if (!idToUpdate) throw new Error("ID tidak ditemukan untuk update.")
+        if (!idToUpdate) throw new Error("没有找到要更新的文章 ID。")
 
         const result = await saveBlogOnServer(row, "edit", idToUpdate)
         if (!result.success) error = { message: result.error as string }
@@ -283,12 +287,12 @@ export default function BlogsDashboardPage() {
         setFormModal({ open: false, mode: "create" })
         setToast({
           type: "success",
-          text: formModal.mode === "create" ? "Blog post berhasil dibuat." : "Blog post berhasil diperbarui.",
+          text: formModal.mode === "create" ? "文章创建成功。" : "文章更新成功。",
         })
       }
     } catch (err: any) {
       console.error("Save Error:", err)
-      setToast({ type: "error", text: `Gagal menyimpan: ${err.message}` })
+      setToast({ type: "error", text: `保存失败：${err.message}` })
     } finally {
       setSaving(false)
     }
@@ -318,11 +322,11 @@ export default function BlogsDashboardPage() {
 
       await fetchBlogs()
       setSelectedIds(prev => prev.filter(id => id !== deleteModal.id))
-      setToast({ type: "success", text: "Blog post dan thumbnail berhasil dihapus." })
+      setToast({ type: "success", text: "文章已删除。" })
 
     } catch (err: any) {
       console.error("Delete Error:", err)
-      setToast({ type: "error", text: `Gagal menghapus: ${err.message}` })
+      setToast({ type: "error", text: `删除失败：${err.message}` })
     } finally {
       setDeleteModal({ open: false, id: "", title: "" })
     }
@@ -351,15 +355,14 @@ export default function BlogsDashboardPage() {
       await fetchBlogs()
       setSelectedIds([])
       
-      // Hitung ulang total halaman jika yang dihapus adalah semua yang ada di page saat ini
       const newTotal = filtered.length - itemsToDelete.length
       const maxPage = Math.ceil(newTotal / ITEMS_PER_PAGE) || 1
       if (page > maxPage) setPage(maxPage)
 
-      setToast({ type: "success", text: `${result.count} Blog post berhasil dihapus.` })
+      setToast({ type: "success", text: `${result.count} 篇文章已删除。` })
     } catch (err: any) {
       console.error("Bulk Delete Error:", err)
-      setToast({ type: "error", text: `Gagal menghapus: ${err.message}` })
+      setToast({ type: "error", text: `删除失败：${err.message}` })
     } finally {
       setIsDeletingBulk(false)
       setBulkDeleteModal(false)
@@ -369,11 +372,10 @@ export default function BlogsDashboardPage() {
   function resetFilters() {
     setSearch("")
     setFilterCategory("All")
-    setFilterType("all")
     setPage(1)
   }
 
-  const hasActiveFilters = search || filterCategory !== "All" || filterType !== "all"
+  const hasActiveFilters = search || filterCategory !== "All"
 
   // ─── Render ───────────────────────────────────────────────────────────────
 
@@ -387,7 +389,7 @@ export default function BlogsDashboardPage() {
             <button
               onClick={toggleSidebar}
               className="p-2 -ml-1 rounded-xl hover:bg-white/[0.06] text-gray-400 hover:text-gray-200 transition-colors md:hidden"
-              aria-label="Toggle sidebar"
+              aria-label="切换侧边栏"
             >
               <Menu size={18} />
             </button>
@@ -395,9 +397,9 @@ export default function BlogsDashboardPage() {
               <BookOpen size={14} className="text-accentColor" />
             </div>
             <div>
-              <h1 className="text-sm font-semibold text-white leading-tight">Blog Manager</h1>
+              <h1 className="text-sm font-semibold text-white leading-tight">博客管理</h1>
               <p className="text-[10px] text-gray-500 leading-tight hidden sm:block">
-                Kelola tabel <span className="font-mono text-gray-400">public.blogs</span>
+                管理小嘟嘟自己的博客文章
               </p>
             </div>
           </div>
@@ -409,7 +411,7 @@ export default function BlogsDashboardPage() {
                 className="flex items-center gap-2 px-3 sm:px-4 py-2 text-xs sm:text-sm font-medium bg-red-500/10 text-red-400 border border-red-500/20 rounded-xl hover:bg-red-500/20 hover:border-red-500/30 transition-all"
               >
                 <Trash2 size={14} />
-                <span className="hidden sm:inline">Hapus ({selectedIds.length})</span>
+                <span className="hidden sm:inline">删除 ({selectedIds.length})</span>
                 <span className="sm:hidden">({selectedIds.length})</span>
               </button>
             )}
@@ -418,8 +420,8 @@ export default function BlogsDashboardPage() {
               className="flex items-center gap-2 px-3 sm:px-4 py-2 text-xs sm:text-sm font-medium bg-accentColor text-white rounded-xl hover:brightness-[0.85] transition-all hover:shadow-lg hover:shadow-accentColor/20"
             >
               <Plus size={14} />
-              <span className="hidden sm:inline">New Post</span>
-              <span className="sm:hidden">Baru</span>
+              <span className="hidden sm:inline">写文章</span>
+              <span className="sm:hidden">写</span>
             </button>
           </div>
         </div>
@@ -430,34 +432,34 @@ export default function BlogsDashboardPage() {
           {/* ── Stats ── */}
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4">
             <StatCard
-              label="Total Blog Posts"
+              label="文章总数"
               value={totalBlogs}
               icon={<Database size={15} className="text-gray-400" />}
               color="default"
               loading={loading}
             />
             <StatCard
-              label="Developer Posts"
+              label="我的文章"
               value={devBlogs}
               icon={<Shield size={15} className="text-accentColor" />}
               color="green"
-              sub={totalBlogs > 0 ? `${Math.round((devBlogs / totalBlogs) * 100)}% dari total` : undefined}
+              sub={totalBlogs > 0 ? `${Math.round((devBlogs / totalBlogs) * 100)}%` : undefined}
               loading={loading}
             />
             <StatCard
-              label="Visitor Posts"
-              value={visitorBlogs}
-              icon={<Users size={15} className="text-blue-400" />}
+              label="草稿占位"
+              value={0}
+              icon={<BookOpen size={15} className="text-blue-400" />}
               color="blue"
-              sub={totalBlogs > 0 ? `${Math.round((visitorBlogs / totalBlogs) * 100)}% dari total` : undefined}
+              sub="后续接入"
               loading={loading}
             />
             <StatCard
-              label="Kategori Aktif"
+              label="分类数量"
               value={categoryCount}
               icon={<Tag size={15} className="text-purple-400" />}
               color="purple"
-              sub="dari 8 kategori"
+              sub="当前分类"
               loading={loading}
             />
           </div>
@@ -474,7 +476,7 @@ export default function BlogsDashboardPage() {
                 type="text"
                 value={search}
                 onChange={(e) => { setSearch(e.target.value); setPage(1) }}
-                placeholder="Cari judul, penulis, tag..."
+                placeholder="搜索标题、分类或标签..."
                 className="w-full pl-9 pr-9 py-2.5 bg-white/[0.04] border border-white/[0.08] rounded-xl text-sm text-gray-200 placeholder:text-gray-600 outline-none focus:border-accentColor/50 transition-colors"
               />
               {search && (
@@ -496,20 +498,10 @@ export default function BlogsDashboardPage() {
                   className="w-full sm:w-auto pl-8 pr-8 py-2.5 bg-white/[0.04] border border-white/[0.08] rounded-xl text-sm text-gray-300 outline-none focus:border-accentColor/50 transition-colors appearance-none cursor-pointer"
                 >
                   {CATEGORIES.map((c) => (
-                    <option key={c} value={c} className="bg-[#0d1a1a]">{c}</option>
+                    <option key={c} value={c} className="bg-[#0d1a1a]">{CATEGORY_LABELS[c] || c}</option>
                   ))}
                 </select>
               </div>
-
-              <select
-                value={filterType}
-                onChange={(e) => { setFilterType(e.target.value as typeof filterType); setPage(1) }}
-                className="flex-1 sm:flex-none px-3 py-2.5 bg-white/[0.04] border border-white/[0.08] rounded-xl text-sm text-gray-300 outline-none focus:border-accentColor/50 transition-colors appearance-none cursor-pointer"
-              >
-                <option value="all" className="bg-[#0d1a1a]">Semua Tipe</option>
-                <option value="developer" className="bg-[#0d1a1a]">Developer</option>
-                <option value="visitor" className="bg-[#0d1a1a]">Visitor</option>
-              </select>
 
               {hasActiveFilters && (
                 <button
@@ -517,7 +509,7 @@ export default function BlogsDashboardPage() {
                   className="flex items-center gap-1.5 px-3 py-2.5 text-xs text-gray-400 hover:text-gray-200 border border-white/[0.08] hover:border-white/20 rounded-xl transition-all shrink-0"
                 >
                   <RefreshCw size={12} />
-                  <span className="hidden sm:inline">Reset</span>
+                  <span className="hidden sm:inline">重置</span>
                 </button>
               )}
             </div>
@@ -576,18 +568,17 @@ export default function BlogsDashboardPage() {
                           />
                         </th>
                         <th className="text-left text-[10px] font-semibold text-gray-500 uppercase tracking-widest px-2 py-3.5 w-8">#</th>
-                        <th className="text-left text-[10px] font-semibold text-gray-500 uppercase tracking-widest px-4 py-3.5">Post</th>
-                        <th className="text-left text-[10px] font-semibold text-gray-500 uppercase tracking-widest px-4 py-3.5 w-32">Kategori</th>
-                        <th className="text-left text-[10px] font-semibold text-gray-500 uppercase tracking-widest px-4 py-3.5 w-44">Author</th>
-                        <th className="text-left text-[10px] font-semibold text-gray-500 uppercase tracking-widest px-4 py-3.5 w-28">Published</th>
-                        <th className="text-left text-[10px] font-semibold text-gray-500 uppercase tracking-widest px-4 py-3.5 w-20">Tags</th>
-                        <th className="text-right text-[10px] font-semibold text-gray-500 uppercase tracking-widest px-5 py-3.5 w-24">Aksi</th>
+                        <th className="text-left text-[10px] font-semibold text-gray-500 uppercase tracking-widest px-4 py-3.5">文章</th>
+                        <th className="text-left text-[10px] font-semibold text-gray-500 uppercase tracking-widest px-4 py-3.5 w-32">分类</th>
+                        <th className="text-left text-[10px] font-semibold text-gray-500 uppercase tracking-widest px-4 py-3.5 w-28">发布时间</th>
+                        <th className="text-left text-[10px] font-semibold text-gray-500 uppercase tracking-widest px-4 py-3.5 w-20">标签</th>
+                        <th className="text-right text-[10px] font-semibold text-gray-500 uppercase tracking-widest px-5 py-3.5 w-24">操作</th>
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-white/[0.04]">
                       {paginated.length === 0 ? (
                         <tr>
-                          <td colSpan={8} className="text-center py-16">
+                          <td colSpan={7} className="text-center py-16">
                             <EmptyState onReset={resetFilters} />
                           </td>
                         </tr>
@@ -611,13 +602,13 @@ export default function BlogsDashboardPage() {
                 {/* Table footer */}
                 <div className="flex flex-col sm:flex-row items-center justify-between gap-2 px-5 py-3.5 border-t border-white/[0.06] bg-white/[0.02]">
                   <p className="text-xs text-gray-500">
-                    Menampilkan{" "}
+                    显示{" "}
                     <span className="text-gray-300 font-medium">
                       {filtered.length === 0 ? 0 : Math.min((page - 1) * ITEMS_PER_PAGE + 1, filtered.length)}–
                       {Math.min(page * ITEMS_PER_PAGE, filtered.length)}
                     </span>{" "}
-                    dari{" "}
-                    <span className="text-gray-300 font-medium">{filtered.length}</span> entri
+                    共{" "}
+                    <span className="text-gray-300 font-medium">{filtered.length}</span> 篇
                   </p>
                   <Pagination page={page} totalPages={totalPages} onPageChange={setPage} />
                 </div>
@@ -666,10 +657,10 @@ export default function BlogsDashboardPage() {
                 <AlertCircle size={26} className="text-red-400" />
               </div>
               <div>
-                <h3 className="text-lg font-semibold text-white mb-1.5">Hapus {selectedIds.length} Data Sekaligus?</h3>
+                <h3 className="text-lg font-semibold text-white mb-1.5">删除 {selectedIds.length} 篇文章？</h3>
                 <p className="text-sm text-gray-400 leading-relaxed">
-                  Apakah Anda yakin ingin menghapus {selectedIds.length} data yang dicentang beserta gambar thumbnail-nya? <br/>
-                  <span className="font-semibold text-gray-300">Tindakan ini tidak dapat dibatalkan.</span>
+                  确定要删除选中的文章和相关封面图吗？<br/>
+                  <span className="font-semibold text-gray-300">此操作不可撤销。</span>
                 </p>
               </div>
             </div>
@@ -679,14 +670,14 @@ export default function BlogsDashboardPage() {
                 disabled={isDeletingBulk} 
                 className="flex-1 py-2.5 text-sm font-medium text-gray-400 hover:text-white bg-white/[0.04] hover:bg-white/[0.08] border border-white/[0.08] rounded-xl transition-all disabled:opacity-50"
               >
-                Batal
+                取消
               </button>
               <button 
                 onClick={handleBulkDelete} 
                 disabled={isDeletingBulk} 
                 className="flex-1 flex items-center justify-center gap-2 py-2.5 text-sm font-medium text-white bg-red-500/90 hover:bg-red-500 rounded-xl transition-all disabled:opacity-50"
               >
-                {isDeletingBulk ? <RefreshCw size={16} className="animate-spin" /> : "Ya, Hapus Semua"}
+                {isDeletingBulk ? <RefreshCw size={16} className="animate-spin" /> : "确认删除"}
               </button>
             </div>
           </div>
@@ -758,9 +749,9 @@ function EmptyState({ onReset }: { onReset: () => void }) {
   return (
     <div className="flex flex-col items-center gap-3 py-14 text-gray-500">
       <BookOpen size={28} className="opacity-30" />
-      <p className="text-sm">Tidak ada blog yang cocok.</p>
+      <p className="text-sm">没有找到文章。</p>
       <button onClick={onReset} className="text-xs text-accentColor hover:underline">
-        Reset filter
+        重置筛选
       </button>
     </div>
   )
@@ -806,8 +797,6 @@ function StatCard({ label, value, icon, color, sub, loading }: { label: string, 
 // ─── BlogCard (mobile) ────────────────────────────────────────────────────────
 
 function BlogCard({ blog, rowNum, onEdit, onDelete, isSelected, onToggle }: { blog: BlogEntry, rowNum: number, onEdit: () => void, onDelete: () => void, isSelected: boolean, onToggle: () => void }) {
-  const isDev = blog.author_type === "developer"
-
   return (
     <div className={cn("rounded-2xl border bg-white/[0.02] p-4 space-y-3 transition-colors", isSelected ? "border-accentColor/40 bg-accentColor/5" : "border-white/[0.07]")}>
       {/* Top row: Checkbox, thumbnail + meta */}
@@ -843,14 +832,10 @@ function BlogCard({ blog, rowNum, onEdit, onDelete, isSelected, onToggle }: { bl
       {/* Meta row */}
       <div className="flex items-center gap-2 flex-wrap pl-7">
         <span className={cn("text-[11px] font-medium px-2.5 py-1 rounded-lg border", CATEGORY_STYLE[blog.category] ?? "bg-gray-500/15 text-gray-400 border-gray-500/20")}>
-          {blog.category}
+          {CATEGORY_LABELS[blog.category] || blog.category}
         </span>
-        <span className={cn("text-[10px] font-semibold px-1.5 py-0.5 rounded-md", isDev ? "text-accentColor bg-accentColor/10" : "text-blue-400 bg-blue-500/10")}>
-          {isDev ? "DEV" : "VISITOR"}
-        </span>
-        <span className="text-[11px] text-gray-500">{blog.author_name}</span>
         <span className="text-[11px] text-gray-600 flex items-center gap-1">
-          <Clock size={9} /> {blog.reading_time} min
+          <Clock size={9} /> {blog.reading_time} 分钟
         </span>
       </div>
 
@@ -883,8 +868,6 @@ function BlogCard({ blog, rowNum, onEdit, onDelete, isSelected, onToggle }: { bl
 // ─── BlogTableRow (desktop) ───────────────────────────────────────────────────
 
 function BlogTableRow({ blog, rowNum, onEdit, onDelete, isSelected, onToggle }: { blog: BlogEntry, rowNum: number, onEdit: () => void, onDelete: () => void, isSelected: boolean, onToggle: () => void }) {
-  const isDev = blog.author_type === "developer"
-
   return (
     <tr className={cn("group transition-colors", isSelected ? "bg-accentColor/5" : "hover:bg-white/[0.025]")}>
       <td className="px-4 py-3.5">
@@ -921,33 +904,15 @@ function BlogTableRow({ blog, rowNum, onEdit, onDelete, isSelected, onToggle }: 
 
       <td className="px-4 py-3.5">
         <span className={cn("text-[11px] font-medium px-2.5 py-1 rounded-lg border", CATEGORY_STYLE[blog.category] ?? "bg-gray-500/15 text-gray-400 border-gray-500/20")}>
-          {blog.category}
+          {CATEGORY_LABELS[blog.category] || blog.category}
         </span>
-      </td>
-
-      <td className="px-4 py-3.5">
-        <div className="flex items-center gap-2">
-          <div className={cn("w-7 h-7 rounded-full flex items-center justify-center text-[10px] font-bold shrink-0 overflow-hidden", isDev ? "bg-accentColor/20 text-accentColor" : "bg-white/[0.08] text-gray-400")}>
-            {blog.author_avatar ? (
-              <img src={blog.author_avatar} alt={blog.author_name} className="w-full h-full object-cover" />
-            ) : (
-              getInitials(blog.author_name)
-            )}
-          </div>
-          <div className="min-w-0">
-            <p className="text-xs font-medium text-gray-300 truncate max-w-[110px]">{blog.author_name}</p>
-            <span className={cn("text-[10px] font-semibold px-1.5 py-0.5 rounded-md", isDev ? "text-accentColor bg-accentColor/10" : "text-blue-400 bg-blue-500/10")}>
-              {isDev ? "DEV" : "VISITOR"}
-            </span>
-          </div>
-        </div>
       </td>
 
       <td className="px-4 py-3.5">
         <div className="space-y-0.5">
           <p className="text-xs text-gray-300">{formatDate(blog.published_at)}</p>
           <div className="flex items-center gap-1 text-[10px] text-gray-600">
-            <Clock size={9} /> {blog.reading_time} min read
+            <Clock size={9} /> {blog.reading_time} 分钟
           </div>
         </div>
       </td>
@@ -967,10 +932,10 @@ function BlogTableRow({ blog, rowNum, onEdit, onDelete, isSelected, onToggle }: 
 
       <td className="px-5 py-3.5">
         <div className="flex items-center justify-end gap-1.5">
-          <button onClick={onEdit} className="p-2 rounded-xl text-gray-500 hover:text-accentColor hover:bg-accentColor/10 border border-transparent hover:border-accentColor/20 transition-all" title="Edit">
+          <button onClick={onEdit} className="p-2 rounded-xl text-gray-500 hover:text-accentColor hover:bg-accentColor/10 border border-transparent hover:border-accentColor/20 transition-all" title="编辑">
             <Edit2 size={13} />
           </button>
-          <button onClick={onDelete} className="p-2 rounded-xl text-gray-500 hover:text-red-400 hover:bg-red-500/10 border border-transparent hover:border-red-500/20 transition-all" title="Hapus">
+          <button onClick={onDelete} className="p-2 rounded-xl text-gray-500 hover:text-red-400 hover:bg-red-500/10 border border-transparent hover:border-red-500/20 transition-all" title="删除">
             <Trash2 size={13} />
           </button>
         </div>

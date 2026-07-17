@@ -70,10 +70,10 @@ export default function GuestFormModal({ isOpen, mode, initialData, onClose, onS
             </div>
             <div>
               <h3 className="text-base font-semibold text-white leading-tight">
-                {mode === "create" ? "Tambah Tamu Baru" : "Edit Profil Tamu"}
+                {mode === "create" ? "添加访客" : "编辑访客资料"}
               </h3>
               <p className="text-xs text-gray-400 mt-0.5">
-                {mode === "create" ? "Daftarkan tamu baru ke gallery." : `Ubah profil tamu (ID: ${formData.id}).`}
+                {mode === "create" ? "添加一位图库访客。" : `编辑访客资料（ID：${formData.id}）。`}
               </p>
             </div>
           </div>
@@ -86,11 +86,11 @@ export default function GuestFormModal({ isOpen, mode, initialData, onClose, onS
         <div className="flex-1 overflow-y-auto p-6 scrollbar-none">
           <form id="guest-form" onSubmit={handleSubmit} className="space-y-5">
             <div className="space-y-1.5">
-              <label className="text-xs font-medium text-gray-300 ml-1">Nama Tamu <span className="text-red-400">*</span></label>
+              <label className="text-xs font-medium text-gray-300 ml-1">访客名称 <span className="text-red-400">*</span></label>
               <input
                 required
                 type="text"
-                placeholder="Misal: John Doe"
+                placeholder="输入访客名称"
                 value={formData.name}
                 onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                 className="w-full px-4 py-2.5 bg-white/[0.03] border border-white/[0.08] rounded-xl text-sm text-white placeholder:text-gray-600 outline-none focus:border-accentColor/50 focus:bg-white/[0.05] transition-all"
@@ -98,7 +98,7 @@ export default function GuestFormModal({ isOpen, mode, initialData, onClose, onS
             </div>
 
             <div className="space-y-1.5">
-              <label className="text-xs font-medium text-gray-300 ml-1">URL Avatar (Opsional)</label>
+              <label className="text-xs font-medium text-gray-300 ml-1">头像地址（可选）</label>
               <div className="flex gap-2">
                 <input
                   type="url"
@@ -110,7 +110,7 @@ export default function GuestFormModal({ isOpen, mode, initialData, onClose, onS
               </div>
               {formData.avatar_url && (
                 <div className="mt-2 w-16 h-16 rounded-full overflow-hidden border border-white/[0.08] bg-black/40 flex items-center justify-center mx-auto">
-                  <img src={formData.avatar_url} alt="Preview" className="w-full h-full object-cover" onError={(e) => (e.currentTarget.style.display = 'none')} />
+                  <img src={formData.avatar_url} alt="头像预览" className="w-full h-full object-cover" onError={(e) => (e.currentTarget.style.display = 'none')} />
                 </div>
               )}
             </div>
@@ -120,11 +120,11 @@ export default function GuestFormModal({ isOpen, mode, initialData, onClose, onS
         {/* Footer */}
         <div className="px-6 py-4 border-t border-white/[0.06] bg-white/[0.02] shrink-0 flex items-center justify-end gap-3">
           <button type="button" onClick={onClose} disabled={isSaving} className="px-5 py-2.5 text-sm font-medium text-gray-400 hover:text-white bg-white/[0.04] hover:bg-white/[0.08] border border-white/[0.08] rounded-xl transition-all disabled:opacity-50">
-            Batal
+            取消
           </button>
           <button type="submit" form="guest-form" disabled={isSaving || !formData.name} className="flex items-center gap-2 px-5 py-2.5 text-sm font-medium text-white bg-accentColor rounded-xl hover:brightness-[0.85] transition-all disabled:opacity-50 disabled:cursor-not-allowed">
             {isSaving ? <RefreshCw size={14} className="animate-spin" /> : <Save size={14} />}
-            {isSaving ? "Menyimpan..." : "Simpan"}
+            {isSaving ? "保存中..." : "保存"}
           </button>
         </div>
       </div>

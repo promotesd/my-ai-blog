@@ -1,5 +1,5 @@
 export const env = {
-  apiBaseUrl: import.meta.env.VITE_API_BASE_URL || "http://localhost:8080",
+  apiBaseUrl: import.meta.env.VITE_API_BASE_URL || "",
   supabaseUrl: import.meta.env.VITE_SUPABASE_URL || "",
   supabaseAnonKey: import.meta.env.VITE_SUPABASE_ANON_KEY || "",
   supabaseStorageBucket: import.meta.env.VITE_SUPABASE_STORAGE_BUCKET || "",

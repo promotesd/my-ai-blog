@@ -26,6 +26,7 @@ import { Code2 } from "lucide-react";
 import { ReactNode } from "react";
 import { fetchSkills, type SkillRow } from "@/lib/projectsApi";
 import { fetchAboutStats } from "@/lib/statsApi";
+import { cn } from "@/lib/utils";
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -383,15 +384,20 @@ export default function SkillsPage() {
         <div className="relative max-w-[1100px] mx-auto px-[5%] py-16">
           {/* title */}
           <div className="hero-title overflow-hidden flex flex-wrap gap-x-3 text-4xl md:text-5xl lg:text-[3.4rem] font-semibold tracking-tight text-gray-900 dark:text-white leading-tight mb-5">
-            <span className="inline-block">{t("hero_title_1")}</span>
-            <span className="inline-block text-[#0acf83]">{t("hero_title_2")}</span>
-            <span className="inline-block">{t("hero_title_3")}</span>
-            <span className="inline-block">{t("hero_title_4")}</span>
+            {[t("hero_title_1"), t("hero_title_2"), t("hero_title_3"), t("hero_title_4")]
+              .filter(Boolean)
+              .map((word, index) => (
+                <span key={`${word}-${index}`} className={cn("inline-block", index === 1 && "text-[#0acf83]")}>
+                  {word}
+                </span>
+              ))}
           </div>
 
-          <p className="hero-sub max-w-xl text-gray-500 dark:text-white/50 text-base md:text-lg leading-relaxed mb-10">
-            {t("hero_sub")}
-          </p>
+          {t("hero_sub") && (
+            <p className="hero-sub max-w-xl text-gray-500 dark:text-white/50 text-base md:text-lg leading-relaxed mb-10">
+              {t("hero_sub")}
+            </p>
+          )}
 
           {/* quick stats — all values from Supabase */}
           <div ref={statsRef} className="flex flex-wrap gap-6 sm:gap-10">

@@ -1,9 +1,9 @@
 "use client"
 
 import { useState, useEffect, useRef, type ReactNode } from "react"
-import { X, Upload, Tag as TagIcon, Plus, Clock, Loader2 } from "lucide-react"
+import { X, Upload, Tag as TagIcon, Plus, Clock, Loader2, FileText } from "lucide-react"
 import { cn } from "@/lib/utils"
-import { supabase } from "@/lib/supabase"
+import { PROFILE } from "@/config/profile"
 
 export type AuthorType = "developer" | "visitor"
 
@@ -49,10 +49,10 @@ const EMPTY_FORM: BlogFormData = {
   id: "",
   title: "",
   category: "",
-  author_name: "",
-  author_email: "",
+  author_name: PROFILE.displayName,
+  author_email: PROFILE.email,
   author_phone: "",
-  author_avatar: "",
+  author_avatar: PROFILE.avatarUrl,
   author_type: "developer",
   thumbnail: "",
   tags: [],
@@ -84,6 +84,7 @@ export default function BlogFormModal({
   const [saving, setSaving] = useState(false)
   const [uploadingField, setUploadingField] = useState<string | null>(null)
   const contentRef = useRef<HTMLTextAreaElement>(null)
+  const markdownInputRef = useRef<HTMLInputElement>(null)
 
   useEffect(() => {
     if (isOpen) {
@@ -111,40 +112,49 @@ export default function BlogFormModal({
   async function handleFileUpload(file: File, field: "thumbnail" | "author_avatar") {
     try {
       setUploadingField(field)
-      const fileExt = file.name.split('.').pop()
-      const fileName = `${Date.now()}-${Math.random().toString(36).substring(2)}.${fileExt}`
-      const filePath = `${field}s/${fileName}` // akan menjadi 'thumbnails/...' atau 'author_avatars/...'
-      const bucket = process.env.NEXT_PUBLIC_SUPABASE_STORAGE_BUCKET || "blog-thumbnails"
-
-      const { error: uploadError } = await supabase.storage
-        .from(bucket)
-        .upload(filePath, file)
-
-      if (uploadError) throw uploadError
-
-      const { data: { publicUrl } } = supabase.storage
-        .from(bucket)
-        .getPublicUrl(filePath)
-
-      setField(field, publicUrl)
+      const token = localStorage.getItem("portfolio-admin-token")
+      const formData = new FormData()
+      formData.append("file", file)
+      formData.append("category", "blogs")
+      const response = await fetch("/api/upload/files", {
+        method: "POST",
+        headers: token ? { Authorization: `Bearer ${token}` } : undefined,
+        body: formData,
+      })
+      const body = await response.json()
+      if (!response.ok || body.code >= 400) {
+        throw new Error(body.message || "上传失败")
+      }
+      setField(field, body.data.url)
     } catch (error: any) {
       console.error("Upload error:", error)
-      alert(`Gagal mengupload file: ${error.message}`)
+      alert(`上传失败：${error.message}`)
     } finally {
       setUploadingField(null)
     }
   }
 
   function handleSave() {
+    const payload = withDefaultAuthor(form)
     if (externalSaving !== undefined) {
-      // Externally managed async save
-      onSave(form)
+      onSave(payload)
     } else {
       setSaving(true)
       setTimeout(() => {
-        onSave(form)
+        onSave(payload)
         setSaving(false)
       }, 600)
+    }
+  }
+
+  function withDefaultAuthor(data: BlogFormData): BlogFormData {
+    return {
+      ...data,
+      author_name: PROFILE.displayName,
+      author_email: PROFILE.email,
+      author_avatar: PROFILE.avatarUrl,
+      author_phone: "",
+      author_type: "developer",
     }
   }
 
@@ -169,27 +179,47 @@ export default function BlogFormModal({
 
   function handleToolbarClick(action: string) {
     switch (action) {
-      case "H1": applyFormat("<h1>", "</h1>"); break;
-      case "H2": applyFormat("<h2>", "</h2>"); break;
-      case "H3": applyFormat("<h3>", "</h3>"); break;
-      case "B": applyFormat("<strong>", "</strong>"); break;
-      case "I": applyFormat("<em>", "</em>"); break;
+      case "H1": applyFormat("# ", ""); break;
+      case "H2": applyFormat("## ", ""); break;
+      case "H3": applyFormat("### ", ""); break;
+      case "B": applyFormat("**", "**"); break;
+      case "I": applyFormat("_", "_"); break;
       case "U": applyFormat("<u>", "</u>"); break;
-      case "S": applyFormat("<s>", "</s>"); break;
-      case "Code": applyFormat("<code>", "</code>"); break;
-      case "Quote": applyFormat("<blockquote>", "</blockquote>"); break;
-      case "• List": applyFormat("<ul>\n  <li>", "</li>\n</ul>"); break;
-      case "1. List": applyFormat("<ol>\n  <li>", "</li>\n</ol>"); break;
+      case "S": applyFormat("~~", "~~"); break;
+      case "Code": applyFormat("`", "`"); break;
+      case "Quote": applyFormat("> ", ""); break;
+      case "• List": applyFormat("- ", ""); break;
+      case "1. List": applyFormat("1. ", ""); break;
       case "Link": {
-        const url = window.prompt("Masukkan URL tautan:")
-        if (url) applyFormat(`<a href="${url}" target="_blank" rel="noopener noreferrer">`, "</a>")
+        const url = window.prompt("输入链接 URL:")
+        if (url) applyFormat("[", `](${url})`)
         break;
       }
       case "Image": {
-        const src = window.prompt("Masukkan URL gambar:")
-        if (src) applyFormat(`<img src="${src}" alt="image" className="rounded-xl w-full my-4" />`, "")
+        const src = window.prompt("输入图片 URL:")
+        if (src) applyFormat("![image](", `${src})`)
         break;
       }
+    }
+  }
+
+  async function handleMarkdownUpload(file?: File) {
+    if (!file) return
+    const isMarkdown =
+      file.name.endsWith(".md") ||
+      file.name.endsWith(".markdown") ||
+      ["text/markdown", "text/plain", ""].includes(file.type)
+    if (!isMarkdown) {
+      alert("请上传 .md 或 .markdown 文件")
+      return
+    }
+    const content = await file.text()
+    setField("content", content)
+    if (!form.title.trim()) {
+      setField("title", file.name.replace(/\.(md|markdown)$/i, ""))
+    }
+    if (!form.excerpt.trim()) {
+      setField("excerpt", content.replace(/[#*_>`().!-]/g, "").replaceAll("[", "").replaceAll("]", "").trim().slice(0, 180))
     }
   }
 
@@ -197,7 +227,7 @@ export default function BlogFormModal({
 
   if (!isOpen) return null
 
-  const isValid = form.title.trim() && form.category && form.author_name.trim()
+  const isValid = form.title.trim() && form.category
 
   return (
     <div className="fixed inset-0 z-50 flex items-start justify-center p-4 pt-8">
@@ -213,12 +243,12 @@ export default function BlogFormModal({
         <div className="flex items-center justify-between px-6 py-4 border-b border-white/[0.06] shrink-0">
           <div>
             <h2 className="text-base font-semibold text-white">
-              {mode === "create" ? "New Blog Post" : "Edit Blog Post"}
+              {mode === "create" ? "写新文章" : "编辑文章"}
             </h2>
             <p className="text-xs text-gray-500 mt-0.5">
               {mode === "create"
-                ? "Tambah entri baru ke tabel blogs"
-                : `Editing: ${form.id}`}
+                ? "作者信息会自动使用小嘟嘟，只需要填写文章内容。"
+                : `正在编辑：${form.id}`}
             </p>
           </div>
           <button
@@ -231,47 +261,23 @@ export default function BlogFormModal({
 
         {/* Scrollable Body */}
         <div className="flex-1 overflow-y-auto scrollbar-none px-6 py-5 space-y-5">
-          {/* ID + Author Type */}
-          <div className="grid grid-cols-2 gap-4">
-            <FormField label="ID" hint="auto jika kosong">
+          {/* ID */}
+          <div className="grid grid-cols-1 gap-4">
+            <FormField label="ID" hint="留空自动生成">
               <TextInput
                 value={form.id}
                 onChange={(v) => setField("id", v)}
-                placeholder="Isi ID khusus atau biarkan kosong (Auto UUID)"
+                placeholder="可填写自定义 ID，或留空自动生成"
               />
             </FormField>
-            <div>
-              <label className="block text-xs font-medium text-gray-400 mb-2">
-                Author Type
-              </label>
-              <div className="flex gap-2">
-                {(["developer", "visitor"] as AuthorType[]).map((type) => (
-                  <button
-                    key={type}
-                    type="button"
-                    onClick={() => setField("author_type", type)}
-                    className={cn(
-                      "flex-1 py-2.5 rounded-xl text-xs font-semibold capitalize transition-all border",
-                      form.author_type === type
-                        ? type === "developer"
-                          ? "bg-accentColor/20 border-accentColor/40 text-accentColor"
-                          : "bg-blue-500/20 border-blue-500/40 text-blue-400"
-                        : "border-white/[0.08] text-gray-500 hover:border-white/20 hover:text-gray-300 bg-white/[0.02]"
-                    )}
-                  >
-                    {type}
-                  </button>
-                ))}
-              </div>
-            </div>
           </div>
 
           {/* Title */}
-          <FormField label="Title" required>
+          <FormField label="标题" required>
             <TextInput
               value={form.title}
               onChange={(v) => setField("title", v)}
-              placeholder="Judul blog post"
+              placeholder="文章标题"
             />
           </FormField>
 
@@ -279,7 +285,7 @@ export default function BlogFormModal({
           <div className="grid grid-cols-2 gap-4">
             <div>
               <label className="block text-xs font-medium text-gray-400 mb-2">
-                Category <span className="text-red-400">*</span>
+                分类 <span className="text-red-400">*</span>
               </label>
               <select
                 value={form.category}
@@ -287,7 +293,7 @@ export default function BlogFormModal({
                 className="w-full bg-white/[0.04] border border-white/[0.08] rounded-xl px-3 py-2.5 text-sm text-gray-200 outline-none focus:border-accentColor/60 transition-colors appearance-none cursor-pointer"
               >
                 <option value="" disabled className="bg-[#0e1c1c]">
-                  Pilih kategori
+                  选择分类
                 </option>
                 {CATEGORIES.map((c) => (
                   <option key={c} value={c} className="bg-[#0e1c1c]">
@@ -297,7 +303,7 @@ export default function BlogFormModal({
               </select>
             </div>
             <FormField
-              label="Reading Time (menit)"
+              label="阅读时间（分钟）"
               icon={<Clock size={12} className="text-gray-500" />}
             >
               <input
@@ -313,48 +319,10 @@ export default function BlogFormModal({
             </FormField>
           </div>
 
-          {/* Author Section */}
-          <div className="rounded-2xl border border-white/[0.06] bg-white/[0.02] p-4 space-y-4">
-            <p className="text-[10px] font-semibold text-gray-500 uppercase tracking-widest">
-              Informasi Author
-            </p>
-            <div className="grid grid-cols-2 gap-4">
-              <FormField label="Author Name" required>
-                <TextInput
-                  value={form.author_name}
-                  onChange={(v) => setField("author_name", v)}
-                  placeholder="Nama lengkap"
-                />
-              </FormField>
-              <FormField label="Author Email">
-                <TextInput
-                  value={form.author_email}
-                  onChange={(v) => setField("author_email", v)}
-                  placeholder="email@example.com"
-                />
-              </FormField>
-              <FormField label="Author Phone">
-                <TextInput
-                  value={form.author_phone}
-                  onChange={(v) => setField("author_phone", v)}
-                  placeholder="+62..."
-                />
-              </FormField>
-              <FormField label="Author Avatar" hint="Upload gambar">
-                <FileInput
-                  value={form.author_avatar}
-                  onChange={(v) => setField("author_avatar", v)}
-                  onUpload={(file) => handleFileUpload(file, "author_avatar")}
-                  uploading={uploadingField === "author_avatar"}
-                />
-              </FormField>
-            </div>
-          </div>
-
           {/* Thumbnail + Published At */}
           <div className="grid grid-cols-2 gap-4">
             <FormField
-              label="Thumbnail"
+              label="封面图"
               icon={<Upload size={12} className="text-gray-500" />}
             >
               <FileInput
@@ -364,7 +332,7 @@ export default function BlogFormModal({
                 uploading={uploadingField === "thumbnail"}
               />
             </FormField>
-            <FormField label="Published At">
+            <FormField label="发布时间">
               <input
                 type="datetime-local"
                 value={form.published_at}
@@ -378,7 +346,7 @@ export default function BlogFormModal({
           <div>
             <label className="flex items-center gap-1.5 text-xs font-medium text-gray-400 mb-2">
               <TagIcon size={11} />
-              Tags
+              标签
             </label>
             <div className="bg-white/[0.04] border border-white/[0.08] rounded-xl p-3 space-y-2 focus-within:border-accentColor/60 transition-colors">
               {form.tags.length > 0 && (
@@ -410,7 +378,7 @@ export default function BlogFormModal({
                       addTag()
                     }
                   }}
-                  placeholder="Tambah tag dan tekan Enter..."
+                  placeholder="输入标签后按 Enter..."
                   className="flex-1 bg-transparent text-sm text-gray-200 placeholder:text-gray-600 outline-none"
                 />
                 <button
@@ -426,14 +394,14 @@ export default function BlogFormModal({
 
           {/* Excerpt */}
           <FormField
-            label="Excerpt"
-            hint="otomatis dari 180 karakter pertama konten"
+            label="摘要"
+            hint="留空时可从正文自动生成"
           >
             <textarea
               value={form.excerpt}
               onChange={(e) => setField("excerpt", e.target.value)}
               rows={3}
-              placeholder="Deskripsi singkat blog post..."
+              placeholder="文章简短摘要..."
               className="w-full bg-white/[0.04] border border-white/[0.08] rounded-xl px-3 py-2.5 text-sm text-gray-200 outline-none focus:border-accentColor/60 transition-colors resize-none placeholder:text-gray-600"
             />
           </FormField>
@@ -441,11 +409,28 @@ export default function BlogFormModal({
           {/* Content */}
           <div>
             <label className="block text-xs font-medium text-gray-400 mb-2">
-              Content (HTML)
+              内容（Markdown / HTML）
             </label>
             <div className="rounded-xl border border-white/[0.08] bg-white/[0.02] overflow-hidden focus-within:border-accentColor/60 transition-colors">
-              {/* Toolbar placeholder */}
               <div className="flex items-center gap-1 px-3 py-2 border-b border-white/[0.06] flex-wrap">
+                <input
+                  ref={markdownInputRef}
+                  type="file"
+                  accept=".md,.markdown,text/markdown,text/plain"
+                  className="hidden"
+                  onChange={(e) => {
+                    handleMarkdownUpload(e.target.files?.[0])
+                    e.target.value = ""
+                  }}
+                />
+                <button
+                  type="button"
+                  onClick={() => markdownInputRef.current?.click()}
+                  className="inline-flex items-center gap-1 px-2 py-1 text-[11px] font-medium rounded-md bg-accentColor/15 text-accentColor hover:bg-accentColor/25 transition-colors"
+                >
+                  <FileText size={12} />
+                  上传 MD
+                </button>
                 {[
                   "H1", "H2", "H3", "B", "I", "U", "S",
                   "Code", "Quote", "• List", "1. List", "Link", "Image",
@@ -465,12 +450,12 @@ export default function BlogFormModal({
                 value={form.content}
                 onChange={(e) => setField("content", e.target.value)}
                 rows={9}
-                placeholder="<h2>Judul Section</h2>&#10;<p>Konten artikel sebagai HTML...</p>"
+                placeholder={"## 标题\n\n在这里写 Markdown，或者上传 .md 文件。"}
                 className="w-full bg-transparent px-4 py-3 text-sm text-gray-300 outline-none resize-none font-mono placeholder:text-gray-600 leading-relaxed"
               />
             </div>
             <p className="text-[10px] text-gray-600 mt-1.5">
-              Gunakan toolbar di atas untuk memasukkan format HTML dengan cepat.
+              作者信息会自动使用小嘟嘟；这里只需要写文章内容。
             </p>
           </div>
         </div>
@@ -478,14 +463,14 @@ export default function BlogFormModal({
         {/* Footer */}
         <div className="flex items-center justify-between px-6 py-4 border-t border-white/[0.06] shrink-0 bg-[#0a1515]">
           <p className="text-xs text-gray-600">
-            <span className="text-red-400">*</span> Field wajib diisi
+            <span className="text-red-400">*</span> 必填项
           </p>
           <div className="flex items-center gap-3">
             <button
               onClick={onClose}
               className="px-4 py-2 text-sm font-medium text-gray-400 hover:text-gray-200 rounded-xl hover:bg-white/[0.06] transition-all"
             >
-              Batal
+              取消
             </button>
             <button
               onClick={handleSave}
@@ -494,10 +479,10 @@ export default function BlogFormModal({
             >
               {isSaving && <Loader2 size={13} className="animate-spin" />}
               {isSaving
-                ? "Menyimpan..."
+                ? "保存中..."
                 : mode === "create"
-                ? "Buat Post"
-                : "Simpan Perubahan"}
+                ? "发布文章"
+                : "保存修改"}
             </button>
           </div>
         </div>

@@ -4,6 +4,7 @@ import Image from "next/image"
 import { GalleryPhoto } from "@/types/gallery"
 import { MapPin, Search, Download, Share2, Tag } from "lucide-react"
 import { cn } from "@/lib/utils"
+import { getGalleryCategoryLabel } from "@/data/galleryData"
 
 interface GalleryPhotoCardProps {
   photo: GalleryPhoto
@@ -59,7 +60,7 @@ export default function GalleryPhotoCard({
               onDownload(photo)
             }}
             className="w-8 h-8 rounded-full bg-black/50 hover:bg-accentColor backdrop-blur-sm text-white flex items-center justify-center transition-all duration-200 hover:scale-110 border border-white/20"
-            title="Download"
+            title="下载"
           >
             <Download className="w-3.5 h-3.5" />
           </button>
@@ -69,7 +70,7 @@ export default function GalleryPhotoCard({
               onShare(photo)
             }}
             className="w-8 h-8 rounded-full bg-black/50 hover:bg-accentColor backdrop-blur-sm text-white flex items-center justify-center transition-all duration-200 hover:scale-110 border border-white/20"
-            title="Share"
+            title="分享"
           >
             <Share2 className="w-3.5 h-3.5" />
           </button>
@@ -79,7 +80,7 @@ export default function GalleryPhotoCard({
               onView(photo)
             }}
             className="w-8 h-8 rounded-full bg-black/50 hover:bg-accentColor backdrop-blur-sm text-white flex items-center justify-center transition-all duration-200 hover:scale-110 border border-white/20"
-            title="Lihat"
+            title="查看"
           >
             <Search className="w-3.5 h-3.5" />
           </button>
@@ -96,7 +97,7 @@ export default function GalleryPhotoCard({
             </div>
             <span className="shrink-0 inline-flex items-center gap-1 text-xs px-2 py-0.5 rounded-full bg-accentColor/90 text-white font-medium">
               <Tag className="w-2.5 h-2.5" />
-              {photo.category.split(" & ")[0]}
+              {getGalleryCategoryLabel(photo.category)}
             </span>
           </div>
         </div>
@@ -115,7 +116,7 @@ export default function GalleryPhotoCard({
             </div>
           )}
           <p className="text-xs font-medium text-gray-700 dark:text-gray-300 truncate">
-            {uploaderName || "Unknown"}
+            {uploaderName || "未知"}
           </p>
         </div>
       )}

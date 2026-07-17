@@ -57,8 +57,13 @@ services:
       UPLOAD_DIR: /app/uploads
       UPLOAD_PUBLIC_PREFIX: /uploads/
       CORS_ALLOWED_ORIGINS: https://xiaodudu.top,https://www.xiaodudu.top
-      GITHUB_USERNAME: ${GITHUB_USERNAME:-agungkurniawanid}
+      GITHUB_USERNAME: ${GITHUB_USERNAME:-promotesd}
       GITHUB_TOKEN: ${GITHUB_TOKEN:-}
+      STEAM_API_KEY: ${STEAM_API_KEY:-}
+      STEAM_ID: ${STEAM_ID:-}
+      STEAM_API_BASE_URL: ${STEAM_API_BASE_URL:-https://api.steampowered.com}
+      STEAM_HIDDEN_APP_IDS: ${STEAM_HIDDEN_APP_IDS:-}
+      STEAM_VISIBLE_GAMES_URL: ${STEAM_VISIBLE_GAMES_URL:-https://raw.githubusercontent.com/promotesd/my-ai-blog/main/data/steam-public-games.json}
     volumes:
       - uploads_data:/app/uploads
     ports:

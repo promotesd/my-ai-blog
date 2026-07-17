@@ -97,7 +97,7 @@ public class GalleryController {
 
   @GetMapping("/photos")
   public Result<List<Map<String, Object>>> photos() {
-    List<Map<String, Object>> rows = jdbcClient.sql("SELECT * FROM gallery_photo ORDER BY date DESC, id DESC")
+    List<Map<String, Object>> rows = jdbcClient.sql("SELECT * FROM gallery_photo WHERE is_approved = 1 ORDER BY date DESC, id DESC")
         .query()
         .listOfRows()
         .stream()
@@ -108,7 +108,7 @@ public class GalleryController {
 
   @GetMapping("/albums")
   public Result<List<Map<String, Object>>> albums() {
-    List<Map<String, Object>> rows = jdbcClient.sql("SELECT * FROM gallery_album ORDER BY created_at DESC, id DESC")
+    List<Map<String, Object>> rows = jdbcClient.sql("SELECT * FROM gallery_album WHERE photo_count > 0 ORDER BY created_at DESC, id DESC")
         .query()
         .listOfRows()
         .stream()
@@ -119,7 +119,7 @@ public class GalleryController {
 
   @GetMapping("/guests")
   public Result<List<Map<String, Object>>> guests() {
-    List<Map<String, Object>> rows = jdbcClient.sql("SELECT * FROM gallery_guest ORDER BY name ASC, id ASC")
+    List<Map<String, Object>> rows = jdbcClient.sql("SELECT * FROM gallery_guest WHERE photo_count > 0 ORDER BY name ASC, id ASC")
         .query()
         .listOfRows()
         .stream()

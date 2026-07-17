@@ -1,12 +1,12 @@
 /**
  * galleryApi.ts
  *
- * Fetches gallery photos, albums, and guest profiles from Supabase.
+ * Fetches gallery photos, albums, and guest profiles from Spring Boot.
  * Converts snake_case DB columns → camelCase TypeScript types.
  */
 
-import { supabase } from "@/lib/supabase"
 import { GalleryPhoto, GalleryAlbum, GalleryOwnerType, GalleryGuest } from "@/types/gallery"
+import { apiRequest } from "@/services/apiClient"
 
 // ── Row types (raw from Supabase) ────────────────────────────────────────────
 
@@ -48,14 +48,20 @@ interface GalleryGuestRow {
   id: number
   name: string
   avatar_url: string | null
+  avatarUrl?: string | null
   album_count: number
+  albumCount?: number
   photo_count: number
+  photoCount?: number
   created_at: string
+  createdAt?: string
 }
 
 // ── Mappers ──────────────────────────────────────────────────────────────────
 
 function mapPhoto(row: GalleryPhotoRow): GalleryPhoto {
+  const imageUrl = normalizePublicUrl(row.image_url)
+  const thumbnailUrl = normalizePublicUrl(row.thumbnail_url) || imageUrl
   return {
     id: row.id,
     title: row.title,
@@ -67,8 +73,8 @@ function mapPhoto(row: GalleryPhotoRow): GalleryPhoto {
     album: row.album,
     albumSlug: row.album_slug,
     device: row.device,
-    imageUrl: row.image_url,
-    thumbnailUrl: row.thumbnail_url,
+    imageUrl,
+    thumbnailUrl,
     width: row.width,
     height: row.height,
     isFeatured: row.is_featured,
@@ -77,6 +83,13 @@ function mapPhoto(row: GalleryPhotoRow): GalleryPhoto {
     uploaderName: row.uploader_name,
     guestId: row.guest_id,
   }
+}
+
+function normalizePublicUrl(url?: string | null) {
+  const value = (url ?? "").trim()
+  if (!value) return ""
+  if (value.startsWith("http://") || value.startsWith("https://") || value.startsWith("/")) return value
+  return ""
 }
 
 function mapAlbum(row: GalleryAlbumRow): GalleryAlbum {
@@ -97,10 +110,10 @@ function mapGuest(row: GalleryGuestRow): GalleryGuest {
   return {
     id: row.id,
     name: row.name,
-    avatarUrl: row.avatar_url,
-    albumCount: row.album_count,
-    photoCount: row.photo_count,
-    createdAt: row.created_at,
+    avatarUrl: row.avatarUrl ?? row.avatar_url,
+    albumCount: row.albumCount ?? row.album_count ?? 0,
+    photoCount: row.photoCount ?? row.photo_count ?? 0,
+    createdAt: row.createdAt ?? row.created_at,
   }
 }
 
@@ -111,18 +124,13 @@ function mapGuest(row: GalleryGuestRow): GalleryGuest {
  * Ordered by date descending.
  */
 export async function fetchGalleryPhotos(): Promise<GalleryPhoto[]> {
-  const { data, error } = await supabase
-    .from("gallery_photos")
-    .select("*")
-    .eq("is_approved", true)
-    .order("date", { ascending: false })
-
-  if (error) {
-    console.error("[galleryApi] fetchGalleryPhotos error:", error.message)
+  try {
+    const data = await apiRequest<GalleryPhotoRow[]>("/api/gallery/photos")
+    return data.map(mapPhoto).filter((photo) => photo.imageUrl)
+  } catch (error) {
+    console.error("[galleryApi] fetchGalleryPhotos error:", error)
     return []
   }
-
-  return (data as GalleryPhotoRow[]).map(mapPhoto)
 }
 
 /**
@@ -131,54 +139,29 @@ export async function fetchGalleryPhotos(): Promise<GalleryPhoto[]> {
 export async function fetchGalleryPhotosByOwner(
   ownerType: GalleryOwnerType
 ): Promise<GalleryPhoto[]> {
-  const { data, error } = await supabase
-    .from("gallery_photos")
-    .select("*")
-    .eq("is_approved", true)
-    .eq("owner_type", ownerType)
-    .order("date", { ascending: false })
-
-  if (error) {
-    console.error("[galleryApi] fetchGalleryPhotosByOwner error:", error.message)
-    return []
-  }
-
-  return (data as GalleryPhotoRow[]).map(mapPhoto)
+  const photos = await fetchGalleryPhotos()
+  return photos.filter((photo) => (photo.ownerType ?? "personal") === ownerType)
 }
 
 /**
  * Fetch all gallery albums.
  */
 export async function fetchGalleryAlbums(): Promise<GalleryAlbum[]> {
-  const { data, error } = await supabase
-    .from("gallery_albums")
-    .select("*")
-    .order("created_at", { ascending: false })
-
-  if (error) {
-    console.error("[galleryApi] fetchGalleryAlbums error:", error.message)
+  try {
+    const data = await apiRequest<GalleryAlbumRow[]>("/api/gallery/albums")
+    return data.map(mapAlbum)
+  } catch (error) {
+    console.error("[galleryApi] fetchGalleryAlbums error:", error)
     return []
   }
-
-  return (data as GalleryAlbumRow[]).map(mapAlbum)
 }
 
 /**
  * Fetch photos for a specific album slug.
  */
 export async function fetchPhotosByAlbum(albumSlug: string): Promise<GalleryPhoto[]> {
-  const { data, error } = await supabase
-    .from("gallery_photos")
-    .select("*")
-    .eq("album_slug", albumSlug)
-    .order("date", { ascending: false })
-
-  if (error) {
-    console.error("[galleryApi] fetchPhotosByAlbum error:", error.message)
-    return []
-  }
-
-  return (data as GalleryPhotoRow[]).map(mapPhoto)
+  const photos = await fetchGalleryPhotos()
+  return photos.filter((photo) => photo.albumSlug === albumSlug)
 }
 
 /**
@@ -186,33 +169,19 @@ export async function fetchPhotosByAlbum(albumSlug: string): Promise<GalleryPhot
  * Returns null if not found.
  */
 export async function fetchAlbumBySlug(slug: string): Promise<GalleryAlbum | null> {
-  const { data, error } = await supabase
-    .from("gallery_albums")
-    .select("*")
-    .eq("slug", slug)
-    .maybeSingle()
-
-  if (error) {
-    console.error("[galleryApi] fetchAlbumBySlug error:", error.message)
-    return null
-  }
-
-  return data ? mapAlbum(data as GalleryAlbumRow) : null
+  const albums = await fetchGalleryAlbums()
+  return albums.find((album) => album.slug === slug) ?? null
 }
 
 /**
  * Fetch all gallery guests (sorted A-Z by name).
  */
 export async function fetchGalleryGuests(): Promise<GalleryGuest[]> {
-  const { data, error } = await supabase
-    .from("gallery_guests")
-    .select("id, name, avatar_url, album_count, photo_count, created_at")
-    .order("name", { ascending: true })
-
-  if (error) {
-    console.error("[galleryApi] fetchGalleryGuests error:", error.message)
+  try {
+    const data = await apiRequest<GalleryGuestRow[]>("/api/gallery/guests")
+    return data.map(mapGuest)
+  } catch (error) {
+    console.error("[galleryApi] fetchGalleryGuests error:", error)
     return []
   }
-
-  return (data as GalleryGuestRow[]).map(mapGuest)
 }

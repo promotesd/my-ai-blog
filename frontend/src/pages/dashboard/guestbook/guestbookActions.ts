@@ -16,7 +16,7 @@ export async function updateGuestbookOnServer(
     row.updated_at = new Date().toISOString()
     const { data, error } = await supabaseAdmin.from("guestbook").update(row).eq("id", id).select()
     if (error) return { success: false, error: error.message }
-    if (!data || data.length === 0) return { success: false, error: "Gagal mengubah data buku tamu di database." }
+    if (!data || data.length === 0) return { success: false, error: "无法在数据库中更新留言。" }
 
     return { success: true }
 }
@@ -24,7 +24,7 @@ export async function updateGuestbookOnServer(
 export async function toggleGuestbookApproval(id: string, isApproved: boolean) {
     const { data, error } = await supabaseAdmin.from("guestbook").update({ is_approved: isApproved, updated_at: new Date().toISOString() }).eq("id", id).select()
     if (error) return { success: false, error: error.message }
-    if (!data || data.length === 0) return { success: false, error: "Gagal mengubah status approval buku tamu." }
+    if (!data || data.length === 0) return { success: false, error: "无法更新留言审核状态。" }
 
     return { success: true }
 }
@@ -37,7 +37,7 @@ export async function deleteGuestbookOnServer(id: string, storageBucket?: string
 
     const { data, error } = await supabaseAdmin.from("guestbook").delete().eq("id", id).select()
     if (error) return { success: false, error: error.message }
-    if (!data || data.length === 0) return { success: false, error: "Data buku tamu gagal dihapus." }
+    if (!data || data.length === 0) return { success: false, error: "无法从数据库中删除留言。" }
 
     return { success: true }
 }

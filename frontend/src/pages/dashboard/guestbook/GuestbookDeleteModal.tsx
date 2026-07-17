@@ -34,21 +34,21 @@ export default function GuestbookDeleteModal({ isOpen, entryName, onClose, onCon
                         <AlertTriangle size={26} className="text-red-400" />
                     </div>
                     <div>
-                        <h3 className="text-lg font-semibold text-white mb-1.5">Hapus Entri Buku Tamu?</h3>
+                        <h3 className="text-lg font-semibold text-white mb-1.5">删除这条留言？</h3>
                         <p className="text-sm text-gray-400 leading-relaxed">
-                            Apakah Anda yakin ingin menghapus buku tamu dari <br />
-                            <span className="text-gray-200 font-medium whitespace-break-spaces">"{entryName}"</span>?<br />
-                            Tindakan ini tidak dapat dibatalkan.
+                            确定要删除来自<br />
+                            <span className="text-gray-200 font-medium whitespace-break-spaces">“{entryName}”</span> 的留言吗？<br />
+                            此操作不可撤销。
                         </p>
                     </div>
                 </div>
 
                 <div className="flex items-center gap-3 px-6 py-4 bg-white/[0.02] border-t border-white/[0.06]">
                     <button onClick={onClose} disabled={isDeleting} className="flex-1 py-2.5 text-sm font-medium text-gray-400 hover:text-white bg-white/[0.04] hover:bg-white/[0.08] border border-white/[0.08] rounded-xl transition-all disabled:opacity-50">
-                        Batal
+                        取消
                     </button>
                     <button onClick={handleConfirm} disabled={isDeleting} className="flex-1 flex items-center justify-center gap-2 py-2.5 text-sm font-medium text-white bg-red-500/90 hover:bg-red-500 rounded-xl transition-all disabled:opacity-50">
-                        {isDeleting ? <Loader2 size={16} className="animate-spin" /> : "Ya, Hapus"}
+                        {isDeleting ? <Loader2 size={16} className="animate-spin" /> : "确认删除"}
                     </button>
                 </div>
             </div>

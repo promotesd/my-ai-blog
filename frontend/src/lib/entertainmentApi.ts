@@ -1,17 +1,17 @@
 import { SteamGame, TMDBMovie } from "@/types/entertainment";
+import { env } from "@/config/env";
 
 // ─── Config ──────────────────────────────────────────────────────────────────
-const STEAM_API_KEY = process.env.NEXT_PUBLIC_STEAM_API_KEY ?? "";
-const STEAM_ID = process.env.NEXT_PUBLIC_STEAM_ID ?? "";
-const TMDB_API_KEY = process.env.NEXT_PUBLIC_TMDB_API_KEY ?? "";
-const GOOGLE_BOOKS_API_KEY = process.env.NEXT_PUBLIC_GOOGLE_BOOKS_API_KEY ?? "";
+const TMDB_API_KEY = env.tmdbApiKey;
+const GOOGLE_BOOKS_API_KEY = env.googleBooksApiKey;
 
 // ─── Steam ───────────────────────────────────────────────────────────────────
 export async function fetchSteamGames(): Promise<SteamGame[]> {
-  // Steam API blocks browser-side CORS, so we route through our own Next.js API
+  // Steam API blocks browser-side CORS, so Spring Boot proxies the request.
   const res = await fetch(`/api/steam-games`);
-  if (!res.ok) throw new Error("Steam API error");
+  if (!res.ok) throw new Error("Steam 接口请求失败");
   const data = await res.json();
+  if (data.error) throw new Error(data.error);
   return (data.response?.games ?? []) as SteamGame[];
 }
 
@@ -122,9 +122,9 @@ export function steamHeaderUrl(appid: number): string {
 
 // ─── Format helpers ───────────────────────────────────────────────────────────
 export function formatPlaytime(minutes: number): string {
-  if (minutes < 60) return `${minutes} menit`;
+  if (minutes < 60) return `${minutes} 分钟`;
   const hours = Math.floor(minutes / 60);
-  return `${hours} jam`;
+  return `${hours} 小时`;
 }
 
 // ─── Open Library ─────────────────────────────────────────────────────────────

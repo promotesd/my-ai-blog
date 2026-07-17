@@ -16,3 +16,17 @@ export const CERTIFICATE_CATEGORIES: CertificateCategory[] = [
   "Sertifikasi Resmi",
   "Kompetisi / Lomba",
 ]
+
+export const CERTIFICATE_CATEGORY_LABELS: Record<CertificateCategory, string> = {
+  "Semua": "全部",
+  "Magang / Internship": "实习",
+  "Bootcamp": "训练营",
+  "Course Online": "在线课程",
+  "Webinar / Seminar": "讲座 / 研讨会",
+  "Sertifikasi Resmi": "官方认证",
+  "Kompetisi / Lomba": "竞赛",
+}
+
+export function getCertificateCategoryLabel(category: CertificateCategory | string) {
+  return CERTIFICATE_CATEGORY_LABELS[category as CertificateCategory] || category
+}

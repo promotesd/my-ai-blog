@@ -10,6 +10,7 @@ import { FaGithub as Github } from "react-icons/fa"
 import { cn } from "@/lib/utils"
 import { supabase } from "@/lib/supabase"
 import { useSidebar } from "@/components/dashboard/SidebarContext"
+import { env } from "@/config/env"
 
 import ProjectFormModal, { type ProjectFormData } from "./ProjectFormModal"
 import ProjectDeleteModal from "./ProjectDeleteModal"
@@ -32,6 +33,13 @@ const CATEGORY_STYLE: Record<string, string> = {
   academic:  "bg-emerald-500/15 text-emerald-400 border-emerald-500/20",
   freelance: "bg-purple-500/15 text-purple-400 border-purple-500/20",
   company:   "bg-orange-500/15 text-orange-400 border-orange-500/20",
+}
+
+const CATEGORY_LABELS: Record<string, string> = {
+  personal: "个人",
+  academic: "学术",
+  freelance: "独立项目",
+  company: "团队或企业",
 }
 
 const ITEMS_PER_PAGE = 5
@@ -67,7 +75,7 @@ export default function ProjectsDashboardPage() {
   const [deleteModal, setDeleteModal] = useState<{ open: boolean, project: any | null }>({ open: false, project: null })
   const [bulkDeleteModal, setBulkDeleteModal] = useState(false)
   
-  const STORAGE_BUCKET = process.env.NEXT_PUBLIC_SUPABASE_STORAGE_BUCKET || "project-thumbnails"
+  const STORAGE_BUCKET = env.supabaseStorageBucket || "project-thumbnails"
 
   useEffect(() => {
     if (toast) {
@@ -93,7 +101,7 @@ export default function ProjectsDashboardPage() {
       setProjects(data || [])
     } catch (err: any) {
       console.error("Fetch Error:", err)
-      setToast({ type: "error", text: `Gagal memuat data: ${err.message}` })
+      setToast({ type: "error", text: `加载数据失败：${err.message}` })
     } finally {
       setLoading(false)
     }
@@ -181,7 +189,7 @@ export default function ProjectsDashboardPage() {
 
       await fetchProjects()
       setFormModal({ open: false, mode: "create" })
-      setToast({ type: "success", text: formModal.mode === "create" ? "Project berhasil dibuat." : "Project berhasil diperbarui." })
+      setToast({ type: "success", text: formModal.mode === "create" ? "项目创建成功。" : "项目更新成功。" })
     } catch (err: any) {
       setToast({ type: "error", text: err.message })
     } finally {
@@ -207,7 +215,7 @@ export default function ProjectsDashboardPage() {
       await fetchProjects()
       setSelectedIds(prev => prev.filter(id => id !== project.id))
       setPage(1)
-      setToast({ type: "success", text: "Project berhasil dihapus." })
+      setToast({ type: "success", text: "项目删除成功。" })
     } catch (err: any) {
       setToast({ type: "error", text: err.message })
     } finally {
@@ -242,10 +250,10 @@ export default function ProjectsDashboardPage() {
       const maxPage = Math.ceil(newTotal / ITEMS_PER_PAGE) || 1
       if (page > maxPage) setPage(maxPage)
 
-      setToast({ type: "success", text: `${result.count} Project berhasil dihapus.` })
+      setToast({ type: "success", text: `已删除 ${result.count} 个项目。` })
     } catch (err: any) {
       console.error("Bulk Delete Error:", err)
-      setToast({ type: "error", text: `Gagal menghapus: ${err.message}` })
+      setToast({ type: "error", text: `删除失败：${err.message}` })
     } finally {
       setIsDeletingBulk(false)
       setBulkDeleteModal(false)
@@ -276,8 +284,8 @@ export default function ProjectsDashboardPage() {
               <FolderKanban size={14} className="text-accentColor" />
             </div>
             <div>
-              <h1 className="text-sm font-semibold text-white leading-tight">Project Manager</h1>
-              <p className="text-[10px] text-gray-500 leading-tight hidden sm:block">Kelola portofolio dan relasi database</p>
+              <h1 className="text-sm font-semibold text-white leading-tight">项目管理</h1>
+              <p className="text-[10px] text-gray-500 leading-tight hidden sm:block">管理项目内容与发布状态</p>
             </div>
           </div>
 
@@ -288,7 +296,7 @@ export default function ProjectsDashboardPage() {
                 className="flex items-center gap-2 px-3 sm:px-4 py-2 text-xs sm:text-sm font-medium bg-red-500/10 text-red-400 border border-red-500/20 rounded-xl hover:bg-red-500/20 hover:border-red-500/30 transition-all"
               >
                 <Trash2 size={14} />
-                <span className="hidden sm:inline">Hapus ({selectedIds.length})</span>
+                <span className="hidden sm:inline">删除（{selectedIds.length}）</span>
                 <span className="sm:hidden">({selectedIds.length})</span>
               </button>
             )}
@@ -296,8 +304,8 @@ export default function ProjectsDashboardPage() {
               onClick={() => setFormModal({ open: true, mode: "create" })}
               className="flex items-center gap-2 px-3 sm:px-4 py-2 text-xs sm:text-sm font-medium bg-accentColor text-white rounded-xl hover:brightness-[0.85] transition-all hover:shadow-lg hover:shadow-accentColor/20"
             >
-              <Plus size={14} /> <span className="hidden sm:inline">New Project</span>
-              <span className="sm:hidden">Baru</span>
+              <Plus size={14} /> <span className="hidden sm:inline">新建项目</span>
+              <span className="sm:hidden">新建</span>
             </button>
           </div>
         </div>
@@ -307,10 +315,10 @@ export default function ProjectsDashboardPage() {
           
           {/* ── Stats ── */}
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4">
-            <StatCard label="Total Projects" value={totalProjects} icon={<Database size={15} className="text-gray-400" />} color="default" loading={loading} />
-            <StatCard label="Published" value={publishedCount} icon={<CheckSquare size={15} className="text-accentColor" />} color="green" sub={totalProjects > 0 ? `${Math.round((publishedCount / totalProjects) * 100)}% dari total` : undefined} loading={loading} />
-            <StatCard label="Popular (Home)" value={popularCount} icon={<Sparkles size={15} className="text-amber-400" />} color="yellow" sub="Tampil di beranda" loading={loading} />
-            <StatCard label="Kategori Digunakan" value={categoryCount} icon={<Layers size={15} className="text-blue-400" />} color="blue" sub="dari 4 kategori" loading={loading} />
+            <StatCard label="项目总数" value={totalProjects} icon={<Database size={15} className="text-gray-400" />} color="default" loading={loading} />
+            <StatCard label="已发布" value={publishedCount} icon={<CheckSquare size={15} className="text-accentColor" />} color="green" sub={totalProjects > 0 ? `${Math.round((publishedCount / totalProjects) * 100)}%` : undefined} loading={loading} />
+            <StatCard label="首页精选" value={popularCount} icon={<Sparkles size={15} className="text-amber-400" />} color="yellow" sub="在首页显示" loading={loading} />
+            <StatCard label="已用分类" value={categoryCount} icon={<Layers size={15} className="text-blue-400" />} color="blue" sub="共 4 个分类" loading={loading} />
           </div>
 
           {/* ── Toolbar ── */}
@@ -319,7 +327,7 @@ export default function ProjectsDashboardPage() {
               <Search size={14} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-500 pointer-events-none" />
               <input
                 type="text" value={search} onChange={(e) => { setSearch(e.target.value); setPage(1) }}
-                placeholder="Cari project..."
+                placeholder="搜索项目"
                 className="w-full pl-9 pr-9 py-2.5 bg-white/[0.04] border border-white/[0.08] rounded-xl text-sm text-gray-200 placeholder:text-gray-600 outline-none focus:border-accentColor/50 transition-colors"
               />
               {search && (
@@ -333,21 +341,21 @@ export default function ProjectsDashboardPage() {
               <div className="relative flex-1 sm:flex-none">
                 <ListFilter size={13} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 pointer-events-none" />
                 <select value={filterCategory} onChange={(e) => { setFilterCategory(e.target.value); setPage(1) }} className="w-full sm:w-auto pl-8 pr-8 py-2.5 bg-white/[0.04] border border-white/[0.08] rounded-xl text-sm text-gray-300 outline-none focus:border-accentColor/50 transition-colors appearance-none cursor-pointer capitalize">
-                  <option value="all" className="bg-[#0d1a1a]">Semua Kategori</option>
-                  {CATEGORIES.map(c => <option key={c} value={c} className="bg-[#0d1a1a] capitalize">{c}</option>)}
+                  <option value="all" className="bg-[#0d1a1a]">全部分类</option>
+                  {CATEGORIES.map(c => <option key={c} value={c} className="bg-[#0d1a1a]">{CATEGORY_LABELS[c]}</option>)}
                 </select>
               </div>
 
               <select value={filterStatus} onChange={(e) => { setFilterStatus(e.target.value as any); setPage(1) }} className="flex-1 sm:flex-none px-3 py-2.5 bg-white/[0.04] border border-white/[0.08] rounded-xl text-sm text-gray-300 outline-none focus:border-accentColor/50 transition-colors appearance-none cursor-pointer">
-                <option value="all" className="bg-[#0d1a1a]">Semua Status</option>
-                <option value="published" className="bg-[#0d1a1a]">Published</option>
-                <option value="draft" className="bg-[#0d1a1a]">Draft</option>
+                <option value="all" className="bg-[#0d1a1a]">全部状态</option>
+                <option value="published" className="bg-[#0d1a1a]">已发布</option>
+                <option value="draft" className="bg-[#0d1a1a]">草稿</option>
               </select>
 
               {hasActiveFilters && (
                 <button onClick={resetFilters} className="flex items-center gap-1.5 px-3 py-2.5 text-xs text-gray-400 hover:text-gray-200 border border-white/[0.08] hover:border-white/20 rounded-xl transition-all shrink-0">
                   <RefreshCw size={12} />
-                  <span className="hidden sm:inline">Reset</span>
+                  <span className="hidden sm:inline">重置</span>
                 </button>
               )}
             </div>
@@ -399,11 +407,11 @@ export default function ProjectsDashboardPage() {
                           />
                         </th>
                         <th className="text-left text-[10px] font-semibold text-gray-500 uppercase tracking-widest px-2 py-3.5 w-8">#</th>
-                        <th className="text-left text-[10px] font-semibold text-gray-500 uppercase tracking-widest px-4 py-3.5 min-w-[280px]">Info Project</th>
-                        <th className="text-left text-[10px] font-semibold text-gray-500 uppercase tracking-widest px-4 py-3.5 w-36">Kategori</th>
-                        <th className="text-left text-[10px] font-semibold text-gray-500 uppercase tracking-widest px-4 py-3.5 w-32">Status</th>
-                        <th className="text-left text-[10px] font-semibold text-gray-500 uppercase tracking-widest px-4 py-3.5 w-48">Links</th>
-                        <th className="text-right text-[10px] font-semibold text-gray-500 uppercase tracking-widest px-5 py-3.5 w-24">Aksi</th>
+                        <th className="text-left text-[10px] font-semibold text-gray-500 uppercase tracking-widest px-4 py-3.5 min-w-[280px]">项目信息</th>
+                        <th className="text-left text-[10px] font-semibold text-gray-500 uppercase tracking-widest px-4 py-3.5 w-36">分类</th>
+                        <th className="text-left text-[10px] font-semibold text-gray-500 uppercase tracking-widest px-4 py-3.5 w-32">状态</th>
+                        <th className="text-left text-[10px] font-semibold text-gray-500 uppercase tracking-widest px-4 py-3.5 w-48">链接</th>
+                        <th className="text-right text-[10px] font-semibold text-gray-500 uppercase tracking-widest px-5 py-3.5 w-24">操作</th>
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-white/[0.04]">
@@ -432,7 +440,7 @@ export default function ProjectsDashboardPage() {
                 {/* Table Footer */}
                 <div className="flex flex-col sm:flex-row items-center justify-between gap-2 px-5 py-3.5 border-t border-white/[0.06] bg-white/[0.02]">
                   <p className="text-xs text-gray-500">
-                    Menampilkan <span className="text-gray-300 font-medium">{filtered.length === 0 ? 0 : Math.min((page - 1) * ITEMS_PER_PAGE + 1, filtered.length)}–{Math.min(page * ITEMS_PER_PAGE, filtered.length)}</span> dari <span className="text-gray-300 font-medium">{filtered.length}</span> entri
+                    显示 <span className="text-gray-300 font-medium">{filtered.length === 0 ? 0 : Math.min((page - 1) * ITEMS_PER_PAGE + 1, filtered.length)}–{Math.min(page * ITEMS_PER_PAGE, filtered.length)}</span>，共 <span className="text-gray-300 font-medium">{filtered.length}</span> 条
                   </p>
                   <Pagination page={page} totalPages={totalPages} onPageChange={setPage} />
                 </div>
@@ -480,10 +488,10 @@ export default function ProjectsDashboardPage() {
                 <AlertCircle size={26} className="text-red-400" />
               </div>
               <div>
-                <h3 className="text-lg font-semibold text-white mb-1.5">Hapus {selectedIds.length} Data Sekaligus?</h3>
+                <h3 className="text-lg font-semibold text-white mb-1.5">删除选中的 {selectedIds.length} 个项目？</h3>
                 <p className="text-sm text-gray-400 leading-relaxed">
-                  Apakah Anda yakin ingin menghapus {selectedIds.length} project yang dicentang beserta gambar thumbnail-nya? <br/>
-                  <span className="font-semibold text-gray-300">Tindakan ini permanen.</span>
+                  项目记录及关联缩略图将一并删除。<br/>
+                  <span className="font-semibold text-gray-300">此操作无法撤销。</span>
                 </p>
               </div>
             </div>
@@ -493,14 +501,14 @@ export default function ProjectsDashboardPage() {
                 disabled={isDeletingBulk} 
                 className="flex-1 py-2.5 text-sm font-medium text-gray-400 hover:text-white bg-white/[0.04] hover:bg-white/[0.08] border border-white/[0.08] rounded-xl transition-all disabled:opacity-50"
               >
-                Batal
+                取消
               </button>
               <button 
                 onClick={handleBulkDelete} 
                 disabled={isDeletingBulk} 
                 className="flex-1 flex items-center justify-center gap-2 py-2.5 text-sm font-medium text-white bg-red-500/90 hover:bg-red-500 rounded-xl transition-all disabled:opacity-50"
               >
-                {isDeletingBulk ? <RefreshCw size={16} className="animate-spin" /> : "Ya, Hapus Semua"}
+                {isDeletingBulk ? <RefreshCw size={16} className="animate-spin" /> : "确认全部删除"}
               </button>
             </div>
           </div>
@@ -571,7 +579,7 @@ function EmptyState({ onReset }: { onReset: () => void }) {
   return (
     <div className="flex flex-col items-center gap-3 py-14 text-gray-500">
       <FolderKanban size={28} className="opacity-30" />
-      <p className="text-sm">Tidak ada project yang cocok.</p>
+      <p className="text-sm">没有找到匹配的项目。</p>
       <button onClick={onReset} className="text-xs text-accentColor hover:underline">
         Reset filter
       </button>
@@ -633,16 +641,16 @@ function ProjectCard({ project, rowNum, onEdit, onDelete, isSelected, onToggle }
       {/* Status Badges */}
       <div className="flex items-center gap-2 flex-wrap pl-7">
         <span className={cn("text-[11px] font-medium px-2.5 py-1 rounded-lg border capitalize", CATEGORY_STYLE[project.category] ?? "bg-gray-500/15 text-gray-400 border-gray-500/20")}>
-          {project.category || "Uncategorized"}
+          {CATEGORY_LABELS[project.category] || "未分类"}
         </span>
         {project.is_popular && (
           <span className="inline-flex items-center gap-1 text-[10px] font-semibold px-1.5 py-0.5 rounded-md bg-amber-500/15 text-amber-500 border border-amber-500/20">
-            <Star size={10} className="fill-amber-500" /> Populer
+            <Star size={10} className="fill-amber-500" /> 热门
           </span>
         )}
         {!project.is_published && (
           <span className="inline-flex items-center gap-1 text-[10px] font-medium px-1.5 py-0.5 rounded-md bg-red-500/15 text-red-400 border border-red-500/20">
-            <EyeOff size={10} /> Draft
+            <EyeOff size={10} /> 草稿
           </span>
         )}
       </div>
@@ -698,7 +706,7 @@ function ProjectTableRow({ project, rowNum, onEdit, onDelete, isSelected, onTogg
 
       <td className="px-4 py-3.5">
         <span className={cn("text-[11px] font-medium px-2.5 py-1 rounded-lg border capitalize", CATEGORY_STYLE[project.category] ?? "bg-gray-500/15 text-gray-400 border-gray-500/20")}>
-          {project.category || "Uncategorized"}
+          {CATEGORY_LABELS[project.category] || "未分类"}
         </span>
       </td>
 
@@ -706,16 +714,16 @@ function ProjectTableRow({ project, rowNum, onEdit, onDelete, isSelected, onTogg
         <div className="flex flex-col gap-1.5 items-start">
           {project.is_popular ? (
             <span className="inline-flex items-center gap-1 text-[10px] font-semibold px-2 py-0.5 rounded-md bg-amber-500/15 text-amber-500 border border-amber-500/20">
-              <Star size={10} className="fill-amber-500" /> Populer
+              <Star size={10} className="fill-amber-500" /> 热门
             </span>
           ) : (
             <span className="inline-flex items-center gap-1 text-[10px] font-medium px-2 py-0.5 rounded-md bg-white/[0.05] text-gray-400 border border-white/[0.08]">
-              Standard
+              普通
             </span>
           )}
           {!project.is_published && (
             <span className="inline-flex items-center gap-1 text-[10px] font-medium px-2 py-0.5 rounded-md bg-red-500/15 text-red-400 border border-red-500/20">
-              <EyeOff size={10} /> Draft
+              <EyeOff size={10} /> 草稿
             </span>
           )}
         </div>
@@ -734,10 +742,10 @@ function ProjectTableRow({ project, rowNum, onEdit, onDelete, isSelected, onTogg
 
       <td className="px-5 py-3.5">
         <div className="flex items-center justify-end gap-1.5">
-          <button onClick={onEdit} title="Edit" className="p-2 rounded-xl text-gray-500 hover:text-accentColor hover:bg-accentColor/10 border border-transparent hover:border-accentColor/20 transition-all">
+          <button onClick={onEdit} title="编辑" className="p-2 rounded-xl text-gray-500 hover:text-accentColor hover:bg-accentColor/10 border border-transparent hover:border-accentColor/20 transition-all">
             <Edit2 size={13} />
           </button>
-          <button onClick={onDelete} title="Hapus" className="p-2 rounded-xl text-gray-500 hover:text-red-400 hover:bg-red-500/10 border border-transparent hover:border-red-500/20 transition-all">
+          <button onClick={onDelete} title="删除" className="p-2 rounded-xl text-gray-500 hover:text-red-400 hover:bg-red-500/10 border border-transparent hover:border-red-500/20 transition-all">
             <Trash2 size={13} />
           </button>
         </div>

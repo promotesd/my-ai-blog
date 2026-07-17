@@ -13,12 +13,12 @@ export async function saveDiaryOnServer(row: any, mode: "create" | "edit", idToU
   if (mode === "create") {
     const { data, error } = await supabaseAdmin.from("diaries").insert(row).select()
     if (error) return { success: false, error: error.message }
-    if (!data || data.length === 0) return { success: false, error: "Gagal membuat diary entry di database." }
+    if (!data || data.length === 0) return { success: false, error: "无法在数据库中创建日记。" }
     return { success: true, data }
   } else {
     const { data, error } = await supabaseAdmin.from("diaries").update(row).eq("id", idToUpdate).select()
     if (error) return { success: false, error: error.message }
-    if (!data || data.length === 0) return { success: false, error: "Gagal mengubah diary entry di database." }
+    if (!data || data.length === 0) return { success: false, error: "无法在数据库中更新日记。" }
     return { success: true, data }
   }
 }
@@ -26,7 +26,7 @@ export async function saveDiaryOnServer(row: any, mode: "create" | "edit", idToU
 export async function deleteDiaryOnServer(id: string) {
   const { data, error } = await supabaseAdmin.from("diaries").delete().eq("id", id).select()
   if (error) return { success: false, error: error.message }
-  if (!data || data.length === 0) return { success: false, error: "Data gagal dihapus di database." }
+  if (!data || data.length === 0) return { success: false, error: "无法从数据库中删除日记。" }
   
   return { success: true }
 }

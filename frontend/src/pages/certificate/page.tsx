@@ -22,7 +22,7 @@ import {
 } from "lucide-react"
 import { useTranslations } from "next-intl"
 import { cn } from "@/lib/utils"
-import { CERTIFICATE_CATEGORIES } from "@/data/certificateData"
+import { CERTIFICATE_CATEGORIES, getCertificateCategoryLabel } from "@/data/certificateData"
 import { fetchCertificates } from "@/lib/certificateApi"
 import type { Certificate, CertificateCategory, CertificateStatus, SortOption } from "@/types/certificate"
 import TranslateWidget from "@/components/TranslateWidget"
@@ -35,12 +35,12 @@ const PdfThumbnailComponent = dynamic(() => import("./PdfThumbnail"), { ssr: fal
 
 function formatDate(dateStr: string) {
   const d = new Date(dateStr)
-  return d.toLocaleString("default", { month: "long", timeZone: "UTC" }) + " " + d.getUTCFullYear()
+  return d.toLocaleString("zh-CN", { month: "long", timeZone: "UTC" }) + " " + d.getUTCFullYear()
 }
 
 function formatDateShort(dateStr: string) {
   const d = new Date(dateStr)
-  return d.toLocaleDateString("en-GB", { day: "2-digit", month: "short", year: "numeric", timeZone: "UTC" })
+  return d.toLocaleDateString("zh-CN", { day: "2-digit", month: "short", year: "numeric", timeZone: "UTC" })
 }
 
 function getYear(dateStr: string) {
@@ -160,7 +160,7 @@ function CertCard({ cert, onPreview, index }: { cert: Certificate; onPreview: ()
       <div className="p-4">
         {/* Category */}
         <span className={cn("inline-block text-[11px] font-semibold px-2.5 py-1 rounded-full mb-2", categoryCls)}>
-          {cert.category}
+          {getCertificateCategoryLabel(cert.category)}
         </span>
 
         {/* Title */}
@@ -302,7 +302,7 @@ function TimelineItem({ cert, onPreview, isLeft }: { cert: Certificate; onPrevie
 
             <div className="flex-1 min-w-0">
               <div className="flex flex-wrap gap-1.5 mb-1.5">
-                <span className={cn("text-[10px] font-bold px-2 py-0.5 rounded-full", categoryCls)}>{cert.category}</span>
+                <span className={cn("text-[10px] font-bold px-2 py-0.5 rounded-full", categoryCls)}>{getCertificateCategoryLabel(cert.category)}</span>
                 <span className={cn("text-[10px] font-bold px-2 py-0.5 rounded-full flex items-center gap-1", statusCfg.bg, statusCfg.text)}>
                   <span className={cn("w-1 h-1 rounded-full", statusCfg.dot)} />
                   {statusLabel}
@@ -569,7 +569,7 @@ export default function CertificatePage() {
                     : "bg-gray-100 dark:bg-gray-700/60 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600"
                 )}
               >
-                {cat === "Semua" ? t("cat_all") : cat}
+                {getCertificateCategoryLabel(cat)}
               </button>
             ))}
           </div>

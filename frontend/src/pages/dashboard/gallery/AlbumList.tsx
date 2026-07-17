@@ -33,7 +33,7 @@ function getPhotoCountForAlbum(slug: string, photos: any[]) {
 
 function formatDateShort(dateString?: string) {
   if (!dateString) return ""
-  return new Date(dateString).toLocaleDateString("id-ID", { day: "numeric", month: "short", year: "numeric" })
+  return new Date(dateString).toLocaleDateString("zh-CN", { day: "numeric", month: "short", year: "numeric" })
 }
 
 export default function AlbumList({ albums, photos, loading, searchAlbum, selectedIds, onToggle, onToggleAll, onEdit, onDelete }: AlbumListProps) {
@@ -71,7 +71,7 @@ export default function AlbumList({ albums, photos, loading, searchAlbum, select
     return (
       <div className="flex flex-col items-center gap-3 py-14 text-gray-500">
         <Folder size={28} className="opacity-30" />
-        <p className="text-sm">{searchAlbum ? "Tidak ada album yang cocok." : "Belum ada album. Buat album pertama!"}</p>
+        <p className="text-sm">{searchAlbum ? "没有匹配的相册。" : "暂无相册。"}</p>
       </div>
     )
   }
@@ -126,7 +126,7 @@ export default function AlbumList({ albums, photos, loading, searchAlbum, select
                   </span>
                 )}
                 <span className="inline-flex items-center gap-1 text-[10px] px-2 py-0.5 rounded-md bg-blue-500/10 border border-blue-500/20 text-blue-400">
-                  <ImageIcon size={9} /> {count} foto
+                  <ImageIcon size={9} /> {count} 张照片
                 </span>
               </div>
 
@@ -159,12 +159,12 @@ export default function AlbumList({ albums, photos, loading, searchAlbum, select
                   />
                 </th>
                 <th className="text-left text-[10px] font-semibold text-gray-500 uppercase tracking-widest px-2 py-3.5 w-8">#</th>
-                <th className="text-left text-[10px] font-semibold text-gray-500 uppercase tracking-widest px-4 py-3.5 min-w-[260px]">Album</th>
-                <th className="text-left text-[10px] font-semibold text-gray-500 uppercase tracking-widest px-4 py-3.5 w-36">Kategori</th>
-                <th className="text-left text-[10px] font-semibold text-gray-500 uppercase tracking-widest px-4 py-3.5 w-24">Periode</th>
-                <th className="text-left text-[10px] font-semibold text-gray-500 uppercase tracking-widest px-4 py-3.5 w-24">Foto</th>
-                <th className="text-left text-[10px] font-semibold text-gray-500 uppercase tracking-widest px-4 py-3.5 w-32">Dibuat</th>
-                <th className="text-right text-[10px] font-semibold text-gray-500 uppercase tracking-widest px-5 py-3.5 w-24">Aksi</th>
+                <th className="text-left text-[10px] font-semibold text-gray-500 uppercase tracking-widest px-4 py-3.5 min-w-[260px]">相册</th>
+                <th className="text-left text-[10px] font-semibold text-gray-500 uppercase tracking-widest px-4 py-3.5 w-36">分类</th>
+                <th className="text-left text-[10px] font-semibold text-gray-500 uppercase tracking-widest px-4 py-3.5 w-24">时间段</th>
+                <th className="text-left text-[10px] font-semibold text-gray-500 uppercase tracking-widest px-4 py-3.5 w-24">照片</th>
+                <th className="text-left text-[10px] font-semibold text-gray-500 uppercase tracking-widest px-4 py-3.5 w-32">创建时间</th>
+                <th className="text-right text-[10px] font-semibold text-gray-500 uppercase tracking-widest px-5 py-3.5 w-24">操作</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-white/[0.04]">
@@ -235,10 +235,10 @@ export default function AlbumList({ albums, photos, loading, searchAlbum, select
 
                     <td className="px-5 py-3.5">
                       <div className="flex items-center justify-end gap-1.5">
-                        <button onClick={() => onEdit(album)} title="Edit Album" className="p-2 rounded-xl text-gray-500 hover:text-accentColor hover:bg-accentColor/10 border border-transparent hover:border-accentColor/20 transition-all">
+                        <button onClick={() => onEdit(album)} title="编辑相册" className="p-2 rounded-xl text-gray-500 hover:text-accentColor hover:bg-accentColor/10 border border-transparent hover:border-accentColor/20 transition-all">
                           <Edit2 size={13} />
                         </button>
-                        <button onClick={() => onDelete(album)} title="Hapus Album" className="p-2 rounded-xl text-gray-500 hover:text-red-400 hover:bg-red-500/10 border border-transparent hover:border-red-500/20 transition-all">
+                        <button onClick={() => onDelete(album)} title="删除相册" className="p-2 rounded-xl text-gray-500 hover:text-red-400 hover:bg-red-500/10 border border-transparent hover:border-red-500/20 transition-all">
                           <Trash2 size={13} />
                         </button>
                       </div>
@@ -251,10 +251,10 @@ export default function AlbumList({ albums, photos, loading, searchAlbum, select
         </div>
         <div className="px-5 py-3.5 border-t border-white/[0.06] bg-white/[0.02]">
           <p className="text-xs text-gray-500">
-            Menampilkan <span className="text-gray-300 font-medium">{filtered.length}</span>{" "}
-            {searchAlbum ? `dari ${albums.length} ` : ""}album
+            显示 <span className="text-gray-300 font-medium">{filtered.length}</span> 个相册
+            {searchAlbum ? `，共 ${albums.length} 个` : ""}
             {selectedIds.length > 0 && (
-              <span className="ml-2 text-accentColor font-medium">· {selectedIds.length} dipilih</span>
+              <span className="ml-2 text-accentColor font-medium">· 已选择 {selectedIds.length} 个</span>
             )}
           </p>
         </div>

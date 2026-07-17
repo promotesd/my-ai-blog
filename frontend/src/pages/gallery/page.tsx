@@ -15,11 +15,10 @@ import {
   User,
   Users,
   Plus,
-  MousePointerClick,
 } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { GalleryPhoto, GalleryAlbum, GalleryCategory, GalleryGuest, SortOption } from "@/types/gallery"
-import { GALLERY_CATEGORIES } from "@/data/galleryData"
+import { GALLERY_CATEGORIES, getGalleryCategoryLabel } from "@/data/galleryData"
 import { fetchGalleryPhotos, fetchGalleryAlbums, fetchGalleryGuests } from "@/lib/galleryApi"
 
 import FeaturedCarousel from "@/components/gallery/FeaturedCarousel"
@@ -27,7 +26,7 @@ import GalleryPhotoCard from "@/components/gallery/GalleryPhotoCard"
 import GalleryAlbumCard from "@/components/gallery/GalleryAlbumCard"
 import GuestRegistrationModal from "@/components/gallery/GuestRegistrationModal"
 
-import ProfileImg from "@/assets/SAVE_20221213_123032 (1).jpg"
+import { PROFILE } from "@/config/profile"
 
 // Dynamically import lightbox to avoid SSR issues
 const GalleryLightbox = dynamic(() => import("@/components/gallery/GalleryLightbox"), {
@@ -201,12 +200,6 @@ export default function GalleryPage() {
               >
                 <Users className="w-4 h-4" />
                 <span>{t("tab_guest")}</span>
-                {ownerTab !== "guest" && (
-                  <span className="ml-1 flex items-center gap-1 text-[10px] font-normal opacity-70 bg-white/50 dark:bg-black/20 px-1.5 py-0.5 rounded-md border border-black/5 dark:border-white/10">
-                    <MousePointerClick className="w-3 h-3" />
-                    {t("click_hint")}
-                  </span>
-                )}
               </button>
               <button
                 onClick={() => switchOwnerTab("personal")}
@@ -219,12 +212,6 @@ export default function GalleryPage() {
               >
                 <User className="w-4 h-4" />
                 <span>{t("tab_personal")}</span>
-                {ownerTab !== "personal" && (
-                  <span className="ml-1 flex items-center gap-1 text-[10px] font-normal opacity-70 bg-white/50 dark:bg-black/20 px-1.5 py-0.5 rounded-md border border-black/5 dark:border-white/10">
-                    <MousePointerClick className="w-3 h-3" />
-                    {t("click_hint")}
-                  </span>
-                )}
               </button>
             </div>
           </div>
@@ -336,7 +323,7 @@ export default function GalleryPage() {
                     : "bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700"
                 )}
               >
-                {cat}
+                {getGalleryCategoryLabel(cat)}
               </button>
             ))}
           </div>
@@ -425,7 +412,7 @@ export default function GalleryPage() {
                     className="flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors border border-transparent hover:border-gray-200 dark:hover:border-gray-600"
                   >
                     <SlidersHorizontal className="w-4 h-4" />
-                    {sortBy}
+                    {sortBy === "Terbaru" ? t("sort_newest") : sortBy === "Terlama" ? t("sort_oldest") : t("sort_az")}
                     <ChevronDown className={cn("w-4 h-4 transition-transform", showSortMenu && "rotate-180")} />
                   </button>
                   {showSortMenu && (
@@ -480,7 +467,7 @@ export default function GalleryPage() {
                               : "text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700"
                           )}
                         >
-                          {y}
+                          {y === "Semua" ? t("year_label") : y}
                         </button>
                       ))}
                     </div>
@@ -554,8 +541,8 @@ export default function GalleryPage() {
                           uploaderName = guestUser ? guestUser.name : "Guest";
                           uploaderAvatar = guestUser?.avatarUrl;
                         } else {
-                          uploaderName = "Agung Kurniawan";
-                          uploaderAvatar = ProfileImg;
+                          uploaderName = "小嘟嘟";
+                          uploaderAvatar = PROFILE.avatarUrl;
                         }
 
                         return (
@@ -621,8 +608,8 @@ export default function GalleryPage() {
                           uploaderName = guestUser ? guestUser.name : "Guest";
                           uploaderAvatar = guestUser?.avatarUrl;
                         } else {
-                          uploaderName = "Agung Kurniawan";
-                          uploaderAvatar = ProfileImg;
+                          uploaderName = "小嘟嘟";
+                          uploaderAvatar = PROFILE.avatarUrl;
                         }
 
                         return (

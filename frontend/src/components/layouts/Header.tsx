@@ -81,16 +81,15 @@ export default function Header() {
       <div className="w-full h-auto bg-gray-50/90 shadow-sm dark:bg-gray-950/80 min-h-[4.5rem] flex items-center px-[5%]">
         <div className="w-full flex items-center justify-between">
           {/* Logo */}
-          <Link href="/" className="text-xl shrink-0">
+          <Link href="/" className="text-xl shrink-0 font-semibold">
             <span
               className={cn(
                 "dark:text-white hover:text-accentColor cursor-pointer transition-colors duration-200",
                 section === "#project" && "dark:text-black"
               )}
             >
-              Gungzz
+              小嘟嘟
             </span>
-            <span className="text-accentColor font-bold text-[#0EBD7A]">leefy</span>
           </Link>
 
           {/* Desktop Nav */}

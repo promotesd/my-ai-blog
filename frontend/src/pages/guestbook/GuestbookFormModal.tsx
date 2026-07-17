@@ -5,8 +5,6 @@ import { useTranslations } from "next-intl"
 import { createPortal } from "react-dom"
 import { X, Upload, ChevronRight, ChevronLeft, Send, Star, Check, ImageIcon } from "lucide-react"
 import { cn } from "@/lib/utils"
-import { supabase } from "@/lib/supabase"
-import { generateFingerprint } from "@/lib/fingerprint"
 import GuestbookCard, { GuestbookEntry } from "./GuestbookCard"
 import Image from "next/image"
 import imageCompression from "browser-image-compression"
@@ -25,13 +23,13 @@ export const MOODS = [
 
 export const REFERRAL_SOURCES = [
   "Google Search",
-  "Instagram",
-  "LinkedIn",
-  "Twitter / X",
   "Referral / Teman",
   "GitHub",
+  "xiaodudu.top",
   "Other",
 ]
+
+const QUICK_EMOJIS = ["😊", "👏", "✨", "🎉", "💡", "❤️", "👍", "🔥"]
 
 export const COLOR_PRESETS = [
   "#6366f1",
@@ -330,8 +328,7 @@ export default function GuestbookFormModal({ isOpen, onClose, onSuccess }: Props
     const e: typeof errors = {}
     if (!form.name.trim()) e.name = t("err_name")
     if (!form.city.trim()) e.city = t("err_city")
-    if (!form.profession.trim()) e.profession = t("err_profession")
-    if (!form.referral_source) e.referral_source = t("err_referral")
+    if (!form.contact.trim()) e.contact = "请填写联系方式"
     setErrors(e)
     return Object.keys(e).length === 0
   }
@@ -341,7 +338,6 @@ export default function GuestbookFormModal({ isOpen, onClose, onSuccess }: Props
     if (!form.mood) e.mood = t("err_mood")
     if (!form.rating) e.rating = t("err_rating")
     if (!form.message.trim()) e.message = t("err_message")
-    if (form.message.trim().length < 10) e.message = t("err_message_min")
     setErrors(e)
     return Object.keys(e).length === 0
   }
@@ -367,90 +363,43 @@ export default function GuestbookFormModal({ isOpen, onClose, onSuccess }: Props
     setSubmitError("")
 
     try {
-      const fingerprint = await generateFingerprint()
-
-      // Cek server-side (fingerprint + IP fallback) — mencegah bypass meskipun localStorage dihapus
-      const visitorRes = await fetch(
-        `/api/visitor-check?type=guestbook_submitted&fp=${fingerprint}`
-      ).catch(() => null)
-      if (visitorRes?.ok) {
-        const visitorData = await visitorRes.json().catch(() => null)
-        if (visitorData?.checked) {
-          localStorage.setItem("guestbook_submitted", "true")
-          throw new Error(t("err_already_submitted"))
-        }
-      }
-
-      // Check fingerprint langsung di tabel guestbook (layer kedua)
-      const { data: existing } = await supabase
-        .from("guestbook")
-        .select("id")
-        .eq("browser_fingerprint", fingerprint)
-        .single()
-
-      if (existing) {
-        localStorage.setItem("guestbook_submitted", "true")
-        throw new Error(t("err_already_submitted"))
-      }
-
       // Upload avatar if provided
       let avatarUrl: string | null = null
       if (form.avatarFile) {
-        const ext = form.avatarFile.name.split(".").pop()
-        const fileName = `avatars/${fingerprint.slice(0, 16)}-${Date.now()}.${ext}`
-        const { data: uploadData, error: uploadError } = await supabase.storage
-          .from("guestbook-avatars")
-          .upload(fileName, form.avatarFile, {
-            upsert: false,
-            cacheControl: "31536000",
-            contentType: form.avatarFile.type,
-          })
-
-        if (uploadError) {
-          throw new Error(`${t("err_upload")} ${uploadError.message}`)
+        const uploadForm = new FormData()
+        uploadForm.append("file", form.avatarFile)
+        const uploadRes = await fetch("/api/upload/guestbook", {
+          method: "POST",
+          body: uploadForm,
+        })
+        const uploadJson = await uploadRes.json().catch(() => null)
+        if (!uploadRes.ok || uploadJson?.code >= 400) {
+          throw new Error(uploadJson?.message || t("err_upload"))
         }
-
-        if (uploadData) {
-          const { data: urlData } = supabase.storage
-            .from("guestbook-avatars")
-            .getPublicUrl(uploadData.path)
-          avatarUrl = urlData.publicUrl
-        }
+        avatarUrl = uploadJson?.data?.url ?? null
       }
 
-      // Insert entry via server-side API (bypass RLS dengan service role key)
       const insertRes = await fetch("/api/guestbook", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          browser_fingerprint: fingerprint,
+          browser_fingerprint: `${Date.now()}-${crypto.randomUUID?.() ?? Math.random().toString(36).slice(2)}`,
           name: form.name.trim(),
           city: form.city.trim(),
-          profession: form.profession.trim(),
+          profession: form.profession.trim() || "访客",
           message: form.message.trim(),
-          mood: form.mood,
-          rating: form.rating,
+          mood: form.mood || "Senang",
+          rating: form.rating || 5,
           card_color: form.card_color,
           avatar_url: avatarUrl,
-          referral_source: form.referral_source,
-          contact: form.contact.trim() || null,
+          referral_source: form.referral_source || "xiaodudu.top",
+          contact: form.contact.trim(),
         }),
       })
 
       const insertJson = await insertRes.json()
       if (!insertRes.ok) throw new Error(insertJson.error ?? t("err_generic"))
       const newEntry = insertJson.data
-
-      // Save flag to localStorage
-      localStorage.setItem("guestbook_submitted", "true")
-
-      // Catat fingerprint server-side agar tidak bisa bypass dengan hapus localStorage
-      // Fingerprint sudah tersedia dari langkah validasi sebelumnya
-      fetch("/api/visitor-check", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ type: "guestbook_submitted", fingerprint }),
-      }).catch(() => {})
 
       handleClose()
       onSuccess(newEntry as GuestbookEntry)
@@ -466,6 +415,17 @@ export default function GuestbookFormModal({ isOpen, onClose, onSuccess }: Props
   }
 
   if (!isOpen) return null
+
+  const appendToMessage = (text: string) => {
+    const space = form.message && !form.message.endsWith(" ") ? " " : ""
+    update("message", `${form.message}${space}${text}`)
+  }
+
+  const addMediaUrl = (kind: "image" | "gif") => {
+    const url = window.prompt(kind === "gif" ? "输入 GIF 链接:" : "输入图片链接:")
+    if (!url) return
+    appendToMessage(kind === "gif" ? `[GIF](${url})` : `![图片](${url})`)
+  }
 
   const STEPS = [t("step_identity"), t("step_message"), t("step_preview")]
   const progress = ((step - 1) / (STEPS.length - 1)) * 100
@@ -564,7 +524,7 @@ export default function GuestbookFormModal({ isOpen, onClose, onSuccess }: Props
 
                 <div>
                   <label className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5 block">
-                    {t("label_contact")} <span className="text-gray-400 font-normal">{t("label_optional")}</span>
+                    {t("label_contact")} <span className="text-red-500">*</span>
                   </label>
                   <div className="relative">
                     <input
@@ -573,9 +533,13 @@ export default function GuestbookFormModal({ isOpen, onClose, onSuccess }: Props
                       onChange={(e) => update("contact", e.target.value)}
                       placeholder={t("contact_placeholder")}
                       maxLength={60}
-                      className="w-full px-3.5 py-2.5 rounded-xl border text-sm bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-white placeholder-gray-400 outline-none transition-all border-gray-200 dark:border-gray-700 focus:ring-2 focus:ring-accentColor/30 focus:border-accentColor"
+                      className={cn(
+                        "w-full px-3.5 py-2.5 rounded-xl border text-sm bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-white placeholder-gray-400 outline-none transition-all focus:ring-2 focus:ring-accentColor/30 focus:border-accentColor",
+                        errors.contact ? "border-red-400" : "border-gray-200 dark:border-gray-700"
+                      )}
                     />
                   </div>
+                  {errors.contact && <p className="text-xs text-red-500 mt-1">{errors.contact}</p>}
                   <p className="text-[11px] text-gray-400 mt-1">
                     {t("contact_hint")}
                   </p>
@@ -621,7 +585,7 @@ export default function GuestbookFormModal({ isOpen, onClose, onSuccess }: Props
 
                 <div>
                   <label className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5 block">
-                    {t("label_profession")} <span className="text-red-500">*</span>
+                    {t("label_profession")} <span className="text-gray-400 font-normal">{t("label_optional")}</span>
                   </label>
                   <input
                     type="text"
@@ -635,14 +599,11 @@ export default function GuestbookFormModal({ isOpen, onClose, onSuccess }: Props
                       errors.profession ? "border-red-400" : "border-gray-200 dark:border-gray-700"
                     )}
                   />
-                  {errors.profession && (
-                    <p className="text-xs text-red-500 mt-1">{errors.profession}</p>
-                  )}
                 </div>
 
                 <div>
                   <label className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5 block">
-                    {t("label_referral")} <span className="text-red-500">*</span>
+                    {t("label_referral")} <span className="text-gray-400 font-normal">{t("label_optional")}</span>
                   </label>
                   <select
                     value={form.referral_source}
@@ -658,9 +619,6 @@ export default function GuestbookFormModal({ isOpen, onClose, onSuccess }: Props
                       <option key={s} value={s}>{s}</option>
                     ))}
                   </select>
-                  {errors.referral_source && (
-                    <p className="text-xs text-red-500 mt-1">{errors.referral_source}</p>
-                  )}
                 </div>
               </div>
             )}
@@ -705,6 +663,32 @@ export default function GuestbookFormModal({ isOpen, onClose, onSuccess }: Props
                   <label className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5 block">
                     {t("label_message")} <span className="text-red-500">*</span>
                   </label>
+                  <div className="mb-2 flex flex-wrap items-center gap-1.5">
+                    {QUICK_EMOJIS.map((emoji) => (
+                      <button
+                        key={emoji}
+                        type="button"
+                        onClick={() => appendToMessage(emoji)}
+                        className="h-8 w-8 rounded-lg border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 hover:border-accentColor text-base transition-colors"
+                      >
+                        {emoji}
+                      </button>
+                    ))}
+                    <button
+                      type="button"
+                      onClick={() => addMediaUrl("image")}
+                      className="px-2.5 h-8 rounded-lg border border-gray-200 dark:border-gray-700 text-xs text-gray-600 dark:text-gray-300 hover:border-accentColor transition-colors"
+                    >
+                      图片
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => addMediaUrl("gif")}
+                      className="px-2.5 h-8 rounded-lg border border-gray-200 dark:border-gray-700 text-xs text-gray-600 dark:text-gray-300 hover:border-accentColor transition-colors"
+                    >
+                      GIF
+                    </button>
+                  </div>
                   <textarea
                     value={form.message}
                     onChange={(e) => update("message", e.target.value)}

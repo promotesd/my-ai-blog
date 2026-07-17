@@ -72,7 +72,7 @@ function GuestbookDashboardContent() {
             if (error) throw error
             setEntries(data || [])
         } catch (err: any) {
-            setToast({ type: "error", text: `Gagal memuat data: ${err.message}` })
+            setToast({ type: "error", text: `加载留言失败：${err.message}` })
         } finally {
             setLoading(false)
         }
@@ -140,7 +140,7 @@ function GuestbookDashboardContent() {
             if (!res.success) throw new Error(res.error)
 
             setEntries(prev => prev.map(e => e.id === id ? { ...e, is_approved: !currentStatus } : e))
-            setToast({ type: "success", text: !currentStatus ? "Entri disetujui untuk tampil ke publik." : "Entri disembunyikan dari publik." })
+            setToast({ type: "success", text: !currentStatus ? "留言已设为公开。" : "留言已隐藏。" })
         } catch (err: any) {
             setToast({ type: "error", text: err.message })
         }
@@ -154,7 +154,7 @@ function GuestbookDashboardContent() {
 
             await fetchEntries()
             setFormModal({ open: false, data: null })
-            setToast({ type: "success", text: "Perubahan entri berhasil disimpan." })
+            setToast({ type: "success", text: "留言修改已保存。" })
         } catch (err: any) {
             setToast({ type: "error", text: err.message })
         } finally {
@@ -174,7 +174,7 @@ function GuestbookDashboardContent() {
             await fetchEntries()
             setSelectedIds(prev => prev.filter(id => id !== item.id))
             setPage(1)
-            setToast({ type: "success", text: "Entri buku tamu berhasil dihapus." })
+            setToast({ type: "success", text: "留言删除成功。" })
         } catch (err: any) {
             setToast({ type: "error", text: err.message })
         } finally {
@@ -200,9 +200,9 @@ function GuestbookDashboardContent() {
             const maxPage = Math.ceil(newTotal / ITEMS_PER_PAGE) || 1
             if (page > maxPage) setPage(maxPage)
 
-            setToast({ type: "success", text: `${result.count} data buku tamu berhasil dihapus.` })
+            setToast({ type: "success", text: `已删除 ${result.count} 条留言。` })
         } catch (err: any) {
-            setToast({ type: "error", text: `Gagal menghapus: ${err.message}` })
+            setToast({ type: "error", text: `删除失败：${err.message}` })
         } finally {
             setIsDeletingBulk(false)
             setBulkDeleteModal(false)
@@ -230,8 +230,8 @@ function GuestbookDashboardContent() {
                             <MessageSquare size={14} className="text-accentColor" />
                         </div>
                         <div>
-                            <h1 className="text-sm font-semibold text-white leading-tight">Guestbook Moderation</h1>
-                            <p className="text-[10px] text-gray-500 leading-tight hidden sm:block">Kelola ulasan tamu dan perizinan tampil</p>
+                            <h1 className="text-sm font-semibold text-white leading-tight">留言簿管理</h1>
+                            <p className="text-[10px] text-gray-500 leading-tight hidden sm:block">管理留言内容与公开状态</p>
                         </div>
                     </div>
 
@@ -239,7 +239,7 @@ function GuestbookDashboardContent() {
                         {selectedIds.length > 0 && (
                             <button onClick={() => setBulkDeleteModal(true)} className="flex items-center gap-2 px-3 sm:px-4 py-2 text-xs sm:text-sm font-medium bg-red-500/10 text-red-400 border border-red-500/20 rounded-xl hover:bg-red-500/20 transition-all">
                                 <Trash2 size={14} />
-                                <span className="hidden sm:inline">Hapus ({selectedIds.length})</span>
+                                <span className="hidden sm:inline">删除（{selectedIds.length}）</span>
                                 <span className="sm:hidden">({selectedIds.length})</span>
                             </button>
                         )}
@@ -251,10 +251,10 @@ function GuestbookDashboardContent() {
 
                     {/* ── Stats ── */}
                     <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4">
-                        <StatCard label="Total Ulasan" value={totalEntries} icon={<MailPlus size={15} className="text-gray-400" />} color="default" loading={loading} />
-                        <StatCard label="Approved (Publik)" value={approvedCount} icon={<ShieldCheck size={15} className="text-emerald-400" />} color="green" loading={loading} />
-                        <StatCard label="Pending / Disembunyikan" value={pendingCount} icon={<ShieldAlert size={15} className="text-amber-400" />} color="yellow" loading={loading} />
-                        <StatCard label="Rata-rata Rating" value={avgRating} icon={<Star size={15} className="text-purple-400" />} color="purple" loading={loading} />
+                        <StatCard label="留言总数" value={totalEntries} icon={<MailPlus size={15} className="text-gray-400" />} color="default" loading={loading} />
+                        <StatCard label="公开显示" value={approvedCount} icon={<ShieldCheck size={15} className="text-emerald-400" />} color="green" loading={loading} />
+                        <StatCard label="待审核或隐藏" value={pendingCount} icon={<ShieldAlert size={15} className="text-amber-400" />} color="yellow" loading={loading} />
+                        <StatCard label="平均评分" value={avgRating} icon={<Star size={15} className="text-purple-400" />} color="purple" loading={loading} />
                     </div>
 
                     {/* ── Toolbar ── */}
@@ -263,7 +263,7 @@ function GuestbookDashboardContent() {
                             <Search size={14} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-500 pointer-events-none" />
                             <input
                                 type="text" value={search} onChange={(e) => { setSearch(e.target.value); setPage(1) }}
-                                placeholder="Cari nama atau isi ulasan..."
+                                placeholder="搜索名称或留言内容"
                                 className="w-full pl-9 pr-9 py-2.5 bg-white/[0.04] border border-white/[0.08] rounded-xl text-sm text-gray-200 placeholder:text-gray-600 outline-none focus:border-accentColor/50 transition-colors"
                             />
                             {search && (
@@ -273,15 +273,15 @@ function GuestbookDashboardContent() {
 
                         <div className="flex items-center gap-2">
                             <select value={filterApproval} onChange={(e) => { setFilterApproval(e.target.value); setPage(1) }} className="flex-1 sm:w-auto px-3 py-2.5 bg-white/[0.04] border border-white/[0.08] rounded-xl text-sm text-gray-300 outline-none focus:border-accentColor/50 transition-colors appearance-none cursor-pointer">
-                                <option value="all" className="bg-[#0d1a1a]">Semua Status</option>
-                                <option value="approved" className="bg-[#0d1a1a]">Approved (Publik)</option>
-                                <option value="pending" className="bg-[#0d1a1a]">Pending (Tersembunyi)</option>
+                                <option value="all" className="bg-[#0d1a1a]">全部状态</option>
+                                <option value="approved" className="bg-[#0d1a1a]">已公开</option>
+                                <option value="pending" className="bg-[#0d1a1a]">待审核或隐藏</option>
                             </select>
 
                             {hasActiveFilters && (
                                 <button onClick={resetFilters} className="flex items-center gap-1.5 px-3 py-2.5 text-xs text-gray-400 hover:text-gray-200 border border-white/[0.08] hover:border-white/20 rounded-xl transition-all shrink-0">
                                     <RefreshCw size={12} />
-                                    <span className="hidden sm:inline">Reset</span>
+                                    <span className="hidden sm:inline">重置</span>
                                 </button>
                             )}
                         </div>
@@ -321,10 +321,10 @@ function GuestbookDashboardContent() {
                                             <tr className="bg-white/[0.04] border-b border-white/[0.06]">
                                                 <th className="px-4 py-3.5 w-12 text-left"><input type="checkbox" checked={paginated.length > 0 && selectedIds.length === paginated.length} onChange={toggleSelectAll} className="w-4 h-4 rounded cursor-pointer accent-accentColor bg-white/[0.05] border-white/[0.1]" /></th>
                                                 <th className="text-left text-[10px] font-semibold text-gray-500 uppercase tracking-widest px-2 py-3.5 w-8">#</th>
-                                                <th className="text-left text-[10px] font-semibold text-gray-500 uppercase tracking-widest px-4 py-3.5 min-w-[240px]">Pengunjung</th>
-                                                <th className="text-left text-[10px] font-semibold text-gray-500 uppercase tracking-widest px-4 py-3.5 min-w-[300px]">Isi Ulasan & Rating</th>
-                                                <th className="text-left text-[10px] font-semibold text-gray-500 uppercase tracking-widest px-4 py-3.5 w-32">Status (Moderasi)</th>
-                                                <th className="text-right text-[10px] font-semibold text-gray-500 uppercase tracking-widest px-5 py-3.5 w-24">Aksi</th>
+                                                <th className="text-left text-[10px] font-semibold text-gray-500 uppercase tracking-widest px-4 py-3.5 min-w-[240px]">访客</th>
+                                                <th className="text-left text-[10px] font-semibold text-gray-500 uppercase tracking-widest px-4 py-3.5 min-w-[300px]">留言内容与评分</th>
+                                                <th className="text-left text-[10px] font-semibold text-gray-500 uppercase tracking-widest px-4 py-3.5 w-32">审核状态</th>
+                                                <th className="text-right text-[10px] font-semibold text-gray-500 uppercase tracking-widest px-5 py-3.5 w-24">操作</th>
                                             </tr>
                                         </thead>
                                         <tbody className="divide-y divide-white/[0.04]">
@@ -346,7 +346,7 @@ function GuestbookDashboardContent() {
                                 </div>
 
                                 <div className="flex flex-col sm:flex-row items-center justify-between gap-2 px-5 py-3.5 border-t border-white/[0.06] bg-white/[0.02]">
-                                    <p className="text-xs text-gray-500">Menampilkan <span className="text-gray-300 font-medium">{filtered.length === 0 ? 0 : Math.min((page - 1) * ITEMS_PER_PAGE + 1, filtered.length)}–{Math.min(page * ITEMS_PER_PAGE, filtered.length)}</span> dari <span className="text-gray-300 font-medium">{filtered.length}</span> entri</p>
+                                    <p className="text-xs text-gray-500">显示第 <span className="text-gray-300 font-medium">{filtered.length === 0 ? 0 : Math.min((page - 1) * ITEMS_PER_PAGE + 1, filtered.length)}–{Math.min(page * ITEMS_PER_PAGE, filtered.length)}</span> 条，共 <span className="text-gray-300 font-medium">{filtered.length}</span> 条</p>
                                     <Pagination page={page} totalPages={totalPages} onPageChange={setPage} />
                                 </div>
                             </div>
@@ -374,14 +374,14 @@ function GuestbookDashboardContent() {
                         <div className="p-6 text-center space-y-4 mt-2">
                             <div className="w-14 h-14 rounded-full bg-red-500/10 flex items-center justify-center mx-auto border border-red-500/20"><AlertCircle size={26} className="text-red-400" /></div>
                             <div>
-                                <h3 className="text-lg font-semibold text-white mb-1.5">Hapus {selectedIds.length} Entri?</h3>
-                                <p className="text-sm text-gray-400 leading-relaxed">Apakah Anda yakin ingin menghapus {selectedIds.length} buku tamu beserta avatarnya? <span className="font-semibold text-gray-300">Tindakan ini tidak dapat dibatalkan.</span></p>
+                                <h3 className="text-lg font-semibold text-white mb-1.5">删除选中的 {selectedIds.length} 条留言？</h3>
+                                <p className="text-sm text-gray-400 leading-relaxed">确定删除选中的 {selectedIds.length} 条留言及其头像吗？<span className="font-semibold text-gray-300">此操作不可撤销。</span></p>
                             </div>
                         </div>
                         <div className="flex items-center gap-3 px-6 py-4 bg-white/[0.02] border-t border-white/[0.06]">
-                            <button onClick={() => setBulkDeleteModal(false)} disabled={isDeletingBulk} className="flex-1 py-2.5 text-sm font-medium text-gray-400 hover:text-white bg-white/[0.04] hover:bg-white/[0.08] border border-white/[0.08] rounded-xl transition-all">Batal</button>
+                            <button onClick={() => setBulkDeleteModal(false)} disabled={isDeletingBulk} className="flex-1 py-2.5 text-sm font-medium text-gray-400 hover:text-white bg-white/[0.04] hover:bg-white/[0.08] border border-white/[0.08] rounded-xl transition-all">取消</button>
                             <button onClick={handleBulkDelete} disabled={isDeletingBulk} className="flex-1 flex items-center justify-center gap-2 py-2.5 text-sm font-medium text-white bg-red-500/90 hover:bg-red-500 rounded-xl transition-all">
-                                {isDeletingBulk ? <RefreshCw size={16} className="animate-spin" /> : "Ya, Hapus Semua"}
+                                {isDeletingBulk ? <RefreshCw size={16} className="animate-spin" /> : "确认全部删除"}
                             </button>
                         </div>
                     </div>
@@ -425,8 +425,8 @@ function EmptyState({ onReset }: { onReset: () => void }) {
     return (
         <div className="flex flex-col items-center gap-3 py-14 text-gray-500">
             <MessageSquare size={28} className="opacity-30" />
-            <p className="text-sm">Tidak ada entri yang ditemukan.</p>
-            <button onClick={onReset} className="text-xs text-accentColor hover:underline">Reset filter</button>
+            <p className="text-sm">没有找到匹配的留言。</p>
+            <button onClick={onReset} className="text-xs text-accentColor hover:underline">重置筛选</button>
         </div>
     )
 }
@@ -479,7 +479,7 @@ function EntryCard({ item, rowNum, onEdit, onDelete, isSelected, onToggle, onTog
             <div className="flex items-center justify-between gap-4 pl-7 pt-2 border-t border-white/[0.06]">
                 <button onClick={onToggleApprove} className={cn("flex items-center gap-1.5 px-2 py-1.5 rounded-lg border text-[10px] font-medium transition-colors", item.is_approved ? "bg-emerald-500/10 text-emerald-400 border-emerald-500/20 hover:bg-emerald-500/20" : "bg-amber-500/10 text-amber-400 border-amber-500/20 hover:bg-amber-500/20")}>
                     {item.is_approved ? <ShieldCheck size={12} /> : <ShieldAlert size={12} />}
-                    {item.is_approved ? "Approved" : "Pending"}
+                    {item.is_approved ? "已公开" : "待审核"}
                 </button>
                 <div className="flex items-center gap-1.5 shrink-0">
                     <button onClick={onEdit} className="p-2 rounded-xl text-gray-500 hover:text-accentColor hover:bg-accentColor/10 border border-transparent hover:border-accentColor/20 transition-all"><Edit2 size={13} /></button>
@@ -522,16 +522,16 @@ function EntryTableRow({ item, rowNum, onEdit, onDelete, isSelected, onToggle, o
             <td className="px-4 py-3.5">
                 <button onClick={onToggleApprove} className={cn("flex items-center gap-1.5 px-2 py-1.5 rounded-lg border text-[10px] font-medium transition-colors", item.is_approved ? "bg-emerald-500/10 text-emerald-400 border-emerald-500/20 hover:bg-emerald-500/20" : "bg-amber-500/10 text-amber-400 border-amber-500/20 hover:bg-amber-500/20")}>
                     {item.is_approved ? <ShieldCheck size={12} /> : <ShieldAlert size={12} />}
-                    {item.is_approved ? "Approved" : "Pending"}
+                    {item.is_approved ? "已公开" : "待审核"}
                 </button>
             </td>
 
             <td className="px-5 py-3.5">
                 <div className="flex items-center justify-end gap-1.5">
-                    <button onClick={onEdit} title="Edit" className="p-2 rounded-xl text-gray-500 hover:text-accentColor hover:bg-accentColor/10 border border-transparent hover:border-accentColor/20 transition-all">
+                    <button onClick={onEdit} title="编辑" className="p-2 rounded-xl text-gray-500 hover:text-accentColor hover:bg-accentColor/10 border border-transparent hover:border-accentColor/20 transition-all">
                         <Edit2 size={13} />
                     </button>
-                    <button onClick={onDelete} title="Hapus" className="p-2 rounded-xl text-gray-500 hover:text-red-400 hover:bg-red-500/10 border border-transparent hover:border-red-500/20 transition-all">
+                    <button onClick={onDelete} title="删除" className="p-2 rounded-xl text-gray-500 hover:text-red-400 hover:bg-red-500/10 border border-transparent hover:border-red-500/20 transition-all">
                         <Trash2 size={13} />
                     </button>
                 </div>
@@ -547,7 +547,7 @@ function GuestbookLoadingFallback() {
         <div className="flex items-center justify-center h-full min-h-[400px]">
             <div className="flex flex-col items-center gap-3">
                 <div className="w-6 h-6 border-2 border-accentColor border-t-transparent rounded-full animate-spin" />
-                <p className="text-xs text-gray-500">Memuat halaman...</p>
+                <p className="text-xs text-gray-500">正在加载页面...</p>
             </div>
         </div>
     )

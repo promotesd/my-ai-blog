@@ -5,13 +5,8 @@ import { useParams } from "next/navigation"
 import Link from "next/link"
 import Image from "next/image"
 import { useTranslations, useLocale } from "next-intl"
-import { createClient } from "@supabase/supabase-js"
 import { ChevronLeft, Globe, Download, Smartphone, Calendar, Info, ExternalLink, Apple, Play } from "lucide-react"
 import TranslateWidget from "@/components/TranslateWidget" // Pastikan path ini benar
-
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || ""
-const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || ""
-const supabase = createClient(supabaseUrl, supabaseKey)
 
 // ─── Shimmer Skeleton ────────────────────────────────────────────────────────
 
@@ -106,16 +101,8 @@ export default function ProjectDetailPage() {
 
   useEffect(() => {
     async function fetchDetail() {
-      const { data } = await supabase
-        .from("deployed_projects")
-        .select("*")
-        .eq("slug", slug)
-        .single()
-
-      if (data) {
-        setProject(data)
-        setActiveImage(data.thumbnail_url)
-      }
+      void slug
+      setProject(null)
       setIsLoading(false)
     }
     fetchDetail()
@@ -125,8 +112,7 @@ export default function ProjectDetailPage() {
     if (project.external_apk_url) {
       window.open(project.external_apk_url, "_blank")
     } else if (project.apk_file_path) {
-      const { data } = supabase.storage.from("project-files").getPublicUrl(project.apk_file_path)
-      window.open(data.publicUrl, "_blank")
+      return
     }
   }
 
@@ -213,7 +199,7 @@ export default function ProjectDetailPage() {
             <div className="flex flex-wrap items-center gap-3 text-sm text-gray-500 dark:text-gray-400">
               <span className="flex items-center gap-1.5">
                 <Calendar size={14} />
-                {t("updated_at")}: {new Date(project.updated_at || project.published_at).toLocaleDateString(locale === "id" ? "id-ID" : locale === "de" ? "de-DE" : "en-US", { day: "numeric", month: "short", year: "numeric" })}
+                {t("updated_at")}: {new Date(project.updated_at || project.published_at).toLocaleDateString(locale === "zh" ? "zh-CN" : "en-US", { day: "numeric", month: "short", year: "numeric" })}
               </span>
               <span className="flex items-center gap-1.5 bg-gray-100 dark:bg-gray-800 px-2.5 py-1 rounded-md text-xs font-medium">
                 {platform.includes("web")
@@ -335,7 +321,7 @@ export default function ProjectDetailPage() {
               {/* Tech stack card */}
               <div className="bg-white dark:bg-[#161D1F] border border-gray-200 dark:border-gray-800 rounded-2xl p-5 sm:p-6">
                 <h3 className="font-semibold text-gray-900 dark:text-white mb-4 text-sm sm:text-base">
-                  Tech Stack
+                  技术栈
                 </h3>
                 <div className="flex flex-wrap gap-2">
                   {project.tags.map((tag: string) => (

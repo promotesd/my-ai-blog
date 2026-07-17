@@ -106,22 +106,22 @@ export default function BlogSection() {
               <BlogCard key={blog.id} item={blog} />
             ))
           ) : (
-            <div className="w-full text-center text-gray-500 dark:text-gray-400 py-10">Belum ada artikel yang ditampilkan.</div>
+            <div className="w-full text-center text-gray-500 dark:text-gray-400 py-10">暂无博客文章。</div>
           )}
         </div>
 
-        <Link
-          href='https://www.tiktok.com/@agungkurniawan.id?_t=ZS-8t6x1wpm4z2&_r=1'
-          target="_blank"
-          aria-label="Follow up on my medium account"
-          rel="noopener noreferrer"
-          className="flex items-center gap-2"
-        >
-          <div className="text-accentColor navlink text-sm italic">
-            {t("follow")}
-          </div>
-          <ArrowRight color="white" size={15} />
-        </Link>
+        {t("follow") && (
+          <Link
+            href="/blogs"
+            aria-label="View blog page"
+            className="flex items-center gap-2"
+          >
+            <div className="text-accentColor navlink text-sm italic">
+              {t("follow")}
+            </div>
+            <ArrowRight color="white" size={15} />
+          </Link>
+        )}
       </div>
     </section>
   )

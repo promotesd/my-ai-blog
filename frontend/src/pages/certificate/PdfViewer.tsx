@@ -10,6 +10,7 @@ import {
   FileX,
 } from "lucide-react"
 import { cn } from "@/lib/utils"
+import { getCertificateCategoryLabel } from "@/data/certificateData"
 import type { Certificate } from "@/types/certificate"
 
 interface PdfViewerProps {
@@ -18,16 +19,14 @@ interface PdfViewerProps {
 }
 
 const STATUS_CONFIG = {
-  Valid:    { bg: "bg-emerald-100 dark:bg-emerald-900/40", text: "text-emerald-700 dark:text-emerald-400", dot: "bg-emerald-500", label: "Valid" },
-  Expired:  { bg: "bg-red-100 dark:bg-red-900/40",         text: "text-red-700 dark:text-red-400",         dot: "bg-red-500",     label: "Expired" },
-  Lifetime: { bg: "bg-blue-100 dark:bg-blue-900/40",       text: "text-blue-700 dark:text-blue-400",       dot: "bg-blue-500",    label: "Lifetime" },
+  Valid:    { bg: "bg-emerald-100 dark:bg-emerald-900/40", text: "text-emerald-700 dark:text-emerald-400", dot: "bg-emerald-500", label: "有效" },
+  Expired:  { bg: "bg-red-100 dark:bg-red-900/40",         text: "text-red-700 dark:text-red-400",         dot: "bg-red-500",     label: "已过期" },
+  Lifetime: { bg: "bg-blue-100 dark:bg-blue-900/40",       text: "text-blue-700 dark:text-blue-400",       dot: "bg-blue-500",    label: "长期有效" },
 }
-
-const ID_MONTHS = ["Januari","Februari","Maret","April","Mei","Juni","Juli","Agustus","September","Oktober","November","Desember"]
 
 function formatDate(dateStr: string) {
   const d = new Date(dateStr)
-  return `${d.getUTCDate()} ${ID_MONTHS[d.getUTCMonth()]} ${d.getUTCFullYear()}`
+  return d.toLocaleDateString("zh-CN", { year: "numeric", month: "long", day: "numeric", timeZone: "UTC" })
 }
 
 export default function PdfViewer({ certificate, onClose }: PdfViewerProps) {
@@ -49,7 +48,7 @@ export default function PdfViewer({ certificate, onClose }: PdfViewerProps) {
         <button
           onClick={onClose}
           className="absolute top-3 right-3 z-20 p-2 rounded-full bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors shadow-sm"
-          aria-label="Tutup"
+          aria-label="关闭"
         >
           <X className="w-5 h-5 text-gray-600 dark:text-gray-300" />
         </button>
@@ -59,7 +58,7 @@ export default function PdfViewer({ certificate, onClose }: PdfViewerProps) {
           
           {/* Header Mobile Only (Optional) */}
           <div className="md:hidden flex items-center justify-between px-4 py-3 border-b border-gray-100 dark:border-gray-800 bg-gray-50 dark:bg-gray-800/50 shrink-0 z-10">
-            <span className="text-sm font-medium text-gray-500 dark:text-gray-400">Pratinjau Sertifikat</span>
+            <span className="text-sm font-medium text-gray-500 dark:text-gray-400">证书预览</span>
           </div>
 
           {/* Preview content using Native Browser PDF Viewer */}
@@ -68,7 +67,7 @@ export default function PdfViewer({ certificate, onClose }: PdfViewerProps) {
               <iframe 
                 src={`${certificate.pdf_url}#view=FitH`} 
                 className="w-full h-full border-0"
-                title={`Sertifikat ${certificate.title}`}
+                title={`证书 ${certificate.title}`}
                 loading="lazy"
               />
             ) : certificate.thumbnail_url && !thumbError ? (
@@ -86,7 +85,7 @@ export default function PdfViewer({ certificate, onClose }: PdfViewerProps) {
                   <div className="absolute bottom-4 left-1/2 -translate-x-1/2">
                     <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold bg-amber-100 dark:bg-amber-900/80 text-amber-800 dark:text-amber-200 border border-amber-200 dark:border-amber-700/50 shadow-md backdrop-blur-sm whitespace-nowrap">
                       <Clock className="w-3.5 h-3.5 shrink-0" />
-                      Hanya Menampilkan Gambar Pratinjau
+                      仅显示图片预览
                     </span>
                   </div>
                 </div>
@@ -98,9 +97,9 @@ export default function PdfViewer({ certificate, onClose }: PdfViewerProps) {
                   <FileX className="w-10 h-10 text-gray-400 dark:text-gray-500" />
                 </div>
                 <div>
-                  <p className="font-semibold text-gray-700 dark:text-gray-200">Pratinjau tidak tersedia</p>
+                  <p className="font-semibold text-gray-700 dark:text-gray-200">暂无预览</p>
                   <p className="text-sm text-gray-500 dark:text-gray-400 mt-1 max-w-xs">
-                    File PDF untuk sertifikat ini belum diunggah atau sedang diproses.
+                    这个证书的 PDF 暂未上传或正在处理中。
                   </p>
                 </div>
               </div>
@@ -120,7 +119,7 @@ export default function PdfViewer({ certificate, onClose }: PdfViewerProps) {
 
             {/* Category badge */}
             <span className="ml-2 inline-flex items-center text-xs font-medium px-2.5 py-1.5 rounded-full bg-accentColor/10 text-accentColor">
-              {certificate.category}
+              {getCertificateCategoryLabel(certificate.category)}
             </span>
 
             <h2 className="mt-4 font-bold text-xl text-gray-900 dark:text-white leading-snug">
@@ -143,20 +142,20 @@ export default function PdfViewer({ certificate, onClose }: PdfViewerProps) {
           <div className="p-6 space-y-5 flex-1">
             {certificate.description && (
               <div>
-                <p className="text-xs uppercase tracking-wider text-gray-400 dark:text-gray-500 font-bold mb-2">Deskripsi</p>
+                <p className="text-xs uppercase tracking-wider text-gray-400 dark:text-gray-500 font-bold mb-2">描述</p>
                 <p className="text-sm text-gray-600 dark:text-gray-300 leading-relaxed">{certificate.description}</p>
               </div>
             )}
 
             <div className="grid grid-cols-2 gap-3 mt-4">
               <div className="bg-gray-50 dark:bg-gray-800/60 rounded-xl p-3 border border-gray-100 dark:border-gray-700/50">
-                <p className="text-xs text-gray-400 dark:text-gray-500 mb-1 font-medium">Tanggal Terbit</p>
+                <p className="text-xs text-gray-400 dark:text-gray-500 mb-1 font-medium">颁发日期</p>
                 <p className="text-sm font-semibold text-gray-800 dark:text-white">{formatDate(certificate.issue_date)}</p>
               </div>
               <div className="bg-gray-50 dark:bg-gray-800/60 rounded-xl p-3 border border-gray-100 dark:border-gray-700/50">
-                <p className="text-xs text-gray-400 dark:text-gray-500 mb-1 font-medium">Berlaku Hingga</p>
+                <p className="text-xs text-gray-400 dark:text-gray-500 mb-1 font-medium">有效期至</p>
                 <p className="text-sm font-semibold text-gray-800 dark:text-white">
-                  {certificate.expiry_date ? formatDate(certificate.expiry_date) : "Seumur Hidup"}
+                  {certificate.expiry_date ? formatDate(certificate.expiry_date) : "长期有效"}
                 </p>
               </div>
             </div>
@@ -171,12 +170,12 @@ export default function PdfViewer({ certificate, onClose }: PdfViewerProps) {
                 className="w-full inline-flex items-center justify-center gap-2 px-4 py-3.5 rounded-xl bg-accentColor text-white font-semibold text-sm hover:bg-accentColor/90 hover:shadow-lg hover:shadow-accentColor/20 active:scale-[0.98] transition-all duration-200"
               >
                 <Download className="w-4 h-4" />
-                Unduh Sertifikat PDF
+                下载证书 PDF
               </a>
             ) : (
               <div className="w-full inline-flex items-center justify-center gap-2 px-4 py-3.5 rounded-xl bg-gray-100 dark:bg-gray-800 text-gray-400 dark:text-gray-500 font-semibold text-sm cursor-not-allowed select-none border border-gray-200 dark:border-gray-700">
                 <Award className="w-4 h-4" />
-                File PDF Tidak Tersedia
+                暂无 PDF 文件
               </div>
             )}
           </div>

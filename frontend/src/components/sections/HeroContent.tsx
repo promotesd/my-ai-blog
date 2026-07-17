@@ -4,6 +4,7 @@ import { gsap } from "gsap";
 import { ScrollTrigger } from "gsap/dist/ScrollTrigger";
 import Link from "next/link";
 import { useTranslations } from "next-intl";
+import { PROFILE } from "@/config/profile";
 
 export default function HeroContent() {
   const sectionRef = useRef(null);
@@ -72,9 +73,8 @@ export default function HeroContent() {
       </div>
 
       <Link
-        href="https://wa.me/6281331640909"
+        href={`mailto:${PROFILE.email}`}
         aria-label="Contact Me"
-        target="_blank"
         className="contact_me_btn px-4 py-[6px] shadow-md mt-10 md:mt-3 group flex items-center gap-2"
       >
         <div className="dark:text-black relative z-[3] text-sm">

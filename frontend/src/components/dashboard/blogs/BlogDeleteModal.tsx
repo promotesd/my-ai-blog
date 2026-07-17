@@ -58,9 +58,9 @@ export default function BlogDeleteModal({
 
           {/* Title */}
           <div className="space-y-1.5">
-            <h3 className="text-base font-semibold text-white">Delete Blog Post</h3>
+            <h3 className="text-base font-semibold text-white">删除文章</h3>
             <p className="text-sm text-gray-400 leading-relaxed">
-              Yakin ingin menghapus
+              确定要删除
               <br />
               <span className="text-gray-200 font-medium">&quot;{blogTitle}&quot;</span>?
             </p>
@@ -73,7 +73,7 @@ export default function BlogDeleteModal({
           <div className="flex items-center gap-2 p-3 rounded-xl bg-red-500/[0.08] border border-red-500/20 text-left">
             <AlertTriangle size={13} className="text-red-400 shrink-0" />
             <p className="text-xs text-red-400/80">
-              Aksi ini tidak dapat dibatalkan. Data akan dihapus permanen dari Supabase.
+              此操作不可撤销，文章和相关文件会被永久删除。
             </p>
           </div>
 
@@ -83,7 +83,7 @@ export default function BlogDeleteModal({
               onClick={onClose}
               className="flex-1 py-2.5 text-sm font-medium text-gray-400 border border-white/[0.08] rounded-xl hover:border-white/20 hover:text-gray-200 transition-all"
             >
-              Batal
+              取消
             </button>
             <button
               onClick={handleDelete}
@@ -91,7 +91,7 @@ export default function BlogDeleteModal({
               className="flex-1 flex items-center justify-center gap-2 py-2.5 text-sm font-medium bg-red-500/20 text-red-400 border border-red-500/30 rounded-xl hover:bg-red-500/30 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
             >
               {loading && <Loader2 size={13} className="animate-spin" />}
-              {loading ? "Menghapus..." : "Hapus Post"}
+              {loading ? "删除中..." : "删除文章"}
             </button>
           </div>
         </div>

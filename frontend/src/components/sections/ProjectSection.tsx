@@ -12,6 +12,7 @@ import { RoughNotation } from "react-rough-notation";
 import ProjectCard from "../ProjectCard";
 import { useTranslations } from "next-intl";
 import { fetchPopularProjects } from "@/lib/projectsApi";
+import { PROFILE } from "@/config/profile";
 
 // ─── Skeleton card shown while Supabase data is loading ──────────────────────
 function ProjectCardSkeleton() {
@@ -108,12 +109,14 @@ export default function ProjectSection() {
               {t("title")}
             </div>
           </RoughNotation>
-          <div ref={elementRef} className="overflow-hidden ">
-            <div className="qoutes-animation md:w-full text-center font-medium flex flex-col items-center text-black">
-              <div>{t("quote_line1")}</div>
-              <div>{t("quote_line2")}</div>
+          {(t("quote_line1") || t("quote_line2")) && (
+            <div ref={elementRef} className="overflow-hidden ">
+              <div className="qoutes-animation md:w-full text-center font-medium flex flex-col items-center text-black">
+                {t("quote_line1") && <div>{t("quote_line1")}</div>}
+                {t("quote_line2") && <div>{t("quote_line2")}</div>}
+              </div>
             </div>
-          </div>
+          )}
         </div>
         <div className="w-full pt-40 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10">
           {loading
@@ -125,20 +128,19 @@ export default function ProjectSection() {
                 <ProjectCard key={project.id} item={project} />
               ))
             ) : (
-              <div className="col-span-1 md:col-span-2 lg:col-span-3 text-center text-gray-500 dark:text-gray-400 py-10">Belum ada project yang ditampilkan.</div>
+              <div className="col-span-1 md:col-span-2 lg:col-span-3 text-center text-gray-500 dark:text-gray-400 py-10">暂无项目。</div>
             )}
         </div>
 
         <div className="font-medium text-black">
-          {t("see_more")}{" "}
           <Link
-            href="https://github.com/agungkurniawanid"
+            href={PROFILE.githubUrl}
             target="_blank"
             aria-label="Expore more in my github profile"
             rel="noopener noreferrer"
             className="text-accentColor navlink hover:text-accentColor"
           >
-            my github profile
+            {t("see_more") || "GitHub"}
           </Link>
         </div>
       </div>

@@ -46,11 +46,11 @@ export default function ProjectDeleteModal({
             <AlertTriangle size={26} className="text-red-400" />
           </div>
           <div>
-            <h3 className="text-lg font-semibold text-white mb-1.5">Hapus Project?</h3>
+            <h3 className="text-lg font-semibold text-white mb-1.5">删除项目？</h3>
             <p className="text-sm text-gray-400 leading-relaxed">
-              Apakah Anda yakin ingin menghapus project <br/>
-              <span className="text-gray-200 font-medium">"{projectTitle}"</span>?<br/>
-              Tindakan ini permanen dan akan menghapus relasi data serta gambar cover-nya.
+              确定要删除项目<br/>
+              <span className="text-gray-200 font-medium">“{projectTitle}”</span>吗？<br/>
+              此操作不可撤销，并会删除关联数据和项目封面。
             </p>
           </div>
         </div>
@@ -62,14 +62,14 @@ export default function ProjectDeleteModal({
             disabled={isDeleting}
             className="flex-1 py-2.5 text-sm font-medium text-gray-400 hover:text-white bg-white/[0.04] hover:bg-white/[0.08] border border-white/[0.08] rounded-xl transition-all disabled:opacity-50"
           >
-            Batal
+            取消
           </button>
           <button
             onClick={handleConfirm}
             disabled={isDeleting}
             className="flex-1 flex items-center justify-center gap-2 py-2.5 text-sm font-medium text-white bg-red-500/90 hover:bg-red-500 rounded-xl transition-all disabled:opacity-50"
           >
-            {isDeleting ? <Loader2 size={16} className="animate-spin" /> : "Ya, Hapus"}
+            {isDeleting ? <Loader2 size={16} className="animate-spin" /> : "确认删除"}
           </button>
         </div>
       </div>

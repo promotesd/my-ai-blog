@@ -1,7 +1,8 @@
 "use client"
 
 import { useDiaryStore } from "@/stores/DiaryStore"
-import { X, Calendar, Tag } from "lucide-react"
+import { useEffect, useMemo, useState } from "react"
+import { X, Calendar, MessageCircle, Send } from "lucide-react"
 import { useTranslations } from "next-intl"
 import { formatDate } from "@/lib/utils"
 
@@ -26,8 +27,28 @@ export default function DiaryEntryModal({ entryId, onClose }: DiaryEntryModalPro
   const t = useTranslations("diaryPage")
   const { diaries } = useDiaryStore()
   const entry = diaries.find((d) => d.id === entryId)
+  const storageKey = useMemo(() => `diary_comments_${entryId}`, [entryId])
+  const [comments, setComments] = useState<Array<{ id: string; text: string; createdAt: string }>>([])
+  const [commentText, setCommentText] = useState("")
+
+  useEffect(() => {
+    const raw = localStorage.getItem(storageKey)
+    setComments(raw ? JSON.parse(raw) : [])
+  }, [storageKey])
 
   if (!entry) return null
+
+  const saveComments = (next: typeof comments) => {
+    setComments(next)
+    localStorage.setItem(storageKey, JSON.stringify(next))
+  }
+
+  const addComment = () => {
+    const text = commentText.trim()
+    if (!text) return
+    saveComments([{ id: crypto.randomUUID?.() ?? String(Date.now()), text, createdAt: new Date().toISOString() }, ...comments])
+    setCommentText("")
+  }
 
   const getMoodLabel = (mood: string) => {
     const key = `mood_${mood.toLowerCase()}` as any
@@ -108,6 +129,57 @@ export default function DiaryEntryModal({ entryId, onClose }: DiaryEntryModalPro
             <span>
               Last updated: {new Date(entry.updated_at).toLocaleDateString()}
             </span>
+          </div>
+
+          <div className="mt-8 pt-6 border-t border-gray-200 dark:border-gray-700">
+            <div className="flex items-center gap-2 mb-4">
+              <MessageCircle size={18} className="text-accentColor" />
+              <h3 className="font-semibold text-gray-900 dark:text-white">评论</h3>
+              <span className="text-xs text-gray-400">{comments.length}</span>
+            </div>
+            <div className="rounded-xl border border-gray-200 dark:border-gray-700 overflow-hidden bg-gray-50 dark:bg-gray-800/40">
+              <div className="flex flex-wrap gap-1.5 px-3 pt-3">
+                {["😊", "✨", "👍", "💭", "❤️"].map((emoji) => (
+                  <button
+                    key={emoji}
+                    type="button"
+                    onClick={() => setCommentText((prev) => `${prev}${emoji}`)}
+                    className="h-8 w-8 rounded-lg bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 hover:border-accentColor"
+                  >
+                    {emoji}
+                  </button>
+                ))}
+              </div>
+              <div className="flex gap-2 p-3">
+                <input
+                  value={commentText}
+                  onChange={(event) => setCommentText(event.target.value)}
+                  onKeyDown={(event) => {
+                    if (event.key === "Enter") addComment()
+                  }}
+                  placeholder="写一条评论..."
+                  className="flex-1 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 px-3 py-2 text-sm outline-none focus:border-accentColor dark:text-white"
+                />
+                <button
+                  type="button"
+                  onClick={addComment}
+                  className="inline-flex items-center gap-1.5 rounded-lg bg-accentColor px-3 py-2 text-sm font-medium text-white"
+                >
+                  <Send size={14} />
+                  发送
+                </button>
+              </div>
+            </div>
+            {comments.length > 0 && (
+              <div className="mt-4 space-y-3">
+                {comments.map((comment) => (
+                  <div key={comment.id} className="rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 p-3">
+                    <p className="text-sm text-gray-700 dark:text-gray-300">{comment.text}</p>
+                    <p className="mt-1 text-[11px] text-gray-400">{new Date(comment.createdAt).toLocaleString()}</p>
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
         </div>
       </div>

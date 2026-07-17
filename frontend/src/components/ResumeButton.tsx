@@ -4,6 +4,7 @@ import { useEffect, useRef } from "react"
 import { cn } from "@/lib/utils"
 import { useSectionStore } from "@/stores/Section"
 import { gsap } from "gsap"
+import { useResumeStatus } from "@/hooks/useResumeStatus"
 
 export default function ResumeBtn() {
   const topTween = useRef(null)
@@ -66,14 +67,25 @@ export default function ResumeBtn() {
   }, [])
 
   const { section } = useSectionStore()
+  const { status } = useResumeStatus()
+  const hasResume = status.uploaded && Boolean(status.url)
+
   return (
     <a
       role="button"
-      href="https://drive.google.com/file/d/1DY1uGgMMbicKU6Sbh7YbSWac8Y_ncUYc/view?usp=sharing"
-      target="_blank"
-      rel="noopener noreferrer"
-      aria-label="Resume"
-      className="group hidden duration-150 lg:flex md:justify-center md:items-center relative h-[34px] w-[100px] overflow-hidden border-[.01px] border-gray-800 hover:border-none hover:bg-accentColor hover:shadow-resume_btn_shadow hover:webkit-reflect"
+      href={hasResume ? status.url : undefined}
+      target={hasResume ? "_blank" : undefined}
+      rel={hasResume ? "noopener noreferrer" : undefined}
+      aria-disabled={!hasResume}
+      aria-label={hasResume ? "Resume" : "Resume not uploaded yet"}
+      title={hasResume ? "Resume" : "暂未上传简历"}
+      className={cn(
+        "group hidden duration-150 lg:flex md:justify-center md:items-center relative h-[34px] w-[100px] overflow-hidden border-[.01px] border-gray-800 hover:border-none hover:bg-accentColor hover:shadow-resume_btn_shadow hover:webkit-reflect",
+        !hasResume && "cursor-not-allowed opacity-70 hover:bg-transparent hover:shadow-none"
+      )}
+      onClick={(event) => {
+        if (!hasResume) event.preventDefault()
+      }}
     >
       <span className="sr-only">Resume</span>
       <div
@@ -98,7 +110,7 @@ export default function ResumeBtn() {
           section === "#project" && "dark:text-black"
         )}
       >
-        Resume
+        {hasResume ? "Resume" : "待上传"}
       </div>
     </a>
   )

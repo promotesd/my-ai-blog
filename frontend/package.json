@@ -7,6 +7,7 @@
     "dev": "vite",
     "build": "tsc -b && vite build",
     "lint": "eslint .",
+    "test:smoke": "node scripts/smoke-production.mjs",
     "preview": "vite preview"
   },
   "dependencies": {
@@ -66,6 +67,7 @@
     "eslint-plugin-react-hooks": "^7.1.1",
     "eslint-plugin-react-refresh": "^0.5.2",
     "globals": "^17.6.0",
+    "playwright": "^1.61.1",
     "postcss": "^8.5.15",
     "tailwindcss": "^3.4.17",
     "tailwindcss-animate": "^1.0.7",

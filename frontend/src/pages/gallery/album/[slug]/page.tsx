@@ -6,11 +6,11 @@ import Image from "next/image"
 import dynamic from "next/dynamic"
 import Masonry from "react-masonry-css"
 import { ArrowLeft, MapPin, Calendar, Images, Loader2 } from "lucide-react"
-import { galleryPhotos, galleryAlbums } from "@/data/galleryData"
+import { galleryPhotos, galleryAlbums, getGalleryCategoryLabel } from "@/data/galleryData"
 import { GalleryPhoto, GalleryAlbum, GalleryGuest } from "@/types/gallery"
 import { fetchAlbumBySlug, fetchPhotosByAlbum, fetchGalleryGuests } from "@/lib/galleryApi"
 import GalleryPhotoCard from "@/components/gallery/GalleryPhotoCard"
-import ProfileImg from "@/assets/SAVE_20221213_123032 (1).jpg"
+import { PROFILE } from "@/config/profile"
 
 const GalleryLightbox = dynamic(() => import("@/components/gallery/GalleryLightbox"), {
   ssr: false,
@@ -51,7 +51,7 @@ export default function AlbumDetailPage({ params }: PageProps) {
         return
       }
 
-      // 2. Fetch dynamic album from Supabase (guest albums)
+      // 2. Fetch dynamic guest album from the backend
       const [dbAlbum, dbPhotos, allGuests] = await Promise.all([
         fetchAlbumBySlug(slug),
         fetchPhotosByAlbum(slug),
@@ -106,13 +106,13 @@ export default function AlbumDetailPage({ params }: PageProps) {
     return (
       <main className="min-h-screen bg-baseBackground pt-28 px-4">
         <div className="max-w-xl mx-auto text-center">
-          <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Album not found</h1>
+          <h1 className="text-2xl font-bold text-gray-900 dark:text-white">相册不存在</h1>
           <p className="mt-3 text-sm text-gray-500 dark:text-gray-400">
-            The requested gallery album is unavailable.
+            这个图库相册暂时无法访问。
           </p>
           <Link href="/gallery" className="inline-flex items-center gap-2 mt-6 text-sm text-accentColor hover:underline">
             <ArrowLeft size={15} />
-            Back to gallery
+            返回图库
           </Link>
         </div>
       </main>
@@ -141,20 +141,20 @@ export default function AlbumDetailPage({ params }: PageProps) {
           className="absolute z-[999] top-6 left-6 flex items-center gap-2 text-white text-sm font-medium bg-black/40 hover:bg-black/60 backdrop-blur-sm px-4 py-2 rounded-full border border-white/20 transition-all duration-200 hover:-translate-x-0.5"
         >
           <ArrowLeft className="w-4 h-4" />
-          Kembali ke Gallery
+          返回图库
         </Link>
 
         {/* Album info */}
         <div className="absolute z-10 bottom-0 left-0 right-0 px-[5%] py-8">
           <span className="inline-flex items-center text-xs font-semibold px-3 py-1 rounded-full bg-accentColor/90 text-white mb-3">
-            {album.category}
+            {getGalleryCategoryLabel(album.category)}
           </span>
           <h1 className="text-3xl md:text-5xl font-bold text-white mb-2">{album.name}</h1>
           <p className="text-white/70 text-sm md:text-base mb-4 max-w-2xl">{album.description}</p>
           <div className="flex items-center gap-5 text-white/60 text-sm">
             <span className="flex items-center gap-1.5">
               <Images className="w-4 h-4 text-accentColor" />
-              {photos.length} foto
+              {photos.length} 张照片
             </span>
             <span className="flex items-center gap-1.5">
               <Calendar className="w-4 h-4 text-accentColor" />
@@ -186,7 +186,7 @@ export default function AlbumDetailPage({ params }: PageProps) {
         {photos.length === 0 ? (
           <div className="flex flex-col items-center py-24 gap-4 text-gray-400">
             <Images className="w-16 h-16 opacity-30" />
-            <p>Belum ada foto di album ini</p>
+            <p>这个相册暂无照片</p>
           </div>
         ) : (
           <Masonry
@@ -199,11 +199,11 @@ export default function AlbumDetailPage({ params }: PageProps) {
               let uploaderAvatar: string | null | undefined = undefined;
               if (photo.ownerType === "guest" && photo.guestId) {
                 const guestUser = guests.find((g) => g.id === photo.guestId);
-                uploaderName = guestUser ? guestUser.name : "Guest";
+                uploaderName = guestUser ? guestUser.name : "访客";
                 uploaderAvatar = guestUser?.avatarUrl;
               } else {
-                uploaderName = "Agung Kurniawan";
-                uploaderAvatar = ProfileImg;
+                uploaderName = "小嘟嘟";
+                uploaderAvatar = PROFILE.avatarUrl;
               }
 
               return (

@@ -18,7 +18,7 @@ interface GuestListProps {
 
 function formatDateShort(dateString?: string) {
   if (!dateString) return ""
-  return new Date(dateString).toLocaleDateString("id-ID", { day: "numeric", month: "short", year: "numeric" })
+  return new Date(dateString).toLocaleDateString("zh-CN", { day: "numeric", month: "short", year: "numeric" })
 }
 
 export default function GuestList({
@@ -63,7 +63,7 @@ export default function GuestList({
     return (
       <div className="flex flex-col items-center gap-3 py-14 text-gray-500">
         <User size={28} className="opacity-30" />
-        <p className="text-sm">{searchGuest ? "Tidak ada nama tamu yang cocok." : "Belum ada tamu yang terdaftar."}</p>
+        <p className="text-sm">{searchGuest ? "没有匹配的访客。" : "暂无访客。"}</p>
       </div>
     )
   }
@@ -103,10 +103,10 @@ export default function GuestList({
 
               <div className="flex flex-wrap gap-1.5 pl-7">
                 <span className="inline-flex items-center gap-1 text-[10px] px-2 py-0.5 rounded-md bg-blue-500/10 border border-blue-500/20 text-blue-400">
-                  <ImageIcon size={9} /> {guest.photoCount} foto
+                  <ImageIcon size={9} /> {guest.photoCount} 张照片
                 </span>
                 <span className="inline-flex items-center gap-1 text-[10px] px-2 py-0.5 rounded-md bg-emerald-500/10 border border-emerald-500/20 text-emerald-400">
-                  <Folder size={9} /> {guest.albumCount} album
+                  <Folder size={9} /> {guest.albumCount} 个相册
                 </span>
                 <span className="inline-flex items-center gap-1 text-[10px] px-2 py-0.5 rounded-md bg-white/[0.05] border border-white/[0.08] text-gray-400">
                   <Calendar size={9} /> {formatDateShort(guest.createdAt)}
@@ -142,11 +142,11 @@ export default function GuestList({
                   />
                 </th>
                 <th className="text-left text-[10px] font-semibold text-gray-500 uppercase tracking-widest px-2 py-3.5 w-8">#</th>
-                <th className="text-left text-[10px] font-semibold text-gray-500 uppercase tracking-widest px-4 py-3.5 min-w-[200px]">Nama Tamu</th>
-                <th className="text-left text-[10px] font-semibold text-gray-500 uppercase tracking-widest px-4 py-3.5 w-24">Foto</th>
-                <th className="text-left text-[10px] font-semibold text-gray-500 uppercase tracking-widest px-4 py-3.5 w-24">Album</th>
-                <th className="text-left text-[10px] font-semibold text-gray-500 uppercase tracking-widest px-4 py-3.5 w-32">Terdaftar</th>
-                <th className="text-right text-[10px] font-semibold text-gray-500 uppercase tracking-widest px-5 py-3.5 w-24">Aksi</th>
+                <th className="text-left text-[10px] font-semibold text-gray-500 uppercase tracking-widest px-4 py-3.5 min-w-[200px]">访客名称</th>
+                <th className="text-left text-[10px] font-semibold text-gray-500 uppercase tracking-widest px-4 py-3.5 w-24">照片</th>
+                <th className="text-left text-[10px] font-semibold text-gray-500 uppercase tracking-widest px-4 py-3.5 w-24">相册</th>
+                <th className="text-left text-[10px] font-semibold text-gray-500 uppercase tracking-widest px-4 py-3.5 w-32">注册时间</th>
+                <th className="text-right text-[10px] font-semibold text-gray-500 uppercase tracking-widest px-5 py-3.5 w-24">操作</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-white/[0.04]">
@@ -208,10 +208,10 @@ export default function GuestList({
 
                     <td className="px-5 py-3.5">
                       <div className="flex items-center justify-end gap-1.5">
-                        <button onClick={() => onEdit(guest)} title="Edit Guest" className="p-2 rounded-xl text-gray-500 hover:text-accentColor hover:bg-accentColor/10 border border-transparent hover:border-accentColor/20 transition-all">
+                        <button onClick={() => onEdit(guest)} title="编辑访客" className="p-2 rounded-xl text-gray-500 hover:text-accentColor hover:bg-accentColor/10 border border-transparent hover:border-accentColor/20 transition-all">
                           <Edit2 size={13} />
                         </button>
-                        <button onClick={() => onDelete(guest)} title="Hapus Guest" className="p-2 rounded-xl text-gray-500 hover:text-red-400 hover:bg-red-500/10 border border-transparent hover:border-red-500/20 transition-all">
+                        <button onClick={() => onDelete(guest)} title="删除访客" className="p-2 rounded-xl text-gray-500 hover:text-red-400 hover:bg-red-500/10 border border-transparent hover:border-red-500/20 transition-all">
                           <Trash2 size={13} />
                         </button>
                       </div>
@@ -224,10 +224,10 @@ export default function GuestList({
         </div>
         <div className="px-5 py-3.5 border-t border-white/[0.06] bg-white/[0.02]">
           <p className="text-xs text-gray-500">
-            Menampilkan <span className="text-gray-300 font-medium">{filtered.length}</span>{" "}
-            {searchGuest ? `dari ${guests.length} ` : ""}tamu
+            显示 <span className="text-gray-300 font-medium">{filtered.length}</span> 位访客
+            {searchGuest ? `，共 ${guests.length} 位` : ""}
             {selectedIds.length > 0 && (
-              <span className="ml-2 text-accentColor font-medium">· {selectedIds.length} dipilih</span>
+              <span className="ml-2 text-accentColor font-medium">· 已选择 {selectedIds.length} 位</span>
             )}
           </p>
         </div>

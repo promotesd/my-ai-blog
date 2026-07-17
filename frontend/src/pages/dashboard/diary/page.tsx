@@ -30,11 +30,20 @@ interface DiaryEntry {
 
 const MOODS: DiaryMood[] = ["Reflective", "Happy", "Thoughtful", "Melancholic", "Inspired", "Grateful"]
 const ITEMS_PER_PAGE = 8
-const MONTHS_SHORT = ["Jan", "Feb", "Mar", "Apr", "Mei", "Jun", "Jul", "Agu", "Sep", "Okt", "Nov", "Des"]
+const MONTHS_SHORT = ["1月", "2月", "3月", "4月", "5月", "6月", "7月", "8月", "9月", "10月", "11月", "12月"]
 
 const MOOD_ICONS: Record<DiaryMood, string> = {
   Reflective: "🤔", Happy: "😊", Thoughtful: "💭",
   Melancholic: "😢", Inspired: "✨", Grateful: "🙏",
+}
+
+const MOOD_LABELS: Record<DiaryMood, string> = {
+  Reflective: "思考",
+  Happy: "开心",
+  Thoughtful: "沉思",
+  Melancholic: "低落",
+  Inspired: "受到启发",
+  Grateful: "感恩",
 }
 
 const MOOD_COLORS: Record<DiaryMood, string> = {
@@ -56,7 +65,7 @@ interface ToastMsg {
 function diaryToDiaryEntry(diary: Diary): DiaryEntry {
   return {
     id: diary.id,
-    title: diary.title || "Untitled",
+    title: diary.title || "无标题日记",
     content: diary.content || "",
     entry_date: diary.entry_date || new Date().toISOString().split('T')[0],
     mood: diary.mood,
@@ -176,9 +185,9 @@ export default function DiaryDashboardPage() {
 
       await fetchDiaries()
       setFormModal({ open: false, mode: "create" })
-      setToast({ type: "success", text: formModal.mode === "create" ? (t("toast_create_success") || "Diary entry berhasil dibuat.") : (t("toast_edit_success") || "Diary entry berhasil diperbarui.") })
+      setToast({ type: "success", text: formModal.mode === "create" ? (t("toast_create_success") || "日记创建成功。") : (t("toast_edit_success") || "日记更新成功。") })
     } catch (err: any) {
-      setToast({ type: "error", text: `${t("toast_error") || "Gagal menyimpan"}: ${err.message}` })
+      setToast({ type: "error", text: `${t("toast_error") || "保存失败"}: ${err.message}` })
     } finally {
       setSaving(false)
     }
@@ -195,9 +204,9 @@ export default function DiaryDashboardPage() {
       await fetchDiaries()
       setSelectedIds(prev => prev.filter(id => id !== entry.id))
       setPage(1)
-      setToast({ type: "success", text: t("toast_delete_success") || "Diary entry berhasil dihapus." })
+      setToast({ type: "success", text: t("toast_delete_success") || "日记删除成功。" })
     } catch (err: any) {
-      setToast({ type: "error", text: `${t("toast_delete_error") || "Gagal menghapus"}: ${err.message}` })
+      setToast({ type: "error", text: `${t("toast_delete_error") || "删除失败"}: ${err.message}` })
     } finally {
       setDeleteModal({ open: false, entry: null })
     }
@@ -216,9 +225,9 @@ export default function DiaryDashboardPage() {
       const maxPage = Math.ceil(newTotal / ITEMS_PER_PAGE) || 1
       if (page > maxPage) setPage(maxPage)
 
-      setToast({ type: "success", text: t("toast_bulk_delete_success") || `${res.count} diary entries berhasil dihapus.` })
+      setToast({ type: "success", text: t("toast_bulk_delete_success") || `${res.count} 篇日记已删除。` })
     } catch (err: any) {
-      setToast({ type: "error", text: `${t("toast_bulk_delete_error") || "Gagal menghapus"}: ${err.message}` })
+      setToast({ type: "error", text: `${t("toast_bulk_delete_error") || "批量删除失败"}: ${err.message}` })
     } finally {
       setIsDeletingBulk(false)
       setBulkDeleteModal(false)
@@ -248,8 +257,8 @@ export default function DiaryDashboardPage() {
               <BookMarked size={14} className="text-accentColor" />
             </div>
             <div>
-              <h1 className="text-sm font-semibold text-white leading-tight">{t("title") || "Diary Management"}</h1>
-              <p className="text-[10px] text-gray-500 leading-tight hidden sm:block">Kelola jurnal & refleksi pribadi</p>
+              <h1 className="text-sm font-semibold text-white leading-tight">{t("title") || "日记管理"}</h1>
+              <p className="text-[10px] text-gray-500 leading-tight hidden sm:block">管理个人日记、想法和图片记录</p>
             </div>
           </div>
           
@@ -257,13 +266,13 @@ export default function DiaryDashboardPage() {
             {selectedIds.length > 0 && (
               <button onClick={() => setBulkDeleteModal(true)} className="flex items-center gap-2 px-3 sm:px-4 py-2 text-xs sm:text-sm font-medium bg-red-500/10 text-red-400 border border-red-500/20 rounded-xl hover:bg-red-500/20 transition-all">
                 <Trash2 size={14} />
-                <span className="hidden sm:inline">Hapus ({selectedIds.length})</span>
+                <span className="hidden sm:inline">删除 ({selectedIds.length})</span>
                 <span className="sm:hidden">({selectedIds.length})</span>
               </button>
             )}
             <button onClick={() => setFormModal({ open: true, mode: "create" })} className="flex items-center gap-2 px-3 sm:px-4 py-2 text-xs sm:text-sm font-medium bg-accentColor text-white rounded-xl hover:brightness-[0.85] transition-all hover:shadow-lg hover:shadow-accentColor/20">
-              <Plus size={14} /> <span className="hidden sm:inline">{t("btn_new") || "New Entry"}</span>
-              <span className="sm:hidden">Baru</span>
+              <Plus size={14} /> <span className="hidden sm:inline">{t("btn_new") || "写日记"}</span>
+              <span className="sm:hidden">新建</span>
             </button>
           </div>
         </div>
@@ -273,10 +282,10 @@ export default function DiaryDashboardPage() {
           
           {/* ── Stats ── */}
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4">
-            <StatCard label="Total Entries" value={totalEntries} icon={<Database size={15} className="text-gray-400" />} color="default" loading={loading} />
-            <StatCard label="Reflective" value={moodCounts["Reflective"] || 0} icon={<span className="text-sm">🤔</span>} color="blue" loading={loading} />
-            <StatCard label="Inspired" value={moodCounts["Inspired"] || 0} icon={<span className="text-sm">✨</span>} color="purple" loading={loading} />
-            <StatCard label="Grateful" value={moodCounts["Grateful"] || 0} icon={<span className="text-sm">🙏</span>} color="green" loading={loading} />
+            <StatCard label="日记总数" value={totalEntries} icon={<Database size={15} className="text-gray-400" />} color="default" loading={loading} />
+            <StatCard label="思考" value={moodCounts["Reflective"] || 0} icon={<span className="text-sm">🤔</span>} color="blue" loading={loading} />
+            <StatCard label="受到启发" value={moodCounts["Inspired"] || 0} icon={<span className="text-sm">✨</span>} color="purple" loading={loading} />
+            <StatCard label="感恩" value={moodCounts["Grateful"] || 0} icon={<span className="text-sm">🙏</span>} color="green" loading={loading} />
           </div>
 
           {/* ── Toolbar ── */}
@@ -285,7 +294,7 @@ export default function DiaryDashboardPage() {
               <Search size={14} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-500 pointer-events-none" />
               <input
                 type="text" value={search} onChange={(e) => { setSearch(e.target.value); setPage(1) }}
-                placeholder={t("search_placeholder") || "Cari judul atau tags..."}
+                placeholder={t("search_placeholder") || "搜索标题或标签..."}
                 className="w-full pl-9 pr-9 py-2.5 bg-white/[0.04] border border-white/[0.08] rounded-xl text-sm text-gray-200 placeholder:text-gray-600 outline-none focus:border-accentColor/50 transition-colors"
               />
               {search && (
@@ -295,14 +304,14 @@ export default function DiaryDashboardPage() {
 
             <div className="flex items-center gap-2">
               <select value={filterMood} onChange={(e) => { setFilterMood(e.target.value as any); setPage(1) }} className="flex-1 sm:w-auto px-3 py-2.5 bg-white/[0.04] border border-white/[0.08] rounded-xl text-sm text-gray-300 outline-none focus:border-accentColor/50 transition-colors appearance-none cursor-pointer">
-                <option value="All" className="bg-[#0d1a1a]">{t("filter_all_moods") || "Semua Mood"}</option>
-                {MOODS.map(m => <option key={m} value={m} className="bg-[#0d1a1a]">{m}</option>)}
+                <option value="All" className="bg-[#0d1a1a]">{t("filter_all_moods") || "全部心情"}</option>
+                {MOODS.map(m => <option key={m} value={m} className="bg-[#0d1a1a]">{MOOD_LABELS[m]}</option>)}
               </select>
 
               {hasActiveFilters && (
                 <button onClick={resetFilters} className="flex items-center gap-1.5 px-3 py-2.5 text-xs text-gray-400 hover:text-gray-200 border border-white/[0.08] hover:border-white/20 rounded-xl transition-all shrink-0">
                   <RefreshCw size={12} />
-                  <span className="hidden sm:inline">Reset</span>
+                <span className="hidden sm:inline">重置</span>
                 </button>
               )}
             </div>
@@ -343,10 +352,10 @@ export default function DiaryDashboardPage() {
                       <tr className="bg-white/[0.04] border-b border-white/[0.06]">
                         <th className="px-4 py-3.5 w-12 text-left"><input type="checkbox" checked={paginated.length > 0 && selectedIds.length === paginated.length} onChange={toggleSelectAll} className="w-4 h-4 rounded cursor-pointer accent-accentColor bg-white/[0.05] border-white/[0.1]" /></th>
                         <th className="text-left text-[10px] font-semibold text-gray-500 uppercase tracking-widest px-2 py-3.5 w-8">#</th>
-                        <th className="text-left text-[10px] font-semibold text-gray-500 uppercase tracking-widest px-4 py-3.5 min-w-[260px]">{t("col_title") || "Info Diary"}</th>
-                        <th className="text-left text-[10px] font-semibold text-gray-500 uppercase tracking-widest px-4 py-3.5 w-40">{t("col_date") || "Tanggal"}</th>
-                        <th className="text-left text-[10px] font-semibold text-gray-500 uppercase tracking-widest px-4 py-3.5 w-36">{t("col_mood") || "Mood"}</th>
-                        <th className="text-right text-[10px] font-semibold text-gray-500 uppercase tracking-widest px-5 py-3.5 w-24">{t("col_actions") || "Aksi"}</th>
+                        <th className="text-left text-[10px] font-semibold text-gray-500 uppercase tracking-widest px-4 py-3.5 min-w-[260px]">{t("col_title") || "日记"}</th>
+                        <th className="text-left text-[10px] font-semibold text-gray-500 uppercase tracking-widest px-4 py-3.5 w-40">{t("col_date") || "日期"}</th>
+                        <th className="text-left text-[10px] font-semibold text-gray-500 uppercase tracking-widest px-4 py-3.5 w-36">{t("col_mood") || "心情"}</th>
+                        <th className="text-right text-[10px] font-semibold text-gray-500 uppercase tracking-widest px-5 py-3.5 w-24">{t("col_actions") || "操作"}</th>
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-white/[0.04]">
@@ -369,7 +378,7 @@ export default function DiaryDashboardPage() {
                 {/* Table Footer */}
                 <div className="flex flex-col sm:flex-row items-center justify-between gap-2 px-5 py-3.5 border-t border-white/[0.06] bg-white/[0.02]">
                   <p className="text-xs text-gray-500">
-                    {t("pagination_showing") || "Menampilkan"} <span className="text-gray-300 font-medium">{filtered.length === 0 ? 0 : Math.min((page - 1) * ITEMS_PER_PAGE + 1, filtered.length)}–{Math.min(page * ITEMS_PER_PAGE, filtered.length)}</span> {t("pagination_of") || "dari"} <span className="text-gray-300 font-medium">{filtered.length}</span> entri
+                    {t("pagination_showing") || "显示"} <span className="text-gray-300 font-medium">{filtered.length === 0 ? 0 : Math.min((page - 1) * ITEMS_PER_PAGE + 1, filtered.length)}–{Math.min(page * ITEMS_PER_PAGE, filtered.length)}</span> {t("pagination_of") || "共"} <span className="text-gray-300 font-medium">{filtered.length}</span> 篇
                   </p>
                   <Pagination page={page} totalPages={totalPages} onPageChange={setPage} />
                 </div>
@@ -399,14 +408,14 @@ export default function DiaryDashboardPage() {
             <div className="p-6 text-center space-y-4 mt-2">
               <div className="w-14 h-14 rounded-full bg-red-500/10 flex items-center justify-center mx-auto border border-red-500/20"><AlertCircle size={26} className="text-red-400" /></div>
               <div>
-                <h3 className="text-lg font-semibold text-white mb-1.5">Hapus {selectedIds.length} Diary?</h3>
-                <p className="text-sm text-gray-400 leading-relaxed">Apakah Anda yakin ingin menghapus {selectedIds.length} diary yang dicentang? <span className="font-semibold text-gray-300">Tindakan ini tidak dapat dibatalkan.</span></p>
+                <h3 className="text-lg font-semibold text-white mb-1.5">删除 {selectedIds.length} 篇日记？</h3>
+                <p className="text-sm text-gray-400 leading-relaxed">确定要删除选中的 {selectedIds.length} 篇日记吗？<span className="font-semibold text-gray-300">此操作不可撤销。</span></p>
               </div>
             </div>
             <div className="flex items-center gap-3 px-6 py-4 bg-white/[0.02] border-t border-white/[0.06]">
-              <button onClick={() => setBulkDeleteModal(false)} disabled={isDeletingBulk} className="flex-1 py-2.5 text-sm font-medium text-gray-400 hover:text-white bg-white/[0.04] hover:bg-white/[0.08] border border-white/[0.08] rounded-xl transition-all">Batal</button>
+              <button onClick={() => setBulkDeleteModal(false)} disabled={isDeletingBulk} className="flex-1 py-2.5 text-sm font-medium text-gray-400 hover:text-white bg-white/[0.04] hover:bg-white/[0.08] border border-white/[0.08] rounded-xl transition-all">取消</button>
               <button onClick={handleBulkDelete} disabled={isDeletingBulk} className="flex-1 flex items-center justify-center gap-2 py-2.5 text-sm font-medium text-white bg-red-500/90 hover:bg-red-500 rounded-xl transition-all">
-                {isDeletingBulk ? <RefreshCw size={16} className="animate-spin" /> : "Ya, Hapus Semua"}
+                {isDeletingBulk ? <RefreshCw size={16} className="animate-spin" /> : "确认删除"}
               </button>
             </div>
           </div>
@@ -450,8 +459,8 @@ function EmptyState({ onReset }: { onReset: () => void }) {
   return (
     <div className="flex flex-col items-center gap-3 py-14 text-gray-500">
       <BookMarked size={28} className="opacity-30" />
-      <p className="text-sm">Tidak ada catatan yang ditemukan.</p>
-      <button onClick={onReset} className="text-xs text-accentColor hover:underline">Reset filter</button>
+      <p className="text-sm">没有找到日记。</p>
+      <button onClick={onReset} className="text-xs text-accentColor hover:underline">重置筛选</button>
     </div>
   )
 }
@@ -495,9 +504,9 @@ function DiaryCard({ item, rowNum, onEdit, onDelete, isSelected, onToggle }: any
         <div className="flex items-center gap-2">
           {item.mood ? (
             <span className={cn("inline-flex items-center gap-1.5 px-2 py-0.5 rounded-md border text-[10px] font-medium", MOOD_COLORS[item.mood as DiaryMood])}>
-              {MOOD_ICONS[item.mood as DiaryMood]} {item.mood}
+              {MOOD_ICONS[item.mood as DiaryMood]} {MOOD_LABELS[item.mood as DiaryMood] || item.mood}
             </span>
-          ) : <span className="text-[10px] text-gray-600 italic">No mood</span>}
+          ) : <span className="text-[10px] text-gray-600 italic">未选择心情</span>}
         </div>
         <div className="flex flex-wrap gap-1 mt-1">
           {item.tags?.slice(0, 3).map((t: string) => <span key={t} className="text-[9px] bg-white/[0.03] text-gray-500 border border-white/[0.06] px-1.5 py-0.5 rounded">#{t}</span>)}
@@ -536,17 +545,17 @@ function DiaryTableRow({ item, rowNum, onEdit, onDelete, isSelected, onToggle }:
       <td className="px-4 py-3.5">
         {item.mood ? (
           <span className={cn("inline-flex items-center gap-1.5 px-2 py-1 rounded border text-[10px] font-medium", MOOD_COLORS[item.mood as DiaryMood])}>
-            {MOOD_ICONS[item.mood as DiaryMood]} {item.mood}
+            {MOOD_ICONS[item.mood as DiaryMood]} {MOOD_LABELS[item.mood as DiaryMood] || item.mood}
           </span>
         ) : <span className="text-[10px] text-gray-600 italic">-</span>}
       </td>
 
       <td className="px-5 py-3.5">
         <div className="flex items-center justify-end gap-1.5">
-          <button onClick={onEdit} title="Edit" className="p-2 rounded-xl text-gray-500 hover:text-accentColor hover:bg-accentColor/10 border border-transparent hover:border-accentColor/20 transition-all">
+          <button onClick={onEdit} title="编辑" className="p-2 rounded-xl text-gray-500 hover:text-accentColor hover:bg-accentColor/10 border border-transparent hover:border-accentColor/20 transition-all">
             <Edit2 size={13} />
           </button>
-          <button onClick={onDelete} title="Hapus" className="p-2 rounded-xl text-gray-500 hover:text-red-400 hover:bg-red-500/10 border border-transparent hover:border-red-500/20 transition-all">
+          <button onClick={onDelete} title="删除" className="p-2 rounded-xl text-gray-500 hover:text-red-400 hover:bg-red-500/10 border border-transparent hover:border-red-500/20 transition-all">
             <Trash2 size={13} />
           </button>
         </div>

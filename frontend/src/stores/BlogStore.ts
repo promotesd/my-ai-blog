@@ -32,7 +32,7 @@ function asAuthorType(value: unknown): AuthorType {
 
 function rowToBlog(row: any): Blog {
   const author = typeof row.author === "object" && row.author !== null ? row.author : null
-  const authorName = row.author_name ?? author?.name ?? (typeof row.author === "string" ? row.author : "Agung Kurniawan")
+  const authorName = row.author_name ?? author?.name ?? (typeof row.author === "string" ? row.author : "小嘟嘟")
   const publishedAt = row.published_at ?? row.publishedAt ?? row.created_at ?? row.updated_at ?? new Date().toISOString()
 
   return {
@@ -43,7 +43,7 @@ function rowToBlog(row: any): Blog {
     thumbnail: row.thumbnail ?? row.cover_url ?? row.cover ?? DEFAULT_THUMBNAIL,
     category: asCategory(row.category),
     author: {
-      name: String(authorName || "Agung Kurniawan"),
+      name: String(authorName || "小嘟嘟"),
       email: row.author_email ?? author?.email ?? undefined,
       phone: row.author_phone ?? author?.phone ?? undefined,
       avatar: row.author_avatar ?? author?.avatar ?? undefined,

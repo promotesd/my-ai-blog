@@ -50,6 +50,52 @@ public class GitHubStatsController {
     );
   }
 
+  @GetMapping("/github-repos")
+  public List<Map<String, Object>> githubRepos() {
+    try {
+      HttpRequest.Builder builder = HttpRequest.newBuilder()
+          .uri(URI.create("https://api.github.com/users/" + username + "/repos?per_page=100&sort=updated&direction=desc"))
+          .timeout(Duration.ofSeconds(8))
+          .header("Accept", "application/vnd.github+json")
+          .header("User-Agent", "xiaodudu-portfolio");
+      if (token != null && !token.isBlank()) {
+        builder.header("Authorization", "Bearer " + token);
+      }
+
+      HttpResponse<String> response = httpClient.send(builder.GET().build(), HttpResponse.BodyHandlers.ofString());
+      if (response.statusCode() < 200 || response.statusCode() >= 300) {
+        log.warn("GitHub repos API returned status {}", response.statusCode());
+        return List.of();
+      }
+
+      JsonNode nodes = objectMapper.readTree(response.body());
+      if (!nodes.isArray()) return List.of();
+
+      List<Map<String, Object>> repos = new java.util.ArrayList<>();
+      for (JsonNode node : nodes) {
+        Map<String, Object> repo = new LinkedHashMap<>();
+        repo.put("id", node.path("id").asLong());
+        repo.put("name", node.path("name").asText(""));
+        repo.put("full_name", node.path("full_name").asText(""));
+        repo.put("html_url", node.path("html_url").asText(""));
+        repo.put("description", node.path("description").isNull() ? null : node.path("description").asText());
+        repo.put("homepage", node.path("homepage").isNull() ? null : node.path("homepage").asText());
+        repo.put("topics", objectMapper.convertValue(node.path("topics"), new com.fasterxml.jackson.core.type.TypeReference<List<String>>() {}));
+        repo.put("language", node.path("language").isNull() ? null : node.path("language").asText());
+        repo.put("stargazers_count", node.path("stargazers_count").asInt());
+        repo.put("forks_count", node.path("forks_count").asInt());
+        repo.put("watchers_count", node.path("watchers_count").asInt());
+        repo.put("updated_at", node.path("updated_at").asText(""));
+        repo.put("visibility", node.path("visibility").asText("public"));
+        repos.add(repo);
+      }
+      return repos;
+    } catch (Exception exception) {
+      log.warn("Failed to fetch GitHub repositories: {}", exception.getMessage());
+      return List.of();
+    }
+  }
+
   @GetMapping("/github-private-repos")
   public List<Map<String, Object>> githubPrivateRepos() {
     if (token == null || token.isBlank()) {

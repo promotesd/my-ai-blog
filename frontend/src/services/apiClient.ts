@@ -20,11 +20,14 @@ export async function apiRequest<T>(path: string, init?: RequestInit): Promise<T
     ...init,
   })
 
+  const body = await response.json().catch(() => null) as ApiEnvelope<T> | T | null
   if (!response.ok) {
-    throw new Error(`API request failed: ${response.status} ${response.statusText}`)
+    const message = body && typeof body === "object" && "message" in body
+      ? String(body.message)
+      : `请求失败：${response.status} ${response.statusText}`
+    throw new Error(message)
   }
 
-  const body = await response.json() as ApiEnvelope<T> | T
   if (body && typeof body === "object" && "code" in body && "data" in body) {
     if (body.code >= 400) throw new Error(body.message)
     return body.data

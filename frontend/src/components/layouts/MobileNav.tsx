@@ -11,9 +11,8 @@ import { useLanguageStore, type Locale } from "@/stores/LanguageStore"
 import { useTranslations } from "next-intl"
 
 const LANGUAGES: { code: Locale; label: string; flag: string; short: string }[] = [
-  { code: "id", label: "Indonesia", flag: "🇮🇩", short: "ID" },
+  { code: "zh", label: "中文", flag: "🇨🇳", short: "ZH" },
   { code: "en", label: "English",   flag: "🇬🇧", short: "EN" },
-  { code: "de", label: "Deutsch",   flag: "🇩🇪", short: "DE" },
 ]
 
 function LanguagePicker() {
@@ -21,7 +20,7 @@ function LanguagePicker() {
   return (
     <div className="px-2">
       <p className="text-[10px] font-semibold uppercase tracking-widest text-gray-400 dark:text-gray-500 mb-2 px-1">
-        Language / Bahasa
+        Language / 语言
       </p>
       <div className="flex gap-1.5">
         {LANGUAGES.map((lang) => {
@@ -265,7 +264,7 @@ export default function MobileNav() {
 
             <div className="h-px bg-gray-100 dark:bg-gray-800 my-3" />
             <p className="text-xs text-gray-400 dark:text-gray-600 text-center">
-              Gungzz<span className="text-accentColor">leefy</span>
+              小嘟嘟
             </p>
           </div>
         </nav>

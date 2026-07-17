@@ -34,13 +34,13 @@ export default function LoginPage() {
         })
 
         localStorage.setItem("portfolio-admin-token", data.token)
-        setToast({ type: 'success', message: "Login berhasil! Mengalihkan..." })
+        setToast({ type: 'success', message: "登录成功，正在进入后台..." })
         setTimeout(() => {
           router.push("/dashboard")
           router.refresh()
         }, 1000)
-      } catch {
-        setToast({ type: 'error', message: "Connection error. Please try again." })
+      } catch (error) {
+        setToast({ type: 'error', message: error instanceof Error ? error.message : "登录失败，请稍后重试" })
       }
     })
   }
@@ -91,10 +91,10 @@ export default function LoginPage() {
             </div>
           </div>
           <h1 className="text-white text-2xl font-bold tracking-tight">
-            Dev Dashboard
+            小嘟嘟后台
           </h1>
           <p className="text-gray-500 text-sm mt-1.5 text-center leading-relaxed">
-            Masukkan kredensial untuk melanjutkan
+            输入后台账号和密码后继续
           </p>
         </div>
 
@@ -108,7 +108,7 @@ export default function LoginPage() {
               {/* Username */}
               <div className="space-y-2">
                 <label className="block text-[11px] font-semibold text-gray-400 uppercase tracking-widest">
-                  Email
+                  账号
                 </label>
                 <input
                   type="text"
@@ -127,14 +127,14 @@ export default function LoginPage() {
                     transition-all duration-200
                     disabled:opacity-50 disabled:cursor-not-allowed
                   "
-                  placeholder="admin"
+                  placeholder="请输入后台账号"
                 />
               </div>
 
               {/* Password */}
               <div className="space-y-2">
                 <label className="block text-[11px] font-semibold text-gray-400 uppercase tracking-widest">
-                  Password
+                  密码
                 </label>
                 <div className="relative">
                   <input
@@ -186,10 +186,10 @@ export default function LoginPage() {
                 {isPending ? (
                   <>
                     <Loader2 size={15} className="animate-spin" />
-                    <span>Authenticating...</span>
+                    <span>正在登录...</span>
                   </>
                 ) : (
-                  "Sign In"
+                  "登录"
                 )}
               </button>
             </form>
@@ -197,7 +197,7 @@ export default function LoginPage() {
         </div>
 
         <p className="text-center text-gray-700 text-[11px] mt-5 tracking-wide">
-          Restricted access &mdash; authorized personnel only
+          仅限站点管理员访问
         </p>
       </div>
     </div>

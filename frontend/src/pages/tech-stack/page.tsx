@@ -80,6 +80,53 @@ const CAT_ICON: Record<string, React.ReactNode> = {
   "Hardware & Gadget": <FaMobileAlt size={18} />,
 }
 
+const CATEGORY_LABELS: Record<ToolCategory, string> = {
+  "Code Editor & IDE": "代码编辑器与 IDE",
+  "Design & UI Tools": "设计与 UI 工具",
+  "Framework & Library": "框架与库",
+  "Database & Storage": "数据库与存储",
+  "DevOps & Cloud": "DevOps 与云服务",
+  "Browser & Extensions": "浏览器与扩展",
+  "Software & Aplikasi Desktop": "桌面软件",
+  "Website Tools & Online Services": "网站与在线服务",
+  "Streaming & Entertainment": "影音娱乐",
+  "AI Tools & Productivity": "AI 与效率工具",
+  "Hardware & Gadget": "硬件设备",
+}
+
+const CATEGORY_DESCRIPTIONS: Record<ToolCategory, string> = {
+  "Code Editor & IDE": "日常写代码使用的编辑器和开发环境",
+  "Design & UI Tools": "用于界面、视觉和内容设计的工具",
+  "Framework & Library": "前端、后端和应用开发框架",
+  "Database & Storage": "数据库、缓存和数据存储方案",
+  "DevOps & Cloud": "部署、容器、云服务和自动化工具",
+  "Browser & Extensions": "浏览器和开发调试扩展",
+  "Software & Aplikasi Desktop": "桌面端效率工具",
+  "Website Tools & Online Services": "在线服务和网站工具",
+  "Streaming & Entertainment": "影音、游戏和娱乐相关平台",
+  "AI Tools & Productivity": "AI 与学习效率工具",
+  "Hardware & Gadget": "学习和开发使用的硬件设备",
+}
+
+const BADGE_LABELS: Record<ToolBadge, string> = {
+  Favorite: "常用",
+  "Daily Use": "每天使用",
+  Recommended: "推荐",
+  "Pernah Dicoba": "试用过",
+}
+
+function getCategoryLabel(category: ToolCategory) {
+  return CATEGORY_LABELS[category] || category
+}
+
+function getCategoryDescription(category: ToolCategory) {
+  return CATEGORY_DESCRIPTIONS[category] || CATEGORY_META[category]?.description || ""
+}
+
+function getBadgeLabel(badge: ToolBadge) {
+  return BADGE_LABELS[badge] || badge
+}
+
 /* ─────────────────────────── HOOKS ─────────────────────────── */
 function useInView(threshold = 0.1) {
   const ref = useRef<HTMLDivElement>(null)
@@ -126,7 +173,7 @@ function StarRating({ value }: { value: number }) {
 function BadgeChip({ badge }: { badge: ToolBadge }) {
   const meta = BADGE_META[badge] || { bg: "bg-gray-100", color: "text-gray-800", border: "border-gray-200", emoji: "📌" }
   const t = useTranslations("tech")
-  const translatedBadge = t(`badge_${badge.toLowerCase().replace(/\s+/g, "_")}`) || badge
+  const translatedBadge = t(`badge_${badge.toLowerCase().replace(/\s+/g, "_")}`) || getBadgeLabel(badge)
 
   return (
     <span className={cn("inline-flex items-center gap-1 text-[10px] font-semibold px-2 py-0.5 rounded-full border", meta.color, meta.bg, meta.border)}>
@@ -215,7 +262,7 @@ function ToolCard({ tool, delay = 0 }: { tool: ToolItem; delay?: number }) {
             onClick={() => setIsDescExpanded(!isDescExpanded)}
             className="sm:hidden text-[10px] text-accentColor font-medium py-1"
           >
-            {isDescExpanded ? "Lebih sedikit" : "Selengkapnya"}
+            {isDescExpanded ? "收起" : "展开"}
           </button>
         </div>
 
@@ -238,7 +285,7 @@ function ToolCard({ tool, delay = 0 }: { tool: ToolItem; delay?: number }) {
           onMouseEnter={(e) => { const el = e.currentTarget; el.style.background = tool.iconColor; el.style.borderColor = tool.iconColor; el.style.color = "#fff"; }}
           onMouseLeave={(e) => { const el = e.currentTarget; el.style.background = ""; el.style.borderColor = `${tool.iconColor}50`; el.style.color = tool.iconColor; }}
         >
-          <ExternalLink size={10} /> {t("btn_visit") || "Visit"}
+          <ExternalLink size={10} /> {t("btn_visit") || "访问"}
         </a>
       </div>
     </div>
@@ -279,7 +326,7 @@ function FeaturedCard({ tool, index }: { tool: ToolItem; index: number }) {
         <div>
           <h3 className="font-extrabold text-base text-gray-900 dark:text-white">{tool.name}</h3>
           <p className="text-[11px] text-gray-400 dark:text-gray-500 mt-0.5">
-            {CATEGORY_META[tool.category]?.emoji || "🔹"} {tool.category}
+            {CATEGORY_META[tool.category]?.emoji || "🔹"} {getCategoryLabel(tool.category)}
           </p>
         </div>
         <BadgeChip badge={tool.badge} />
@@ -287,7 +334,7 @@ function FeaturedCard({ tool, index }: { tool: ToolItem; index: number }) {
         <TranslateWidget className="w-fit" fields={translateFields} onTranslated={setTranslated} onReverted={() => setTranslated(null)} />
         <StarRating value={tool.usageRating} />
         <a href={tool.officialUrl} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1.5 text-xs font-bold px-4 py-2 rounded-xl text-white transition-all duration-200 hover:opacity-90 hover:scale-105" style={{ background: tool.iconColor }}>
-          <ExternalLink size={11} /> {t("btn_visit_web") || "Visit Website"}
+          <ExternalLink size={11} /> {t("btn_visit_web") || "访问网站"}
         </a>
       </div>
     </div>
@@ -311,10 +358,10 @@ function CategorySection({ category, items }: { category: ToolCategory; items: T
           </div>
           <div>
             <h2 className="font-bold text-gray-900 dark:text-white flex items-center gap-2">
-              {meta.emoji} {category}
+              {meta.emoji} {getCategoryLabel(category)}
               <span className="text-xs font-normal text-gray-400 dark:text-gray-500 bg-gray-100 dark:bg-gray-800 px-2 py-0.5 rounded-full">{items.length}</span>
             </h2>
-            <p className="text-xs text-gray-500 dark:text-gray-400">{meta.description}</p>
+            <p className="text-xs text-gray-500 dark:text-gray-400">{getCategoryDescription(category)}</p>
           </div>
         </div>
       </div>
@@ -324,7 +371,7 @@ function CategorySection({ category, items }: { category: ToolCategory; items: T
       {items.length > LIMIT && (
         <div className="flex justify-center pt-2">
           <button onClick={() => setExpanded((v) => !v)} className="inline-flex items-center gap-2 text-sm font-medium text-accentColor hover:underline transition-all">
-            {expanded ? (<>{t("hide") || "Sembunyikan"} <ChevronRight size={14} className="rotate-90" /></>) : (<>{t("view_all") || "Lihat Semua"} ({items.length - LIMIT} {t("others") || "lainnya"}) <ChevronRight size={14} className="-rotate-90" /></>)}
+            {expanded ? (<>{t("hide") || "收起"} <ChevronRight size={14} className="rotate-90" /></>) : (<>{t("view_all") || "查看全部"} ({items.length - LIMIT} {t("others") || "个其他工具"}) <ChevronRight size={14} className="-rotate-90" /></>)}
           </button>
         </div>
       )}
@@ -363,31 +410,31 @@ function HeroSection({ stats, isLoading, onScrollDown }: { stats: { total: numbe
         <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-blue-500/20 dark:bg-blue-500/10 rounded-full blur-3xl" />
       </div>
       <div className="flex items-center gap-2 text-xs text-gray-500 dark:text-gray-400 mb-8">
-        <Link href="/" className="hover:text-accentColor transition-colors">{t("breadcrumb_home") || "Home"}</Link><span>•</span>
-        <span className="text-accentColor font-medium">{t("breadcrumb_tech") || "Tech & Stack"}</span>
+        <Link href="/" className="hover:text-accentColor transition-colors">{t("breadcrumb_home") || "首页"}</Link><span>•</span>
+        <span className="text-accentColor font-medium">{t("breadcrumb_tech") || "技术栈"}</span>
       </div>
       <div className={cn("space-y-4 max-w-3xl transition-all duration-700", mounted ? "opacity-100 translate-y-0" : "opacity-0 translate-y-8")}>
         <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-accentColor/10 border border-accentColor/30 text-accentColor text-sm font-medium">
-          <Layers size={14} /> {t("hero_badge") || "Tools, Software & Platform"}
+          <Layers size={14} /> {t("hero_badge") || "工具、软件与平台"}
         </div>
         <h1 className="text-4xl md:text-6xl lg:text-7xl font-extrabold leading-tight">
-          <span className="text-gray-900 dark:text-white">{t("hero_title_prefix") || "My "}</span>
+          <span className="text-gray-900 dark:text-white">{t("hero_title_prefix") || "我的"}</span>
           <span className="bg-clip-text text-transparent" style={{ backgroundImage: "linear-gradient(135deg, #0EBD7A 0%, #06d6a0 40%, #48cae4 100%)" }}>
-            {t("hero_title_highlight") || "Tech & Stack"}
+            {t("hero_title_highlight") || "技术栈"}
           </span>
         </h1>
         <p className="text-gray-600 dark:text-gray-300 text-base md:text-lg max-w-2xl mx-auto leading-relaxed">
-          {t("hero_desc") || "Semua tools, software, dan platform yang saya gunakan sehari-hari — dari coding hingga hiburan."}
+          {t("hero_desc") || "这里记录我后续会使用和整理的开发工具、软件与平台。"}
         </p>
       </div>
       <div ref={statsRef} className="flex flex-wrap justify-center gap-3 mt-12">
-        <StatCard icon={<Grid3X3 size={18} />} value={stats.total} label={t("stat_total") || "Total Tools"} start={statsInView} isLoading={isLoading} />
-        <StatCard icon={<FaHeart size={16} />} value={stats.favorites} label={t("stat_favorites") || "Favorites"} start={statsInView} isLoading={isLoading} />
-        <StatCard icon={<Zap size={18} />} value={stats.dailyUse} label={t("stat_daily") || "Daily Use"} start={statsInView} isLoading={isLoading} />
-        <StatCard icon={<Tag size={18} />} value={stats.categories} label={t("stat_categories") || "Kategori"} start={statsInView} isLoading={isLoading} />
+        <StatCard icon={<Grid3X3 size={18} />} value={stats.total} label={t("stat_total") || "工具总数"} start={statsInView} isLoading={isLoading} />
+        <StatCard icon={<FaHeart size={16} />} value={stats.favorites} label={t("stat_favorites") || "常用"} start={statsInView} isLoading={isLoading} />
+        <StatCard icon={<Zap size={18} />} value={stats.dailyUse} label={t("stat_daily") || "每天使用"} start={statsInView} isLoading={isLoading} />
+        <StatCard icon={<Tag size={18} />} value={stats.categories} label={t("stat_categories") || "分类"} start={statsInView} isLoading={isLoading} />
       </div>
       <button onClick={onScrollDown} className="absolute bottom-6 left-1/2 -translate-x-1/2 flex flex-col items-center gap-1 text-gray-500 dark:text-gray-400 hover:text-accentColor transition-colors">
-        <span className="text-[10px] uppercase tracking-widest">{t("scroll") || "Scroll"}</span>
+        <span className="text-[10px] uppercase tracking-widest">{t("scroll") || "向下浏览"}</span>
         <span className="w-5 h-8 border-2 border-current rounded-full flex items-start justify-center pt-1"><span className="w-1 h-1.5 bg-current rounded-full animate-bounce" /></span>
       </button>
     </section>
@@ -413,8 +460,8 @@ function TagCloud({ tags, onTagClick, activeTag }: { tags: { tag: string, count:
     <section className="space-y-5">
       <div className="flex items-center gap-2">
         <Tag size={18} className="text-accentColor" />
-        <h2 className="font-bold text-gray-900 dark:text-white">{t("tag_cloud_title") || "Tag Cloud"}</h2>
-        <span className="text-xs text-gray-500 dark:text-gray-400">{t("tag_cloud_desc") || "— Klik tag untuk filter tools"}</span>
+        <h2 className="font-bold text-gray-900 dark:text-white">{t("tag_cloud_title") || "标签云"}</h2>
+        <span className="text-xs text-gray-500 dark:text-gray-400">{t("tag_cloud_desc") || "点击标签筛选工具"}</span>
       </div>
       <div ref={ref} className="flex flex-wrap gap-2 justify-center py-4">
         {tags.map(({ tag, count }, i) => {
@@ -489,17 +536,17 @@ function FilterToolbar({
   }, [])
 
   const getSortModeTranslation = (mode: SortMode) => {
-    if (mode === "Most Used") return t("sort_most_used") || "Most Used"
-    if (mode === "Favorite First") return t("sort_favorite_first") || "Favorite First"
+    if (mode === "Most Used") return t("sort_most_used") || "最常用"
+    if (mode === "Favorite First") return t("sort_favorite_first") || "常用优先"
     return mode
   }
 
   const activeCategoryLabel =
     activeCategory === "All"
-      ? t("cat_all") || "All"
+      ? t("cat_all") || "全部"
       : activeCategory === "Favorites"
-      ? t("cat_favorites") || "Favorites"
-      : (CATEGORY_META[activeCategory as ToolCategory]?.emoji || "🔹") + " " + activeCategory
+      ? t("cat_favorites") || "常用"
+      : (CATEGORY_META[activeCategory as ToolCategory]?.emoji || "🔹") + " " + getCategoryLabel(activeCategory as ToolCategory)
 
   const hasActiveFilters = search || activeCategory !== "All" || activeBadge !== "All" || activeTag
 
@@ -514,7 +561,7 @@ function FilterToolbar({
             type="text"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            placeholder={t("search_placeholder") || "Cari tools..."}
+            placeholder={t("search_placeholder") || "搜索工具..."}
             className="w-full pl-8 pr-8 py-2 rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 text-sm text-gray-800 dark:text-gray-200 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-accentColor/40 focus:border-accentColor transition-all"
           />
           {search && (
@@ -548,14 +595,14 @@ function FilterToolbar({
                   onClick={() => { setActiveCategory("All"); setShowCategoryPanel(false) }}
                   className={cn("w-full flex items-center gap-2 px-3 py-2 rounded-xl text-xs font-medium transition-colors text-left", activeCategory === "All" ? "bg-accentColor text-white" : "text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800")}
                 >
-                  🌐 {t("cat_all") || "All"}
+                  🌐 {t("cat_all") || "全部"}
                   <span className={cn("ml-auto text-[10px] px-1.5 py-0.5 rounded-full", activeCategory === "All" ? "bg-white/20" : "bg-gray-100 dark:bg-gray-800 text-gray-500")}>{totalTools}</span>
                 </button>
                 <button
                   onClick={() => { setActiveCategory("Favorites"); setShowCategoryPanel(false) }}
                   className={cn("w-full flex items-center gap-2 px-3 py-2 rounded-xl text-xs font-medium transition-colors text-left mt-1", activeCategory === "Favorites" ? "bg-rose-500 text-white" : "text-rose-600 dark:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-500/10")}
                 >
-                  ⭐ {t("cat_favorites") || "Favorites"}
+                  ⭐ {t("cat_favorites") || "常用"}
                 </button>
                 <div className="h-px bg-gray-100 dark:bg-gray-800 my-2" />
                 {ALL_TOOL_CATEGORIES.map((cat) => (
@@ -564,7 +611,7 @@ function FilterToolbar({
                     onClick={() => { setActiveCategory(cat as ToolCategory); setShowCategoryPanel(false) }}
                     className={cn("w-full flex items-center gap-2 px-3 py-2 rounded-xl text-xs font-medium transition-colors text-left", activeCategory === cat ? "bg-accentColor text-white" : "text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800")}
                   >
-                    {CATEGORY_META[cat as ToolCategory]?.emoji || "🔹"} {cat}
+                    {CATEGORY_META[cat as ToolCategory]?.emoji || "🔹"} {getCategoryLabel(cat as ToolCategory)}
                   </button>
                 ))}
               </div>
@@ -582,7 +629,7 @@ function FilterToolbar({
             )}
           >
             <Filter size={12} />
-            <span className="hidden sm:inline">{activeBadge === "All" ? t("cat_all") || "All" : activeBadge}</span>
+            <span className="hidden sm:inline">{activeBadge === "All" ? t("cat_all") || "全部" : getBadgeLabel(activeBadge)}</span>
           </button>
           {showBadgeMenu && (
             <div className="absolute right-0 top-full mt-1 w-44 rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 shadow-xl z-50 overflow-hidden">
@@ -592,7 +639,7 @@ function FilterToolbar({
                   onClick={() => { setActiveBadge(b); setShowBadgeMenu(false) }}
                   className={cn("w-full text-left px-4 py-2.5 text-xs transition-colors hover:bg-gray-50 dark:hover:bg-gray-800", activeBadge === b ? "text-accentColor font-semibold" : "text-gray-700 dark:text-gray-300")}
                 >
-                  {b === "All" ? `🔘 ${t("cat_all") || "All"}` : `${BADGE_META[b as ToolBadge]?.emoji || ""} ${b}`}
+                  {b === "All" ? `🔘 ${t("cat_all") || "全部"}` : `${BADGE_META[b as ToolBadge]?.emoji || ""} ${getBadgeLabel(b as ToolBadge)}`}
                 </button>
               ))}
             </div>
@@ -630,7 +677,7 @@ function FilterToolbar({
             className="shrink-0 inline-flex items-center gap-1 px-2.5 py-2 rounded-xl text-xs font-medium text-red-500 border border-red-200 dark:border-red-800/50 bg-red-50 dark:bg-red-950/30 hover:bg-red-100 dark:hover:bg-red-900/40 transition-all"
           >
             <X size={11} />
-            <span className="hidden sm:inline">{t("reset") || "Reset"}</span>
+            <span className="hidden sm:inline">{t("reset") || "重置"}</span>
           </button>
         )}
       </div>
@@ -640,9 +687,9 @@ function FilterToolbar({
         <div className="flex items-center gap-2 pb-2 flex-wrap">
           <p className="text-[11px] text-gray-500 dark:text-gray-400">
             <span className="font-semibold text-accentColor">{filtered.length}</span>
-            {" "}{t("from") || "dari"}{" "}
+            {" "}{t("from") || "共"}{" "}
             <span className="font-semibold">{totalTools}</span>{" "}
-            {t("tools") || "tools"}
+            {t("tools") || "个工具"}
           </p>
           {activeTag && (
             <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-medium bg-accentColor/10 text-accentColor border border-accentColor/30">
@@ -677,7 +724,7 @@ export default function TechStackPage() {
         const data = await portfolioApi.list<ToolItem & { id: number }>("tech-tools")
         setToolsData(data as ToolItem[])
       } catch (error) {
-        console.error("Gagal menarik data tech_tools:", error)
+        console.error("获取技术栈数据失败:", error)
       }
       setIsLoading(false)
     }
@@ -768,8 +815,8 @@ export default function TechStackPage() {
         ) : toolsData.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-20">
             <Layers size={60} className="text-gray-300 dark:text-gray-700 mb-4" />
-            <h2 className="text-xl font-bold text-gray-800 dark:text-gray-200">Belum ada data tools</h2>
-            <p className="text-gray-500">Silakan jalankan script migration terlebih dahulu.</p>
+            <h2 className="text-xl font-bold text-gray-800 dark:text-gray-200">暂无技术栈条目</h2>
+            <p className="text-gray-500">后续整理技能和工具时会在这里补充。</p>
           </div>
         ) : (
           <>
@@ -790,8 +837,8 @@ export default function TechStackPage() {
                 filtered.length === 0 ? (
                   <div className="flex flex-col items-center justify-center py-24 gap-4">
                     <FaSearch size={36} className="text-gray-300 dark:text-gray-700" />
-                    <p className="text-gray-500 dark:text-gray-400 text-sm">{t("empty_state") || "Tidak ada tools yang cocok dengan filter yang dipilih."}</p>
-                    <button onClick={clearFilters} className="text-sm text-accentColor hover:underline">{t("reset_filter") || "Reset filter"}</button>
+                    <p className="text-gray-500 dark:text-gray-400 text-sm">{t("empty_state") || "没有符合筛选条件的工具。"}</p>
+                    <button onClick={clearFilters} className="text-sm text-accentColor hover:underline">{t("reset_filter") || "重置筛选"}</button>
                   </div>
                 ) : (
                   <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">

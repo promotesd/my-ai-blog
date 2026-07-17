@@ -7,20 +7,7 @@ import { useTranslations } from "next-intl";
 import { cn } from "@/lib/utils";
 import { fetchSteamGames, steamHeaderUrl, formatPlaytime } from "@/lib/entertainmentApi";
 import { SteamGame, MobileGame } from "@/types/entertainment";
-import { GAME_MANUAL_DATA, STEAM_GAMES_FALLBACK } from "@/data/entertainmentData";
 import { GameCardSkeleton } from "./EntertainmentSkeletons";
-
-// ── Enrich all Steam games with manual override data, force status=playing ────
-function enrichGame(game: SteamGame): SteamGame {
-  const manual = GAME_MANUAL_DATA[game.appid];
-  return {
-    ...game,
-    ...(manual ?? {}),
-    status: "playing" as const,
-    achievements_done: manual?.achievements_done ?? game.achievements_done,
-    achievements_total: manual?.achievements_total ?? game.achievements_total,
-  };
-}
 
 // ── PC Games (Steam) ─────────────────────────────────────────────────────────
 function PCGamesTab({ globalSearch }: { globalSearch?: string }) {
@@ -33,8 +20,8 @@ function PCGamesTab({ globalSearch }: { globalSearch?: string }) {
 
   useEffect(() => {
     fetchSteamGames()
-      .then((data) => setGames((data.length > 0 ? data : STEAM_GAMES_FALLBACK).map(enrichGame)))
-      .catch(() => { setGames(STEAM_GAMES_FALLBACK.map(enrichGame)); setError(true); })
+      .then(setGames)
+      .catch(() => { setGames([]); setError(true); })
       .finally(() => setLoading(false));
   }, []);
 
@@ -50,7 +37,7 @@ function PCGamesTab({ globalSearch }: { globalSearch?: string }) {
       <div className="grid grid-cols-2 gap-3">
         {[
           { icon: <Gamepad2 size={16} />, label: t("stat_total_games"), value: games.length, color: "text-blue-500" },
-          { icon: <Clock size={16} />, label: t("stat_total_hours"), value: `${totalHours}j`, color: "text-green-500" },
+          { icon: <Clock size={16} />, label: t("stat_total_hours"), value: `${totalHours} 小时`, color: "text-green-500" },
         ].map(({ icon, label, value, color }) => (
           <div key={label} className="rounded-xl border border-gray-200 dark:border-gray-700/50 bg-white dark:bg-gray-800/40 p-4 flex items-center gap-3">
             <span className={cn("p-2 rounded-lg bg-gray-100 dark:bg-gray-700/60", color)}>{icon}</span>
@@ -63,11 +50,15 @@ function PCGamesTab({ globalSearch }: { globalSearch?: string }) {
         <input value={search} onChange={(e) => setSearch(e.target.value)} placeholder={t("search_game")} className="w-full pl-9 pr-4 py-2.5 rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800/60 text-sm text-gray-900 dark:text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-accentColor/40 transition" />
         {search && <button onClick={() => setSearch("")} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"><X size={14} /></button>}
       </div>
-      {error && <div className="rounded-xl border border-yellow-200 dark:border-yellow-800/50 bg-yellow-50 dark:bg-yellow-900/20 px-4 py-3 text-sm text-yellow-700 dark:text-yellow-300">{t("steam_error")}</div>}
+      {error && <div className="rounded-xl border border-yellow-200 dark:border-yellow-800/50 bg-yellow-50 dark:bg-yellow-900/20 px-4 py-3 text-sm text-yellow-700 dark:text-yellow-300">Steam 数据暂时无法读取，请确认 Steam 个人资料中的“游戏详情”已设为公开。</div>}
       {loading ? (
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">{Array.from({ length: 15 }).map((_, i) => <GameCardSkeleton key={i} />)}</div>
       ) : filtered.length === 0 ? (
-        <div className="text-center py-16 text-gray-500 dark:text-gray-400"><Gamepad2 size={48} className="mx-auto mb-3 opacity-30" /><p>{t("no_games")}</p></div>
+        <div className="text-center py-16 text-gray-500 dark:text-gray-400">
+          <Gamepad2 size={48} className="mx-auto mb-3 opacity-30" />
+          <p>Steam 游戏库暂时为空</p>
+          <a href="https://steamcommunity.com/profiles/76561199152950377" target="_blank" rel="noreferrer" className="inline-block mt-3 text-sm text-accentColor hover:underline">查看我的 Steam 主页</a>
+        </div>
       ) : (
         <>
           <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
@@ -97,14 +88,14 @@ function PCGameCard({ game }: { game: SteamGame }) {
         ) : (
           <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-gray-700 to-gray-900"><Gamepad2 size={28} className="text-gray-500" /></div>
         )}
-        <span className="absolute top-2 right-2 text-[10px] font-semibold px-2 py-0.5 rounded-full bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-300">🎮 Playing</span>
+        <span className="absolute top-2 right-2 text-[10px] font-semibold px-2 py-0.5 rounded-full bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-300">Steam</span>
       </div>
       <div className="p-3">
         <p className="text-sm font-semibold text-gray-900 dark:text-white leading-tight line-clamp-2 mb-1">{game.name}</p>
         <p className="text-xs text-gray-500 dark:text-gray-400">{game.playtime_forever > 0 ? `⏱ ${formatPlaytime(game.playtime_forever)}` : t("game_never_played_short")}</p>
         {game.achievements_total && game.achievements_total > 0 && (
           <div className="mt-2">
-            <div className="flex justify-between text-[10px] text-gray-400 mb-0.5"><span>Achievement</span><span>{game.achievements_done ?? 0}/{game.achievements_total}</span></div>
+            <div className="flex justify-between text-[10px] text-gray-400 mb-0.5"><span>{t("achievement")}</span><span>{game.achievements_done ?? 0}/{game.achievements_total}</span></div>
             <div className="h-1 rounded-full bg-gray-200 dark:bg-gray-700 overflow-hidden"><div className="h-full rounded-full bg-accentColor transition-all" style={{ width: `${((game.achievements_done ?? 0) / game.achievements_total) * 100}%` }} /></div>
           </div>
         )}
@@ -167,12 +158,12 @@ function MobileGameCard({ game }: { game: MobileGame }) {
         ) : (
           <div className="w-full h-full flex items-center justify-center"><Smartphone size={32} className="text-gray-400" /></div>
         )}
-        <span className="absolute top-2 right-2 text-[10px] font-semibold px-2 py-0.5 rounded-full bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-300">🎮 Playing</span>
+        <span className="absolute top-2 right-2 text-[10px] font-semibold px-2 py-0.5 rounded-full bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-300">游玩中</span>
       </div>
       <div className="p-3">
         <p className="text-sm font-semibold text-gray-900 dark:text-white line-clamp-2">{game.title}</p>
         <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">{game.platform}</p>
-        {game.hours_played ? <p className="text-xs text-gray-400 mt-1">⏱ {game.hours_played}j</p> : null}
+        {game.hours_played ? <p className="text-xs text-gray-400 mt-1">⏱ {game.hours_played} 小时</p> : null}
         {game.genre.slice(0, 2).map((g) => (
           <span key={g} className="inline-block text-[10px] px-1.5 py-0.5 rounded-full bg-gray-100 dark:bg-gray-700/60 text-gray-500 dark:text-gray-400 mr-1 mt-1">{g}</span>
         ))}

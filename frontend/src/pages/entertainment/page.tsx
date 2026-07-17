@@ -71,7 +71,7 @@ export default function EntertainmentPage() {
               <div className="flex items-center gap-3 mb-3">
                 <span className="text-4xl">🎮</span>
                 <div>
-                  <p className="text-xs font-semibold text-accentColor uppercase tracking-widest mb-0.5">Entertainment</p>
+                  <p className="text-xs font-semibold text-accentColor uppercase tracking-widest mb-0.5">{t("page_eyebrow")}</p>
                   <h1 className="text-3xl md:text-4xl font-extrabold text-gray-900 dark:text-white tracking-tight">
                     {t("page_title")}
                   </h1>

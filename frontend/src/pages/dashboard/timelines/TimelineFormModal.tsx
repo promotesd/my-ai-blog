@@ -47,6 +47,13 @@ const EMPTY_FORM: TimelineFormData = {
 }
 
 const CATEGORIES = ["Pendidikan", "Kursus & Bootcamp", "Karir & Magang", "Pencapaian & Award", "Organisasi & Komunitas"]
+const CATEGORY_LABELS: Record<string, string> = {
+  Pendidikan: "教育",
+  "Kursus & Bootcamp": "课程与训练营",
+  "Karir & Magang": "工作与实习",
+  "Pencapaian & Award": "成果与奖项",
+  "Organisasi & Komunitas": "组织与社群",
+}
 const COLORS = ["blue", "orange", "green", "yellow", "purple", "red", "cyan"]
 
 interface TimelineFormModalProps {
@@ -115,9 +122,9 @@ export default function TimelineFormModal({ isOpen, mode, initialData, onClose, 
       const { data: { publicUrl } } = supabase.storage.from(bucket).getPublicUrl(filePath)
       
       // Tambahkan ke array photos
-      setField("photos", [...form.photos, { src: publicUrl, alt: "Foto Timeline", caption: "" }])
+      setField("photos", [...form.photos, { src: publicUrl, alt: "时间线照片", caption: "" }])
     } catch (error: any) {
-      alert(`Gagal upload: ${error.message}`)
+      alert(`上传失败：${error.message}`)
     } finally {
       setUploading(false)
     }
@@ -137,8 +144,8 @@ export default function TimelineFormModal({ isOpen, mode, initialData, onClose, 
       <div className="relative w-full max-w-4xl max-h-[88vh] flex flex-col bg-[#0e1c1c] border border-white/[0.08] rounded-2xl shadow-2xl overflow-hidden">
         <div className="flex items-center justify-between px-6 py-4 border-b border-white/[0.06] shrink-0">
           <div>
-            <h2 className="text-base font-semibold text-white">{mode === "create" ? "New Timeline Entry" : "Edit Timeline"}</h2>
-            <p className="text-xs text-gray-500 mt-0.5">Kelola riwayat perjalanan hidup/karir Anda</p>
+            <h2 className="text-base font-semibold text-white">{mode === "create" ? "新建时间线记录" : "编辑时间线记录"}</h2>
+            <p className="text-xs text-gray-500 mt-0.5">管理教育与成长经历</p>
           </div>
           <button onClick={onClose} className="p-2 rounded-xl hover:bg-white/[0.06] text-gray-400 hover:text-white transition-colors">
             <X size={16} />
@@ -149,92 +156,92 @@ export default function TimelineFormModal({ isOpen, mode, initialData, onClose, 
           
           {/* SECTION 1: Basic Info */}
           <div className="space-y-4 p-4 rounded-xl border border-white/[0.06] bg-white/[0.01]">
-            <h3 className="text-xs font-semibold text-accentColor uppercase tracking-wider">Informasi Dasar</h3>
+            <h3 className="text-xs font-semibold text-accentColor uppercase tracking-wider">基本信息</h3>
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <label className="block text-xs font-medium text-gray-400 mb-2">Kategori <span className="text-red-400">*</span></label>
+                <label className="block text-xs font-medium text-gray-400 mb-2">分类 <span className="text-red-400">*</span></label>
                 <select value={form.category} onChange={(e) => setField("category", e.target.value)} className="w-full bg-white/[0.04] border border-white/[0.08] rounded-xl px-3 py-2.5 text-sm text-gray-200 outline-none focus:border-accentColor/60 transition-colors">
-                  {CATEGORIES.map(c => <option key={c} value={c} className="bg-[#0d1a1a]">{c}</option>)}
+                  {CATEGORIES.map(c => <option key={c} value={c} className="bg-[#0d1a1a]">{CATEGORY_LABELS[c]}</option>)}
                 </select>
               </div>
-              <FormField label="Tipe (Cth: Kuliah, Bootcamp, Part-time)" required>
-                <TextInput value={form.type} onChange={(v) => setField("type", v)} placeholder="Tipe kegiatan..." />
+              <FormField label="类型（例如：本科、研究生）" required>
+                <TextInput value={form.type} onChange={(v) => setField("type", v)} placeholder="输入经历类型" />
               </FormField>
             </div>
 
             <div className="grid grid-cols-2 gap-4">
-              <FormField label="Judul (Title)" required>
-                <TextInput value={form.title} onChange={(v) => setField("title", v)} placeholder="Nama instansi / kegiatan..." />
+              <FormField label="标题" required>
+                <TextInput value={form.title} onChange={(v) => setField("title", v)} placeholder="输入学校或经历名称" />
               </FormField>
-              <FormField label="Sub-judul (Subtitle)">
-                <TextInput value={form.subtitle} onChange={(v) => setField("subtitle", v)} placeholder="Jurusan / Peran..." />
+              <FormField label="副标题">
+                <TextInput value={form.subtitle} onChange={(v) => setField("subtitle", v)} placeholder="专业或身份" />
               </FormField>
             </div>
 
-            <FormField label="Deskripsi Kegiatan" required>
-              <textarea value={form.description} onChange={(e) => setField("description", e.target.value)} rows={3} placeholder="Ceritakan pengalaman Anda..." className="w-full bg-white/[0.04] border border-white/[0.08] rounded-xl px-3 py-2.5 text-sm text-gray-200 outline-none focus:border-accentColor/60 transition-colors resize-none" />
+            <FormField label="经历描述" required>
+              <textarea value={form.description} onChange={(e) => setField("description", e.target.value)} rows={3} placeholder="介绍这段经历" className="w-full bg-white/[0.04] border border-white/[0.08] rounded-xl px-3 py-2.5 text-sm text-gray-200 outline-none focus:border-accentColor/60 transition-colors resize-none" />
             </FormField>
           </div>
 
           {/* SECTION 2: Waktu & Lokasi */}
           <div className="space-y-4 p-4 rounded-xl border border-white/[0.06] bg-white/[0.01]">
-            <h3 className="text-xs font-semibold text-accentColor uppercase tracking-wider">Waktu & Lokasi</h3>
+            <h3 className="text-xs font-semibold text-accentColor uppercase tracking-wider">时间与地点</h3>
             <div className="grid grid-cols-3 gap-4">
-              <FormField label="Tahun/Bulan Mulai" required icon={<Calendar size={12} className="text-gray-500"/>}>
+              <FormField label="开始年月" required icon={<Calendar size={12} className="text-gray-500"/>}>
                 <TextInput value={form.period_start} onChange={(v) => setField("period_start", v)} placeholder="2020 / Jan 2020" />
               </FormField>
-              <FormField label="Tahun/Bulan Selesai" required>
-                <TextInput value={form.period_end} onChange={(v) => setField("period_end", v)} placeholder="2024 / Sekarang" />
+              <FormField label="结束年月" required>
+                <TextInput value={form.period_end} onChange={(v) => setField("period_end", v)} placeholder="2026 / 至今" />
               </FormField>
               <div>
-                <label className="block text-xs font-medium text-gray-400 mb-2">Status</label>
+                <label className="block text-xs font-medium text-gray-400 mb-2">状态</label>
                 <select value={form.status} onChange={(e) => setField("status", e.target.value)} className="w-full bg-white/[0.04] border border-white/[0.08] rounded-xl px-3 py-2.5 text-sm text-gray-200 outline-none focus:border-accentColor/60 transition-colors">
-                  <option value="Selesai" className="bg-[#0d1a1a]">Selesai</option>
-                  <option value="Sedang Berlangsung" className="bg-[#0d1a1a]">Sedang Berlangsung</option>
+                  <option value="Selesai" className="bg-[#0d1a1a]">已完成</option>
+                  <option value="Sedang Berlangsung" className="bg-[#0d1a1a]">进行中</option>
                 </select>
               </div>
             </div>
             <div className="grid grid-cols-2 gap-4">
-              <FormField label="Lokasi Utama" icon={<Building2 size={12} className="text-gray-500"/>}>
-                <TextInput value={form.location} onChange={(v) => setField("location", v)} placeholder="Kota, Provinsi..." />
+              <FormField label="主要地点" icon={<Building2 size={12} className="text-gray-500"/>}>
+                <TextInput value={form.location} onChange={(v) => setField("location", v)} placeholder="城市、省份" />
               </FormField>
-              <FormField label="Detail Lokasi">
-                <TextInput value={form.locationDetail} onChange={(v) => setField("locationDetail", v)} placeholder="Remote / On-site..." />
+              <FormField label="地点说明">
+                <TextInput value={form.locationDetail} onChange={(v) => setField("locationDetail", v)} placeholder="校区或具体地点" />
               </FormField>
             </div>
           </div>
 
           {/* SECTION 3: Array Data */}
           <div className="space-y-4 p-4 rounded-xl border border-white/[0.06] bg-white/[0.01]">
-            <h3 className="text-xs font-semibold text-accentColor uppercase tracking-wider">Poin Penting & Keahlian</h3>
+            <h3 className="text-xs font-semibold text-accentColor uppercase tracking-wider">重点与技术</h3>
             
-            <ArrayInput field="highlights" label="Highlights / Poin Utama" form={form} inputs={inputs} setInputs={setInputs} onAdd={handleArrayAdd} onRemove={handleArrayRemove} />
-            <ArrayInput field="skills" label="Soft / General Skills" form={form} inputs={inputs} setInputs={setInputs} onAdd={handleArrayAdd} onRemove={handleArrayRemove} />
-            <ArrayInput field="techStack" label="Tech Stack" form={form} inputs={inputs} setInputs={setInputs} onAdd={handleArrayAdd} onRemove={handleArrayRemove} />
+            <ArrayInput field="highlights" label="重点内容" form={form} inputs={inputs} setInputs={setInputs} onAdd={handleArrayAdd} onRemove={handleArrayRemove} />
+            <ArrayInput field="skills" label="综合能力" form={form} inputs={inputs} setInputs={setInputs} onAdd={handleArrayAdd} onRemove={handleArrayRemove} />
+            <ArrayInput field="techStack" label="技术栈" form={form} inputs={inputs} setInputs={setInputs} onAdd={handleArrayAdd} onRemove={handleArrayRemove} />
             
             {(form.category === "Karir & Magang" || form.category === "Organisasi & Komunitas") && (
-              <ArrayInput field="responsibilities" label="Tanggung Jawab (Responsibilities)" form={form} inputs={inputs} setInputs={setInputs} onAdd={handleArrayAdd} onRemove={handleArrayRemove} />
+              <ArrayInput field="responsibilities" label="职责" form={form} inputs={inputs} setInputs={setInputs} onAdd={handleArrayAdd} onRemove={handleArrayRemove} />
             )}
             {form.category === "Pendidikan" && (
-              <ArrayInput field="extracurricular" label="Ekstrakurikuler" form={form} inputs={inputs} setInputs={setInputs} onAdd={handleArrayAdd} onRemove={handleArrayRemove} />
+              <ArrayInput field="extracurricular" label="课外活动" form={form} inputs={inputs} setInputs={setInputs} onAdd={handleArrayAdd} onRemove={handleArrayRemove} />
             )}
           </div>
 
           {/* SECTION 4: Media & Visuals */}
           <div className="space-y-4 p-4 rounded-xl border border-white/[0.06] bg-white/[0.01]">
-            <h3 className="text-xs font-semibold text-accentColor uppercase tracking-wider">Media & Tampilan</h3>
+            <h3 className="text-xs font-semibold text-accentColor uppercase tracking-wider">图片与展示</h3>
             <div className="grid grid-cols-2 gap-4">
-              <FormField label="Warna Tema" icon={<PaintBucket size={12} className="text-gray-500"/>}>
+              <FormField label="主题颜色" icon={<PaintBucket size={12} className="text-gray-500"/>}>
                 <select value={form.color} onChange={(e) => setField("color", e.target.value)} className="w-full bg-white/[0.04] border border-white/[0.08] rounded-xl px-3 py-2.5 text-sm text-gray-200 outline-none focus:border-accentColor/60 transition-colors capitalize">
                   {COLORS.map(c => <option key={c} value={c} className="bg-[#0d1a1a] capitalize">{c}</option>)}
                 </select>
               </FormField>
-              <FormField label="Icon Key (React Icons)">
-                <TextInput value={form.icon} onChange={(v) => setField("icon", v)} placeholder="Cth: FaSchool, FaBriefcase..." />
+              <FormField label="图标名称（React Icons）">
+                <TextInput value={form.icon} onChange={(v) => setField("icon", v)} placeholder="例如：FaSchool、FaBriefcase" />
               </FormField>
             </div>
 
-            <FormField label="Foto & Dokumentasi" icon={<ImageIcon size={12} className="text-gray-500"/>}>
+            <FormField label="照片与资料" icon={<ImageIcon size={12} className="text-gray-500"/>}>
               <div className="space-y-3">
                 {form.photos.map((photo, idx) => (
                   <div key={idx} className="flex gap-3 items-start p-3 bg-white/[0.03] border border-white/[0.08] rounded-xl">
@@ -244,7 +251,7 @@ export default function TimelineFormModal({ isOpen, mode, initialData, onClose, 
                     <div className="flex-1 space-y-2">
                       <input type="text" value={photo.caption} onChange={(e) => {
                         const newPhotos = [...form.photos]; newPhotos[idx].caption = e.target.value; setField("photos", newPhotos)
-                      }} placeholder="Caption / Deskripsi foto..." className="w-full bg-transparent border-b border-white/[0.1] pb-1 text-xs text-gray-300 outline-none focus:border-accentColor" />
+                      }} placeholder="照片说明" className="w-full bg-transparent border-b border-white/[0.1] pb-1 text-xs text-gray-300 outline-none focus:border-accentColor" />
                     </div>
                     <button type="button" onClick={() => removePhoto(idx)} className="p-1.5 text-gray-500 hover:text-red-400 hover:bg-red-500/10 rounded-lg"><X size={14}/></button>
                   </div>
@@ -264,12 +271,12 @@ export default function TimelineFormModal({ isOpen, mode, initialData, onClose, 
         </div>
 
         <div className="flex items-center justify-between px-6 py-4 border-t border-white/[0.06] shrink-0 bg-[#0a1515]">
-          <p className="text-xs text-gray-600"><span className="text-red-400">*</span> Wajib diisi</p>
+          <p className="text-xs text-gray-600"><span className="text-red-400">*</span> 必填</p>
           <div className="flex gap-3">
-            <button onClick={onClose} className="px-4 py-2 text-sm text-gray-400 hover:text-gray-200 rounded-xl hover:bg-white/[0.06]">Batal</button>
+            <button onClick={onClose} className="px-4 py-2 text-sm text-gray-400 hover:text-gray-200 rounded-xl hover:bg-white/[0.06]">取消</button>
             <button onClick={() => onSave(form)} disabled={externalSaving || !isValid} className="flex items-center gap-2 px-5 py-2 text-sm font-medium bg-accentColor text-white rounded-xl hover:brightness-110 disabled:opacity-50 transition-all">
               {externalSaving && <Loader2 size={13} className="animate-spin" />}
-              {mode === "create" ? "Buat Timeline" : "Simpan Perubahan"}
+              {mode === "create" ? "创建记录" : "保存修改"}
             </button>
           </div>
         </div>
@@ -314,7 +321,7 @@ function ArrayInput({ field, label, form, inputs, setInputs, onAdd, onRemove }: 
           value={inputs[field]} 
           onChange={(e) => setInputs((p: any) => ({ ...p, [field]: e.target.value }))} 
           onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); onAdd(field); } }} 
-          placeholder="Ketik lalu tekan Enter..." 
+          placeholder="输入后按回车添加..."
           className="w-full bg-transparent text-sm text-gray-200 placeholder:text-gray-600 outline-none" 
         />
       </div>

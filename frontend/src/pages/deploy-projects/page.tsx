@@ -4,7 +4,6 @@ import { useState, useEffect, useRef, useMemo } from "react"
 import Link from "next/link"
 import Image from "next/image"
 import { useTranslations, useLocale } from "next-intl"
-import { createClient } from "@supabase/supabase-js"
 import {
   Layers, ExternalLink, Download, Globe, Smartphone,
   Loader2, ArrowRight, Calendar, Zap, Search, X, ArrowUpDown, Apple, Play
@@ -12,15 +11,11 @@ import {
 import { cn } from "@/lib/utils"
 import TranslateWidget from "@/components/TranslateWidget"
 
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || ""
-const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || ""
-const supabase = createClient(supabaseUrl, supabaseKey)
-
 /* ─── helpers ─── */
 function formatDate(d: string, locale: string) {
   if (!d) return ""
   // Menyesuaikan format tanggal dengan bahasa yang sedang aktif
-  return new Date(d).toLocaleDateString(locale === "id" ? "id-ID" : locale === "de" ? "de-DE" : "en-US", { 
+  return new Date(d).toLocaleDateString(locale === "zh" ? "zh-CN" : "en-US", {
     day: "numeric", 
     month: "short", 
     year: "numeric" 
@@ -84,8 +79,7 @@ function ProjectCard({ project, index }: { project: any; index: number }) {
 
   let apkUrl = project.external_apk_url
   if (!apkUrl && project.apk_file_path) {
-    const { data } = supabase.storage.from("project-files").getPublicUrl(project.apk_file_path)
-    apkUrl = data.publicUrl
+    apkUrl = ""
   }
   
   const hasDownload = !isWeb && apkUrl
@@ -274,7 +268,7 @@ function FilterTabs({ active, onChange }: { active: FilterType; onChange: (v: Fi
 export default function DeployProjectsPage() {
   const t = useTranslations("deployProjects")
   const [projects, setProjects] = useState<any[]>([])
-  const [isLoading, setIsLoading] = useState(true)
+  const [isLoading, setIsLoading] = useState(false)
   
   const [filter, setFilter] = useState<FilterType>("All")
   const [search, setSearch] = useState("")
@@ -282,15 +276,8 @@ export default function DeployProjectsPage() {
   const [sortMode, setSortMode] = useState("newest") 
 
   useEffect(() => {
-    async function fetchProjects() {
-      const { data } = await supabase
-        .from("deployed_projects")
-        .select("*")
-      
-      if (data) setProjects(data)
-      setIsLoading(false)
-    }
-    fetchProjects()
+    setProjects([])
+    setIsLoading(false)
   }, [])
 
   const filteredProjects = useMemo(() => {

@@ -18,11 +18,11 @@ export async function saveTimelineOnServer(
     // ID di-generate otomatis oleh database (IDENTITY)
     const { data, error } = await supabaseAdmin.from("timelines").insert(row).select()
     if (error) return { success: false, error: error.message }
-    if (!data || data.length === 0) return { success: false, error: "Gagal membuat timeline di database." }
+    if (!data || data.length === 0) return { success: false, error: "无法在数据库中创建时间线记录。" }
   } else {
     const { data, error } = await supabaseAdmin.from("timelines").update(row).eq("id", idToUpdate).select()
     if (error) return { success: false, error: error.message }
-    if (!data || data.length === 0) return { success: false, error: "Gagal mengubah timeline di database." }
+    if (!data || data.length === 0) return { success: false, error: "无法在数据库中更新时间线记录。" }
   }
 
   return { success: true }
@@ -39,7 +39,7 @@ export async function deleteTimelineOnServer(id: number, storageBucket?: string,
   
   const { data, error } = await supabaseAdmin.from("timelines").delete().eq("id", id).select()
   if (error) return { success: false, error: error.message }
-  if (!data || data.length === 0) return { success: false, error: "Data timeline gagal dihapus." }
+  if (!data || data.length === 0) return { success: false, error: "无法从数据库中删除时间线记录。" }
   
   return { success: true }
 }

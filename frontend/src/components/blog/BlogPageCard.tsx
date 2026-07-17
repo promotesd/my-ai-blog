@@ -23,8 +23,8 @@ function formatDate(iso: string) {
 }
 
 export default function BlogPageCard({ blog, view = "grid" }: BlogPageCardProps) {
-  const author = blog.author ?? { name: "Agung Kurniawan", type: "developer" as const }
-  const authorName = author.name || "Agung Kurniawan"
+  const author = blog.author ?? { name: "小嘟嘟", type: "developer" as const }
+  const authorName = author.name || "小嘟嘟"
   const isDeveloper = author.type === "developer"
   const [translated, setTranslated] = useState<{ title: string; excerpt: string } | null>(null)
 

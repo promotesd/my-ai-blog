@@ -6,6 +6,7 @@ import Link from "next/link"
 import { GalleryAlbum } from "@/types/gallery"
 import { Images, Calendar, ArrowRight } from "lucide-react"
 import { cn } from "@/lib/utils"
+import { getGalleryCategoryLabel } from "@/data/galleryData"
 
 interface GalleryAlbumCardProps {
   album: GalleryAlbum
@@ -48,7 +49,7 @@ export default function GalleryAlbumCard({
         {/* Category badge */}
         <div className="absolute top-2 left-2 hidden xs:block sm:block">
           <span className="text-[10px] sm:text-xs font-medium px-2 py-0.5 sm:px-2.5 sm:py-1 rounded-full bg-accentColor/90 text-white backdrop-blur-sm">
-            {album.category.split(" & ")[0]}
+            {getGalleryCategoryLabel(album.category)}
           </span>
         </div>
 
@@ -87,7 +88,7 @@ export default function GalleryAlbumCard({
                 }}
                 className="inline-flex items-center gap-1 text-xs text-accentColor font-medium mt-1 hover:underline select-none"
               >
-                {isExpanded ? "Lihat Lebih Sedikit ↑" : "Lihat Lengkap ↓"}
+                {isExpanded ? "收起 ↑" : "查看完整 ↓"}
               </button>
             )}
           </div>
@@ -102,7 +103,7 @@ export default function GalleryAlbumCard({
             href={`/gallery/album/${album.slug}`}
             className="flex items-center gap-0.5 sm:gap-1 text-accentColor text-[10px] sm:text-xs font-semibold shrink-0 group-hover:gap-1.5 sm:group-hover:gap-2 transition-all duration-200 ml-auto"
           >
-            Lihat <ArrowRight className="w-3 h-3 sm:w-3.5 sm:h-3.5" />
+            查看 <ArrowRight className="w-3 h-3 sm:w-3.5 sm:h-3.5" />
           </Link>
         </div>
       </div>
@@ -112,7 +113,7 @@ export default function GalleryAlbumCard({
         <div className="flex items-center gap-2 px-2 pb-2 sm:px-4 sm:pb-3">
           {uploaderAvatar ? (
             <div className="relative w-5 h-5 sm:w-6 sm:h-6 rounded-full overflow-hidden shrink-0 ring-1 ring-black/10 dark:ring-white/10">
-              <Image unoptimized={true} src={uploaderAvatar} alt={uploaderName || "Uploader"} fill className="object-cover" sizes="24px" />
+              <Image unoptimized={true} src={uploaderAvatar} alt={uploaderName || "上传者"} fill className="object-cover" sizes="24px" />
             </div>
           ) : (
             <div className="w-5 h-5 sm:w-6 sm:h-6 rounded-full bg-accentColor shrink-0 flex items-center justify-center text-[9px] sm:text-[10px] text-white font-bold ring-1 ring-accentColor/30">
@@ -120,7 +121,7 @@ export default function GalleryAlbumCard({
             </div>
           )}
           <p className="text-[10px] sm:text-xs font-medium text-gray-500 dark:text-gray-400 truncate">
-            {uploaderName || "Unknown"}
+            {uploaderName || "未知"}
           </p>
         </div>
       )}

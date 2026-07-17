@@ -21,15 +21,15 @@ export async function saveProjectOnServer(
   if (mode === "create") {
     const { data, error } = await supabaseAdmin.from("projects").insert(row).select()
     if (error) return { success: false, error: error.message }
-    if (!data || data.length === 0) return { success: false, error: "Gagal membuat project di database." }
+    if (!data || data.length === 0) return { success: false, error: "无法在数据库中创建项目。" }
     projectId = data[0].id
   } else {
     const { data, error } = await supabaseAdmin.from("projects").update(row).eq("id", idToUpdate).select()
     if (error) return { success: false, error: error.message }
-    if (!data || data.length === 0) return { success: false, error: "Gagal mengubah project di database." }
+    if (!data || data.length === 0) return { success: false, error: "无法在数据库中更新项目。" }
   }
 
-  if (!projectId) return { success: false, error: "ID Project tidak ditemukan." }
+  if (!projectId) return { success: false, error: "找不到项目 ID。" }
 
   // 1. Sinkronisasi status Popular
   if (isPopular) {
@@ -59,7 +59,7 @@ export async function deleteProjectOnServer(id: string, storageBucket?: string, 
   
   const { data, error } = await supabaseAdmin.from("projects").delete().eq("id", id).select()
   if (error) return { success: false, error: error.message }
-  if (!data || data.length === 0) return { success: false, error: "Data project gagal dihapus." }
+  if (!data || data.length === 0) return { success: false, error: "无法从数据库中删除项目。" }
   
   return { success: true }
 }

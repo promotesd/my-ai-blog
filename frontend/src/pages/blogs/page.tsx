@@ -5,10 +5,10 @@ import { useBlogStore } from "@/stores/BlogStore"
 import { BlogCategory } from "@/types/blog"
 import BlogPageCard from "@/components/blog/BlogPageCard"
 import BlogPageCardSkeleton from "@/components/blog/BlogPageCardSkeleton"
-import ArticleModal from "@/components/blog/ArticleModal"
 import { Search, PenSquare, LayoutGrid, List, Rss, ChevronLeft, ChevronRight, AlertTriangle, ShieldCheck } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { useTranslations } from "next-intl"
+import Link from "next/link"
 
 const CATEGORIES: (BlogCategory | "All")[] = [
   "All",
@@ -31,12 +31,11 @@ export default function BlogsPage() {
   const [activeCategory, setActiveCategory] = useState<BlogCategory | "All">("All")
   const [view, setView] = useState<"grid" | "list">("grid")
   const [page, setPage] = useState(1)
-  const [isModalOpen, setIsModalOpen] = useState(false)
   const [mounted, setMounted] = useState(false)
 
   useEffect(() => {
     fetchBlogs().then(() => setMounted(true))
-  }, [])
+  }, [fetchBlogs])
 
   // Reset page when filters change
   useEffect(() => {
@@ -78,7 +77,7 @@ export default function BlogsPage() {
                 <h1 className="text-4xl md:text-5xl font-bold dark:text-white leading-tight">
                   {t("title1")}{" "}
                   <span className="text-accentColor">{t("title_accent")}</span>
-                  <br />{t("title2")}
+                  {t("title2") && <><br />{t("title2")}</>}
                 </h1>
                 <p className="mt-4 text-gray-600 dark:text-gray-400 max-w-xl leading-relaxed">
                   {t("description")}
@@ -90,13 +89,13 @@ export default function BlogsPage() {
                   <div className="h-4 w-28 rounded bg-gray-200 dark:bg-gray-700 shimmer" />
                 </div>
               </div>
-              <button
-                disabled
+              <Link
+                href="/dashboard/blogs"
                 className="flex items-center gap-2 px-5 py-2.5 bg-accentColor/50 text-white rounded-xl font-medium shrink-0 self-start md:self-auto cursor-not-allowed"
               >
                 <PenSquare size={16} />
                 {t("write_article")}
-              </button>
+              </Link>
             </div>
             {/* Search placeholder */}
             <div className="mt-8 relative">
@@ -144,25 +143,29 @@ export default function BlogsPage() {
               <h1 className="text-4xl md:text-5xl font-bold dark:text-white leading-tight">
                 {t("title1")}{" "}
                 <span className="text-accentColor">{t("title_accent")}</span>
-                <br />{t("title2")}
+                {t("title2") && <><br />{t("title2")}</>}
               </h1>
               <p className="mt-4 text-gray-600 dark:text-gray-400 max-w-xl leading-relaxed">
                 {t("description")}
               </p>
               <div className="flex items-center gap-4 mt-4 text-sm text-gray-500 dark:text-gray-400">
                 <span>{blogs.length} {t("articles_count")}</span>
-                <span className="w-1 h-1 bg-gray-400 rounded-full" />
-                <span>{blogs.filter((b) => b.author.type === "visitor").length} {t("community_count")}</span>
+                {t("community_count") && (
+                  <>
+                    <span className="w-1 h-1 bg-gray-400 rounded-full" />
+                    <span>{blogs.filter((b) => b.author.type === "visitor").length} {t("community_count")}</span>
+                  </>
+                )}
               </div>
             </div>
 
-            <button
-              onClick={() => setIsModalOpen(true)}
+            <Link
+              href="/dashboard/blogs"
               className="flex items-center gap-2 px-5 py-2.5 bg-accentColor text-white rounded-xl font-medium hover:brightness-[0.85] transition-all hover:shadow-lg hover:shadow-accentColor/20 shrink-0 self-start md:self-auto"
             >
               <PenSquare size={16} />
               {t("write_article")}
-            </button>
+            </Link>
           </div>
 
           {/* Search */}
@@ -203,7 +206,7 @@ export default function BlogsPage() {
               </span>
             </p>
             <p className="text-xs text-amber-700/90 dark:text-amber-400/90 leading-relaxed">
-              {t("banner_p1")} <span className="font-semibold">{t("banner_p1_bold")}</span>{t("banner_p2")} <span className="font-semibold">{t("banner_p2_bold")}</span> {t("banner_p3")}<span className="font-semibold">Agung Kurniawan</span>{t("banner_p4")}
+              {t("banner_p1")} <span className="font-semibold">{t("banner_p1_bold")}</span>{t("banner_p2")} <span className="font-semibold">{t("banner_p2_bold")}</span> {t("banner_p3")}<span className="font-semibold">小嘟嘟</span>{t("banner_p4")}
             </p>
           </div>
         </div>
@@ -337,8 +340,6 @@ export default function BlogsPage() {
         )}
       </section>
 
-      {/* Article Modal */}
-      <ArticleModal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} />
     </div>
   )
 }
