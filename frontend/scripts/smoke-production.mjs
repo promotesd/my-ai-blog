@@ -167,6 +167,31 @@ async function checkEntertainmentApis() {
   results.push({ scope: "娱乐接口", route: "Steam 与音乐", ok: failures.length === before })
 }
 
+async function checkContentApis() {
+  const before = failures.length
+  const api = await request.newContext({ baseURL })
+  try {
+    const projects = await api.get("/api/github-repos")
+    const projectPayload = await projects.json().catch(() => null)
+    if (!projects.ok() || !Array.isArray(projectPayload) || projectPayload.length === 0) {
+      failures.push("GitHub 项目接口没有返回公开仓库")
+    } else if (projectPayload.some((repo) => !String(repo.full_name || "").startsWith("promotesd/"))) {
+      failures.push("GitHub 项目接口返回了非 promotesd 仓库")
+    }
+
+    for (const feedPath of ["/rss.xml", "/diary-rss.xml"]) {
+      const feed = await api.get(feedPath)
+      const body = await feed.text()
+      if (!feed.ok() || !feed.headers()["content-type"]?.includes("application/rss+xml") || !body.includes("<rss")) {
+        failures.push(`${feedPath} 不是有效的 RSS 输出`)
+      }
+    }
+  } finally {
+    await api.dispose()
+  }
+  results.push({ scope: "内容接口", route: "GitHub 与 RSS", ok: failures.length === before })
+}
+
 async function checkEntertainmentUi() {
   const before = failures.length
   await page.goto(`${baseURL}/entertainment`, { waitUntil: "domcontentloaded", timeout: 30_000 })
@@ -187,6 +212,7 @@ async function checkEntertainmentUi() {
 }
 
 await checkEntertainmentApis()
+await checkContentApis()
 for (const route of publicRoutes) await visit(route, "公开页")
 await checkEntertainmentUi()
 

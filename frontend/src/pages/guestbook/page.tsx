@@ -145,21 +145,32 @@ export default function GuestbookPage() {
     []
   )
 
-  // ── Fetch initial entries ────────────────────────────────────────────────────
-  useEffect(() => {
-    const fetchEntries = async () => {
-      setLoading(true)
-      try {
-        const data = await guestbookApi.list<GuestbookEntry>()
-        setEntries(data)
-      } catch (error) {
-        console.error("[guestbook] fetch failed:", error)
-        setEntries([])
-      }
-      setLoading(false)
+  // Keep the public count in sync with entries created or removed in the dashboard.
+  const loadEntries = useCallback(async (showLoading = false) => {
+    if (showLoading) setLoading(true)
+    try {
+      const data = await guestbookApi.list<GuestbookEntry>()
+      setEntries(data)
+    } catch (error) {
+      console.error("[guestbook] fetch failed:", error)
+      if (showLoading) setEntries([])
+    } finally {
+      if (showLoading) setLoading(false)
     }
-    fetchEntries()
   }, [])
+
+  useEffect(() => {
+    void loadEntries(true)
+    const interval = window.setInterval(() => void loadEntries(), 20_000)
+    const refreshWhenVisible = () => {
+      if (!document.hidden) void loadEntries()
+    }
+    document.addEventListener("visibilitychange", refreshWhenVisible)
+    return () => {
+      window.clearInterval(interval)
+      document.removeEventListener("visibilitychange", refreshWhenVisible)
+    }
+  }, [loadEntries])
 
   // ── Confetti ─────────────────────────────────────────────────────────────────
   const triggerConfetti = useCallback(async () => {
@@ -281,9 +292,8 @@ export default function GuestbookPage() {
 
         <div className="max-w-4xl mx-auto text-center relative z-10">
           {/* Title */}
-          <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold text-gray-900 dark:text-white leading-tight mb-4">
-            {t("title")}
-            <span className="block text-accentColor">{t("title_accent")}</span>
+          <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold text-gray-900 dark:text-white leading-tight mb-4 whitespace-nowrap">
+            {t("title")}<span className="text-accentColor">{t("title_accent")}</span>
           </h1>
 
           {/* Subtitle */}
