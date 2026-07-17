@@ -89,6 +89,17 @@ async function visit(route, scope) {
     if (!text.includes("1412822254@qq.com") || !text.includes("Visual/LiDAR SLAM") || !text.includes("Robot Navigation")) {
       failures.push("首页没有完整合并个人信息")
     }
+    if (!text.includes("欢迎踏入我的小世界") || !text.includes("fortune favor the brave")) {
+      failures.push("首页欢迎文案或座右铭未更新")
+    }
+    if (text.includes("也可以叫我 profighted")) failures.push("首页仍展示 profighted 别名说明")
+    const contactText = await page.locator("#contacts").innerText().catch(() => "")
+    if (!contactText.includes("欢迎交流") || !contactText.includes("GitHub") || !contactText.includes("邮箱")) {
+      failures.push("首页底部联系按钮不完整")
+    }
+    if (contactText.includes("联系我") || contactText.includes("小嘟嘟") || contactText.includes("智能科学与技术研究生")) {
+      failures.push("首页底部仍展示已删除的联系介绍")
+    }
   }
   if (route === "/projects") {
     const removedProjectText = text.match(/查看部署页|公开项目|私有项目|合作项目/)
@@ -98,6 +109,15 @@ async function visit(route, scope) {
   if (route === "/guestbook") {
     if (await page.locator("h1").count() !== 1) failures.push("留言簿主标题重复")
     if (await page.getByRole("button", { name: /^写留言$/ }).count() !== 1) failures.push("留言簿顶部写留言入口重复")
+    if (text.includes("部署测试") || text.includes("最新留言")) failures.push("留言簿仍展示测试留言或最新留言卡片")
+  }
+  if (route === "/blogs") {
+    if (text.includes("小嘟嘟的博客")) failures.push("博客页仍展示黄色说明提示")
+    const englishCategory = text.match(/\b(Technology|Tutorial|Tips & Tricks|Programming|Design|General|News|Career)\b/)
+    if (englishCategory) failures.push(`博客页仍展示英文分类：${englishCategory[0]}`)
+  }
+  if (route === "/entertainment") {
+    if (text.includes("点击统计卡片可以进入对应分类")) failures.push("娱乐页仍展示统计卡片说明")
   }
   if (scope === "后台页") {
     const untranslated = text.match(/Tidak ada|Belum ada|Simpan Perubahan|Ya, Hapus|Tambah Tamu|Total Photos|Personal Photos|Guest Uploads|New Timeline Entry|New Project|Edit Project|Gallery Manager|Guestbook Moderation|Menampilkan|Pengunjung|Rata-rata Rating|Menunggu Approval|Personal \(Saya\)|Approved \(Publik\)|Pending \(Tersembunyi\)|Informasi Timeline|Album & Dimensi|Memuat halaman|Reset filter/)

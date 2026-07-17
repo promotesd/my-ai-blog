@@ -10,6 +10,7 @@ export default function HeroContent() {
   const sectionRef = useRef(null);
   const q = gsap.utils.selector(sectionRef);
   const t = useTranslations("hero");
+  const bio = t("bio");
 
   useEffect(() => {
     gsap.registerPlugin(ScrollTrigger);
@@ -64,8 +65,21 @@ export default function HeroContent() {
         </div>
       </div>
 
-      <div className="w-[300px] md:w-[370px] relative z-30 text-center text-sm dark:bg-[linear-gradient(#fff,rgba(255,255,255,.6))] inline-block text-black dark:text-transparent bg-clip-text">
-        {t("bio")}
+      <div
+        key={bio}
+        aria-label={bio}
+        className="w-[300px] md:w-[520px] relative z-30 text-center text-sm leading-6 dark:bg-[linear-gradient(#fff,rgba(255,255,255,.6))] inline-block text-black dark:text-transparent bg-clip-text"
+      >
+        {Array.from(bio).map((character, index) => (
+          <span
+            key={`${character}-${index}`}
+            aria-hidden="true"
+            className="bio-character inline-block"
+            style={{ animationDelay: `${index * 45}ms` }}
+          >
+            {character === " " ? "\u00a0" : character}
+          </span>
+        ))}
       </div>
 
       <div className="bio-animation dark:bg-[linear-gradient(#fff,rgba(255,255,255,.6))] inline-block text-black dark:text-transparent bg-clip-text text-md md:text-lg text-center md:text-left">
