@@ -2,10 +2,21 @@ import { writeFile } from "node:fs/promises";
 
 const steamId = process.env.STEAM_ID || "76561199152950377";
 const profileUrl = `https://steamcommunity.com/profiles/${steamId}/games/?tab=all`;
+const xmlUrl = `https://steamcommunity.com/profiles/${steamId}/games?xml=1`;
+
+const headers = {
+  "user-agent": "Mozilla/5.0 (compatible; XiaoduduPortfolio/1.0)",
+  accept: "text/html,application/xhtml+xml,application/xml",
+};
+
+const xmlResponse = await fetch(xmlUrl, { headers });
+const xml = xmlResponse.ok ? await xmlResponse.text() : "";
+const xmlAppids = [...xml.matchAll(/<appID>\s*(?:<!\[CDATA\[)?(\d+)(?:\]\]>)?\s*<\/appID>/g)]
+  .map((match) => Number(match[1]));
 
 const response = await fetch(profileUrl, {
   headers: {
-    "user-agent": "Mozilla/5.0 (compatible; XiaoduduPortfolio/1.0)",
+    ...headers,
     accept: "text/html,application/xhtml+xml",
   },
 });
@@ -20,7 +31,7 @@ const matches = [
   /"games"\s*:\s*(\[[\s\S]*?\])\s*,\s*"strProfileName"/,
 ];
 
-let games;
+let games = xmlAppids.length > 0 ? xmlAppids.map((appid) => ({ appid })) : undefined;
 for (const pattern of matches) {
   const match = html.match(pattern);
   if (!match) continue;
