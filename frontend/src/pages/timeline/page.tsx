@@ -262,10 +262,10 @@ function TimelineCard({ item, side }: { item: TimelineItem; side: "left" | "righ
                   {item.type}
                 </p>
                 <h3 className="font-bold text-gray-900 dark:text-white text-sm leading-snug">
-                  {title} {/* <--- Ditranslate */}
+                  {title}
                 </h3>
                 {subtitle && (
-                  <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">{subtitle}</p> /* <--- Ditranslate */
+                  <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">{subtitle}</p>
                 )}
               </div>
             </div>
@@ -320,7 +320,7 @@ function TimelineCard({ item, side }: { item: TimelineItem; side: "left" | "righ
           </div>
 
           <p className="text-[13px] text-gray-600 dark:text-gray-300 leading-relaxed">
-            {description} {/* <--- Ditranslate */}
+            {description}
           </p>
 
           {item.photos && item.photos.length > 0 && (
@@ -341,7 +341,7 @@ function TimelineCard({ item, side }: { item: TimelineItem; side: "left" | "righ
                 {highlights.map((h, i) => (
                   <li key={i} className="flex items-start gap-2 text-[12px] text-gray-700 dark:text-gray-300">
                     <Star size={12} className={cn("mt-0.5 shrink-0 fill-current", c.text, c.textDark)} />
-                    <span>{h}</span> {/* <--- Ditranslate */}
+                    <span>{h}</span>
                   </li>
                 ))}
               </ul>
@@ -357,7 +357,7 @@ function TimelineCard({ item, side }: { item: TimelineItem; side: "left" | "righ
                 {responsibilities.map((r, i) => (
                   <li key={i} className="flex items-start gap-2 text-[12px] text-gray-700 dark:text-gray-300">
                     <CheckCircle2 size={12} className={cn("mt-0.5 shrink-0", c.text, c.textDark)} />
-                    <span>{r}</span> {/* <--- Ditranslate */}
+                    <span>{r}</span>
                   </li>
                 ))}
               </ul>
@@ -376,7 +376,7 @@ function TimelineCard({ item, side }: { item: TimelineItem; side: "left" | "righ
                     className="inline-flex items-center gap-1 text-[11px] px-2 py-0.5 rounded-md bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400"
                   >
                     <Layers size={10} />
-                    {p} {/* <--- Ditranslate */}
+                    {p}
                   </span>
                 ))}
               </div>
@@ -438,7 +438,7 @@ function TimelineCard({ item, side }: { item: TimelineItem; side: "left" | "righ
             >
               <QuoteIcon size={14} className={cn("absolute -top-1 -left-1 opacity-50", c.text, c.textDark)} />
               <p className="text-[12px] italic text-gray-600 dark:text-gray-300 leading-relaxed">
-                &ldquo;{quote}&rdquo; {/* <--- Ditranslate */}
+                &ldquo;{quote}&rdquo;
               </p>
               {item.quote_author && (
                 <cite className={cn("text-[11px] font-semibold not-italic mt-1 block", c.text, c.textDark)}>

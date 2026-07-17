@@ -4,10 +4,8 @@ import { formatDistanceToNow } from "date-fns"
 import { id as localeId, enUS as localeEn } from "date-fns/locale"
 import { MapPin, Briefcase, Star, ExternalLink, Clock, Phone } from "lucide-react"
 import Image from "next/image"
-import { useEffect, useRef, useState } from "react"
-import { useTranslations } from "next-intl"
+import { useEffect, useRef } from "react"
 import { useLanguageStore } from "@/stores/LanguageStore"
-import TranslateWidget from "@/components/TranslateWidget"
 
 export interface GuestbookEntry {
   id: string
@@ -130,11 +128,9 @@ export function StarRating({ rating }: { rating: number }) {
 }
 
 export default function GuestbookCard({ entry, isNew = false }: Props) {
-  const t = useTranslations("guestbookPage")
   const { locale } = useLanguageStore()
   const dateFnsLocale = locale === "en" ? localeEn : localeId
   const cardRef = useRef<HTMLDivElement>(null)
-  const [translatedMessage, setTranslatedMessage] = useState<string | null>(null)
   const cardColor = entry.card_color || "#6366f1"
   const city = entry.city || "未填写地址"
   const profession = entry.profession || "访客"
@@ -250,16 +246,8 @@ export default function GuestbookCard({ entry, isNew = false }: Props) {
           <span className="absolute -top-1 -left-0.5 text-3xl leading-none text-gray-200 dark:text-gray-700 font-serif select-none">
             "
           </span>
-          <MessageBody text={translatedMessage ?? entry.message} />
+          <MessageBody text={entry.message} />
         </blockquote>
-        <div className="mt-1.5 flex justify-end">
-          <TranslateWidget
-            fields={{ message: entry.message }}
-            onTranslated={(out) => setTranslatedMessage(out.message)}
-            onReverted={() => setTranslatedMessage(null)}
-            size="sm"
-          />
-        </div>
       </div>
 
       {/* Contact */}

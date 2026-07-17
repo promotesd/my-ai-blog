@@ -84,6 +84,17 @@ async function visit(route, scope) {
   if (scope === "公开页" && /Hai!|Buku Tamu|Jangan tampilkan|kunjungan kamu/.test(text)) {
     failures.push(`${scope} ${route} 仍包含留言提示的印尼语文案`)
   }
+  if (scope === "公开页") {
+    const translationControls = await page.locator("button:visible").evaluateAll((buttons) =>
+      buttons.filter((button) => {
+        const label = [button.textContent, button.getAttribute("title"), button.getAttribute("aria-label")]
+          .filter(Boolean)
+          .join(" ")
+        return /\b(translate|translation|translating)\b/i.test(label)
+      }).length
+    )
+    if (translationControls > 0) failures.push(`${scope} ${route} 仍展示翻译控件`)
+  }
   if (route === "/") {
     if (text.includes("项目记录")) failures.push("首页仍展示项目记录区块")
     if (text.includes("文章还在整理中")) failures.push("首页仍展示博客区块")
