@@ -211,7 +211,9 @@ function TimelineCard({ item, side }: { item: TimelineItem; side: "left" | "righ
     item.period_start === periodEnd
       ? item.period_start
       : `${item.period_start} – ${periodEnd}`
-  const isOngoing = ["ongoing", "Sedang Berlangsung", "进行中"].includes(item.status)
+  const isOngoing = item.period_end === "present"
+    || item.period_end === "Sekarang"
+    || ["ongoing", "Sedang Berlangsung", "进行中"].includes(item.status)
   const title = item.title
   const subtitle = item.subtitle
   const description = item.description
