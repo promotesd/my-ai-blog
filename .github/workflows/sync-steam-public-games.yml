@@ -2,6 +2,12 @@ name: Sync public Steam games
 
 on:
   workflow_dispatch:
+  push:
+    branches:
+      - main
+    paths:
+      - ".github/scripts/update-steam-public-games.mjs"
+      - ".github/workflows/sync-steam-public-games.yml"
   schedule:
     - cron: "23 * * * *"
 
