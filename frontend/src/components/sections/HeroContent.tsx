@@ -68,7 +68,7 @@ export default function HeroContent() {
       <div
         key={bio}
         aria-label={bio}
-        className="w-[300px] md:w-[520px] relative z-30 text-center text-sm leading-6 dark:bg-[linear-gradient(#fff,rgba(255,255,255,.6))] inline-block text-black dark:text-transparent bg-clip-text"
+        className="w-[300px] md:w-[520px] relative z-30 text-center text-sm leading-6 text-gray-800 dark:text-gray-200"
       >
         {Array.from(bio).map((character, index) => (
           <span

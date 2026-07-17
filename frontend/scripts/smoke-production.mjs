@@ -105,6 +105,14 @@ async function visit(route, scope) {
     if (emailHref !== "mailto:1412822254@qq.com") failures.push("首页邮箱按钮链接不正确")
     const faviconHref = await page.locator('link[rel="icon"]').getAttribute("href").catch(() => "")
     if (faviconHref !== "/profile/avatar.png?v=20260717") failures.push("浏览器页签未使用新版个人头像")
+    const heroBio = page.locator('[aria-label*="欢迎踏入我的小世界"]')
+    const darkColor = await heroBio.evaluate((element) => {
+      document.documentElement.classList.add("dark")
+      return getComputedStyle(element).color
+    }).catch(() => "")
+    if (!darkColor || darkColor === "rgba(0, 0, 0, 0)" || darkColor === "transparent") {
+      failures.push("首页欢迎文案在深色模式下不可见")
+    }
   }
   if (route === "/projects") {
     const removedProjectText = text.match(/查看部署页|公开项目|私有项目|合作项目/)
