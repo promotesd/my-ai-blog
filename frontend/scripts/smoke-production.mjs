@@ -86,7 +86,7 @@ async function visit(route, scope) {
     if (text.includes("文章还在整理中")) failures.push("首页仍展示博客区块")
     if (text.includes("经验年限") || text.includes("公开贡献")) failures.push("首页仍展示成绩统计")
     if (text.includes("谢谢你来访")) failures.push("首页仍展示已删除的致谢文案")
-    if (!text.includes("1412822254@qq.com") || !text.includes("Visual/LiDAR SLAM") || !text.includes("Robot Navigation")) {
+    if (!text.includes("Visual/LiDAR SLAM") || !text.includes("Robot Navigation")) {
       failures.push("首页没有完整合并个人信息")
     }
     if (!text.includes("欢迎踏入我的小世界") || !text.includes("fortune favor the brave")) {
@@ -94,17 +94,22 @@ async function visit(route, scope) {
     }
     if (text.includes("也可以叫我 profighted")) failures.push("首页仍展示 profighted 别名说明")
     const contactText = await page.locator("#contacts").innerText().catch(() => "")
+    const emailHref = await page.locator('#contacts a[href^="mailto:"]').getAttribute("href").catch(() => "")
     if (!contactText.includes("欢迎交流") || !contactText.includes("GitHub") || !contactText.includes("邮箱")) {
       failures.push("首页底部联系按钮不完整")
     }
     if (contactText.includes("联系我") || contactText.includes("小嘟嘟") || contactText.includes("智能科学与技术研究生")) {
       failures.push("首页底部仍展示已删除的联系介绍")
     }
+    if (emailHref !== "mailto:1412822254@qq.com") failures.push("首页邮箱按钮链接不正确")
   }
   if (route === "/projects") {
     const removedProjectText = text.match(/查看部署页|公开项目|私有项目|合作项目/)
     if (removedProjectText) failures.push(`项目页仍包含旧模块：${removedProjectText[0]}`)
     if (!text.includes("研究类项目") || !text.includes("开发类项目")) failures.push("项目页缺少研究/开发分类")
+    if (!text.includes("研究记录和开发实践汇总") || text.includes("从 GitHub 与本站后台汇总")) {
+      failures.push("项目页副标题未更新")
+    }
   }
   if (route === "/guestbook") {
     if (await page.locator("h1").count() !== 1) failures.push("留言簿主标题重复")
