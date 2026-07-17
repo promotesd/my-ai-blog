@@ -32,7 +32,7 @@ public class GitHubStatsController {
 
   public GitHubStatsController(
       ObjectMapper objectMapper,
-      @Value("${app.github.username:agungkurniawanid}") String username,
+      @Value("${app.github.username:promotesd}") String username,
       @Value("${app.github.token:}") String token
   ) {
     this.objectMapper = objectMapper;

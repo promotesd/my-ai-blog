@@ -14,8 +14,12 @@ const publicRoutes = [
   "/entertainment",
   "/timeline",
   "/contact",
+  "/certificate",
+  "/tech-stack",
   "/xhub",
 ]
+
+const legacyContentPattern = /Agung Kurniawan|Universitas Jember|Soko Financial|BISI International|Charoen Pokphand|Mochi|Bali Trip/i
 
 const adminRoutes = [
   "/dashboard",
@@ -80,7 +84,8 @@ async function visit(route, scope) {
   if (!response || response.status() >= 400) failures.push(`${scope} ${route} 返回 ${response?.status() || "无响应"}`)
   if (text.length < 30) failures.push(`${scope} ${route} 页面内容为空`)
   if (text.includes("Application failed to render")) failures.push(`${scope} ${route} 渲染失败`)
-  if (text.includes("Agung Kurniawan")) failures.push(`${scope} ${route} 仍包含旧站个人信息`)
+  const legacyContent = text.match(legacyContentPattern)
+  if (legacyContent) failures.push(`${scope} ${route} 仍包含旧站内容：${legacyContent[0]}`)
   if (scope === "公开页" && /Hai!|Buku Tamu|Jangan tampilkan|kunjungan kamu/.test(text)) {
     failures.push(`${scope} ${route} 仍包含留言提示的印尼语文案`)
   }
@@ -265,6 +270,28 @@ async function checkContentApis() {
   results.push({ scope: "内容接口", route: "GitHub 与 RSS", ok: failures.length === before })
 }
 
+async function checkRemovedStaticAssets() {
+  const before = failures.length
+  const api = await request.newContext({ baseURL })
+  const removedAssets = [
+    { path: "/ico.ico", forbiddenType: /image|icon/i },
+    { path: "/resume.pdf", forbiddenType: /application\/pdf/i },
+    { path: "/thumbnail-url-share.jpeg", forbiddenType: /image/i },
+  ]
+  try {
+    for (const asset of removedAssets) {
+      const response = await api.get(asset.path)
+      const contentType = response.headers()["content-type"] || ""
+      if (asset.forbiddenType.test(contentType)) {
+        failures.push(`已删除的旧文件仍可访问：${asset.path} (${contentType})`)
+      }
+    }
+  } finally {
+    await api.dispose()
+  }
+  results.push({ scope: "静态资源", route: "旧作者文件", ok: failures.length === before })
+}
+
 async function checkEntertainmentUi() {
   const before = failures.length
   await page.goto(`${baseURL}/entertainment`, { waitUntil: "domcontentloaded", timeout: 30_000 })
@@ -286,6 +313,7 @@ async function checkEntertainmentUi() {
 
 await checkEntertainmentApis()
 await checkContentApis()
+await checkRemovedStaticAssets()
 for (const route of publicRoutes) await visit(route, "公开页")
 await checkEntertainmentUi()
 

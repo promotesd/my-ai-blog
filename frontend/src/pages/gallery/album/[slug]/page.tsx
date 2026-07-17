@@ -6,7 +6,7 @@ import Image from "next/image"
 import dynamic from "next/dynamic"
 import Masonry from "react-masonry-css"
 import { ArrowLeft, MapPin, Calendar, Images, Loader2 } from "lucide-react"
-import { galleryPhotos, galleryAlbums, getGalleryCategoryLabel } from "@/data/galleryData"
+import { getGalleryCategoryLabel } from "@/data/galleryData"
 import { GalleryPhoto, GalleryAlbum, GalleryGuest } from "@/types/gallery"
 import { fetchAlbumBySlug, fetchPhotosByAlbum, fetchGalleryGuests } from "@/lib/galleryApi"
 import GalleryPhotoCard from "@/components/gallery/GalleryPhotoCard"
@@ -41,17 +41,7 @@ export default function AlbumDetailPage({ params }: PageProps) {
     async function loadData() {
       setIsLoading(true)
 
-      // 1. Try static data first (personal albums)
-      const staticAlbum = galleryAlbums.find((a) => a.slug === slug)
-      if (staticAlbum) {
-        const staticPhotos = galleryPhotos.filter((p) => p.albumSlug === slug)
-        setAlbum(staticAlbum)
-        setPhotos(staticPhotos)
-        setIsLoading(false)
-        return
-      }
-
-      // 2. Fetch dynamic guest album from the backend
+      // Albums and photos are owned by the Spring Boot backend.
       const [dbAlbum, dbPhotos, allGuests] = await Promise.all([
         fetchAlbumBySlug(slug),
         fetchPhotosByAlbum(slug),

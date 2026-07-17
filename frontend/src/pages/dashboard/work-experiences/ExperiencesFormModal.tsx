@@ -114,7 +114,7 @@ export default function ExperiencesFormModal({ isOpen, mode, initialData, onClos
 
           <div className="grid grid-cols-2 gap-4">
             <FormField label="Perusahaan / Instansi" icon={<Building2 size={12} className="text-gray-500" />} required>
-              <TextInput value={form.company} onChange={(v) => setField("company", v)} placeholder="Cth: PT. BISI International, Tbk" />
+              <TextInput value={form.company} onChange={(v) => setField("company", v)} placeholder="例如：实验室或团队名称" />
             </FormField>
             <FormField label="Posisi / Jabatan" icon={<Briefcase size={12} className="text-gray-500" />} required>
               <TextInput value={form.position} onChange={(v) => setField("position", v)} placeholder="Cth: Mobile Developer" />
@@ -167,7 +167,7 @@ export default function ExperiencesFormModal({ isOpen, mode, initialData, onClos
           </div>
 
           <FormField label="Lokasi Kota/Provinsi" icon={<MapPin size={12} className="text-gray-500" />}>
-            <TextInput value={form.location} onChange={(v) => setField("location", v)} placeholder="Cth: Kediri, East Java, Indonesia" />
+            <TextInput value={form.location} onChange={(v) => setField("location", v)} placeholder="例如：中国 黑龙江 哈尔滨" />
           </FormField>
 
           <FormField label="Deskripsi Pekerjaan" icon={<FileText size={12} className="text-gray-500" />} required>

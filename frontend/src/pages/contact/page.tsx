@@ -6,23 +6,12 @@ import { gsap } from "gsap";
 import { ScrollTrigger } from "gsap/dist/ScrollTrigger";
 import Link from "next/link";
 import {
-  SiYoutube,
-  SiTiktok,
-  SiSpotify,
-  SiInstagram,
-  SiWhatsapp,
-  SiTelegram,
-  SiSteam,
-  SiPinterest,
-  SiFacebook,
   SiGmail,
   SiGithub,
 } from "react-icons/si";
-import { FaXTwitter } from "react-icons/fa6";
 import {
   FaArrowLeft,
   FaExternalLinkAlt,
-  FaLinkedin as SiLinkedin,
   FaPaperPlane,
   FaStar,
 } from "react-icons/fa";

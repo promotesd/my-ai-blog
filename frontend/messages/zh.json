@@ -93,7 +93,7 @@
     "journey_0_desc": "2022 年至 2026 年，本科就读于福州大学数字媒体技术专业。",
     "journey_1_title": "哈尔滨工程大学智能科学与技术研究生",
     "journey_1_period": "2026 - 至今",
-    "journey_1_desc": "2026 年开始研究生阶段学习，研究方向为 Visual/LiDAR SLAM、Robot Navigation。",
+    "journey_1_desc": "2026 年开始研究生阶段学习，研究方向为 Visual/LiDAR SLAM、Robot Navigation、Robot。",
     "journey_2_title": "",
     "journey_2_desc": "",
     "journey_3_title": "",
@@ -866,25 +866,5 @@
     "mobile_prefix": "去",
     "dismiss": "不再显示",
     "close": "关闭留言提示"
-  },
-  "creditPage": {
-    "breadcrumb_home": "首页",
-    "breadcrumb_credit": "Credits",
-    "badge": "Credits & Attribution",
-    "title_prefix": "Design",
-    "title_accent": "Credits",
-    "subtitle": "Acknowledgements and attributions for design inspirations used in this portfolio.",
-    "home_section_label": "Home Page",
-    "home_section_title": "Homepage Design",
-    "home_section_badge": "Template Used",
-    "home_desc_1": "The design of the homepage (beranda) was adapted and inspired by the portfolio template created by",
-    "home_desc_2": ". The layout, animations, and overall aesthetic of the home page are based on their original work.",
-    "home_author": "Shinn Thant",
-    "other_section_label": "Other Pages",
-    "other_section_title": "Custom & Improvised Design",
-    "other_section_badge": "Original",
-    "other_desc": "All other pages — About, Skills, Projects, Blog, Guestbook, Gallery, Timeline, Tech Stack, Certificate, Entertainment, Deploy Projects, Contact, and more — are independently designed and built from scratch without using any template.",
-    "view_github": "View on GitHub",
-    "back_home": "Back to Home"
   }
 }

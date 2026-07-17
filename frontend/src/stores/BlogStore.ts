@@ -10,7 +10,7 @@ interface BlogState {
   getBlogById: (id: string) => Blog | undefined
 }
 
-const DEFAULT_THUMBNAIL = "/thumbnail-url-share.jpeg"
+const DEFAULT_THUMBNAIL = "/profile/avatar.png"
 const BLOG_CATEGORIES: BlogCategory[] = [
   "Technology",
   "General",

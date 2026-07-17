@@ -32,35 +32,6 @@ interface CertificateRow {
   created_at?:     string
 }
 
-const FALLBACK_CERTIFICATES: Certificate[] = [
-  {
-    id: "spring-boot-portfolio",
-    title: "Spring Boot Portfolio Backend",
-    description: "Portfolio backend migration with Spring Boot, MySQL, Redis, JWT, upload APIs, and deployment workflow.",
-    category: "Sertifikasi Resmi",
-    issuer_name: "Xiaodudu Lab",
-    issuer_logo: undefined,
-    issue_date: "2026-06-06",
-    expiry_date: null,
-    status: "Lifetime",
-    pdf_url: null,
-    thumbnail_url: "/thumbnail-url-share.jpeg",
-  },
-  {
-    id: "react-typescript-portfolio",
-    title: "React TypeScript Portfolio Migration",
-    description: "React + Vite + TypeScript frontend migration preserving the original portfolio UI and routing system.",
-    category: "Course Online",
-    issuer_name: "Xiaodudu Lab",
-    issuer_logo: undefined,
-    issue_date: "2026-06-06",
-    expiry_date: null,
-    status: "Lifetime",
-    pdf_url: null,
-    thumbnail_url: "/thumbnail-url-share.jpeg",
-  },
-]
-
 // ─────────────────────────────────────────────────────────────────────────────
 // fetchCertificates
 // ─────────────────────────────────────────────────────────────────────────────
@@ -88,5 +59,5 @@ export async function fetchCertificates(): Promise<Certificate[]> {
     pdf_url:       row.pdf_url      ?? null,
     thumbnail_url: row.thumbnail_url ?? null,
   }))
-  return certificates.length > 0 ? certificates : FALLBACK_CERTIFICATES
+  return certificates
 }
