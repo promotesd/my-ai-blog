@@ -103,6 +103,8 @@ async function visit(route, scope) {
       failures.push("首页底部仍展示已删除的联系介绍")
     }
     if (emailHref !== "mailto:1412822254@qq.com") failures.push("首页邮箱按钮链接不正确")
+    const faviconHref = await page.locator('link[rel="icon"]').getAttribute("href").catch(() => "")
+    if (faviconHref !== "/profile/avatar.png?v=20260717") failures.push("浏览器页签未使用新版个人头像")
   }
   if (route === "/projects") {
     const removedProjectText = text.match(/查看部署页|公开项目|私有项目|合作项目/)
@@ -211,6 +213,19 @@ async function checkContentApis() {
       if (!feed.ok() || !feed.headers()["content-type"]?.includes("application/rss+xml") || !body.includes("<rss")) {
         failures.push(`${feedPath} 不是有效的 RSS 输出`)
       }
+    }
+
+    const timelines = await api.get("/api/timelines")
+    const timelinePayload = await timelines.json().catch(() => null)
+    const timelineItems = timelinePayload?.data
+    if (!timelines.ok() || !Array.isArray(timelineItems) || timelineItems.length !== 2) {
+      failures.push("时间线接口没有返回两条教育经历")
+    } else {
+      const serialized = JSON.stringify(timelineItems)
+      for (const expected of ["福州大学", "哈尔滨工程大学", "本科", "研究生", "Visual/LiDAR SLAM", "Robot Navigation"]) {
+        if (!serialized.includes(expected)) failures.push(`时间线缺少正确内容：${expected}`)
+      }
+      if (/Ã|Â|â€|æœ|ç¦|å°|ï¼/.test(serialized)) failures.push("时间线接口仍包含乱码")
     }
   } finally {
     await api.dispose()
