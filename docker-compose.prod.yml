@@ -63,7 +63,6 @@ services:
       STEAM_ID: ${STEAM_ID:-}
       STEAM_API_BASE_URL: ${STEAM_API_BASE_URL:-https://api.steampowered.com}
       STEAM_HIDDEN_APP_IDS: ${STEAM_HIDDEN_APP_IDS:-}
-      STEAM_VISIBLE_GAMES_URL: ${STEAM_VISIBLE_GAMES_URL:-https://raw.githubusercontent.com/promotesd/my-ai-blog/main/data/steam-public-games.json}
     volumes:
       - uploads_data:/app/uploads
     ports:
