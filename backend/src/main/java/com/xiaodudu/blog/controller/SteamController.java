@@ -13,10 +13,7 @@ import java.time.Duration;
 import java.net.URI;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
-import java.time.Instant;
 import java.util.Arrays;
-import java.util.HashSet;
-import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 import org.springframework.beans.factory.annotation.Value;
@@ -33,7 +30,6 @@ public class SteamController {
       .connectTimeout(Duration.ofSeconds(8))
       .build();
   private final ObjectMapper objectMapper;
-  private volatile VisibilitySnapshot visibilitySnapshot;
 
   public SteamController(ObjectMapper objectMapper) {
     this.objectMapper = objectMapper;
@@ -53,12 +49,6 @@ public class SteamController {
 
   @Value("${app.steam.hidden-app-ids:}")
   private String hiddenAppIds;
-
-  @Value("${app.steam.visible-games-url:}")
-  private String visibleGamesUrl;
-
-  @Value("${app.steam.visibility-cache-file:uploads/steam/visible-games.json}")
-  private String visibilityCacheFile;
 
   @GetMapping(value = "/api/steam-games", produces = MediaType.APPLICATION_JSON_VALUE)
   public ResponseEntity<String> ownedGames() {
@@ -119,9 +109,7 @@ public class SteamController {
         })
         .collect(Collectors.toSet());
 
-    Optional<Set<Integer>> visibleIds = loadVisibleAppIds();
-
-    if (excludedIds.isEmpty() && visibleIds.isEmpty()) {
+    if (excludedIds.isEmpty()) {
       return payload;
     }
 
@@ -134,77 +122,12 @@ public class SteamController {
       }
       gamesArray.removeIf(game -> {
         int appId = game.path("appid").asInt();
-        return excludedIds.contains(appId) || visibleIds.map(ids -> !ids.contains(appId)).orElse(false);
+        return excludedIds.contains(appId);
       });
       responseObject.put("game_count", gamesArray.size());
       return objectMapper.writeValueAsString(root);
     } catch (Exception ignored) {
       return payload;
     }
-  }
-
-  private Optional<Set<Integer>> loadVisibleAppIds() {
-    if (visibleGamesUrl == null || visibleGamesUrl.isBlank()) {
-      return Optional.empty();
-    }
-
-    VisibilitySnapshot current = visibilitySnapshot;
-    if (current != null && current.loadedAt().plusSeconds(300).isAfter(Instant.now())) {
-      return Optional.of(current.appIds());
-    }
-
-    synchronized (this) {
-      current = visibilitySnapshot;
-      if (current != null && current.loadedAt().plusSeconds(300).isAfter(Instant.now())) {
-        return Optional.of(current.appIds());
-      }
-
-      try {
-        HttpRequest request = HttpRequest.newBuilder(URI.create(visibleGamesUrl))
-            .timeout(Duration.ofSeconds(8))
-            .header("Cache-Control", "no-cache")
-            .GET()
-            .build();
-        HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
-        if (response.statusCode() < 200 || response.statusCode() >= 300) {
-          throw new IllegalStateException("Visible games source returned " + response.statusCode());
-        }
-        Set<Integer> appIds = parseVisibleAppIds(response.body());
-        Path target = Path.of(visibilityCacheFile).toAbsolutePath();
-        Files.createDirectories(target.getParent());
-        Files.writeString(target, response.body());
-        visibilitySnapshot = new VisibilitySnapshot(appIds, Instant.now());
-        return Optional.of(appIds);
-      } catch (Exception ignored) {
-        try {
-          Path target = Path.of(visibilityCacheFile).toAbsolutePath();
-          if (Files.isRegularFile(target)) {
-            Set<Integer> appIds = parseVisibleAppIds(Files.readString(target));
-            visibilitySnapshot = new VisibilitySnapshot(appIds, Instant.now());
-            return Optional.of(appIds);
-          }
-        } catch (Exception cacheIgnored) {
-          // Keep the full Steam response when no verified public list is available.
-        }
-        return current == null ? Optional.empty() : Optional.of(current.appIds());
-      }
-    }
-  }
-
-  private Set<Integer> parseVisibleAppIds(String payload) throws Exception {
-    JsonNode root = objectMapper.readTree(payload);
-    if (!root.path("ready").asBoolean(false) || !root.path("appids").isArray()) {
-      throw new IllegalArgumentException("Visible games list is not ready");
-    }
-    Set<Integer> result = new HashSet<>();
-    root.path("appids").forEach(node -> {
-      if (node.canConvertToInt()) {
-        result.add(node.asInt());
-      }
-    });
-    return Set.copyOf(result);
-  }
-
-  private record VisibilitySnapshot(Set<Integer> appIds, Instant loadedAt) {
   }
 }

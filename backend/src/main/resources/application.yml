@@ -51,5 +51,3 @@ app:
     api-base-url: ${STEAM_API_BASE_URL:https://api.steampowered.com}
     cache-file: ${STEAM_CACHE_FILE:${UPLOAD_DIR:uploads}/steam/games.json}
     hidden-app-ids: ${STEAM_HIDDEN_APP_IDS:}
-    visible-games-url: ${STEAM_VISIBLE_GAMES_URL:}
-    visibility-cache-file: ${STEAM_VISIBILITY_CACHE_FILE:${UPLOAD_DIR:uploads}/steam/visible-games.json}
